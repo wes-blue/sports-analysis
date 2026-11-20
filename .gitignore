@@ -1,0 +1,11 @@
+# Scratch space (never committed)
+**/.work/
+# Excel lock files and OS noise
+~$*.xlsx
+~$*.xlsm
+.DS_Store
+Thumbs.db
+# Tooling
+__pycache__/
+.pytest_cache/
+node_modules/
