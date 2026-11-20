@@ -1,0 +1,146 @@
+# NFL pipeline: Friday watchdog.
+#
+# Owner's guide: NFL/03-pipeline/AUTOMATION.md. Contract: NFL/CONTRACTS.md section 8.
+#
+# Turns red when, in season, a week finished more than 72 hours ago and NFL/04-data still does not
+# include it, and opens or comments on its own rolling issue (label `nfl-pipeline-alert-watchdog`);
+# only a HEALTHY watchdog run closes it. This also catches the case where no weekly attempt ran at all.
+# Green in the off-season. Read-only: it never commits.
+# Two Friday fires, because a scheduled run can itself be dropped or start hours late.
+# Its own concurrency group: in the publish group, a queued watchdog would replace (cancel) a publish
+# run that was waiting there. It reads its own checkout, so it never sees a half-written publish.
+
+name: nfl-pipeline-watchdog
+
+on:
+  schedule:
+    - cron: "41 14 * 1,2,9-12 5"   # Fri 14:41 UTC
+    - cron: "47 21 * 1,2,9-12 5"   # Fri 21:47 UTC (second chance)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nfl-pipeline-watchdog
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: NFL/03-pipeline
+
+env:
+  PYTHONUNBUFFERED: "1"
+  ALERT_LABEL: nfl-pipeline-alert-watchdog
+  MAX_AGE_HOURS: "72"
+  GUIDE_URL: https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write     # rolling alert issue
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Watchdog
+        id: outcome
+        env:
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set +e
+          python -m nflpipe watchdog --max-age-hours "$MAX_AGE_HOURS" > "$ALERT_DETAILS" 2>&1
+          rc=$?
+          cat "$ALERT_DETAILS"
+          case "$rc" in
+            0) outcome=HEALTHY; echo "::notice title=HEALTHY::the published data is up to date" ;;
+            5) outcome=STALE;   echo "::error title=STALE::a finished week has not been published within ${MAX_AGE_HOURS} h" ;;
+            *) outcome=ERROR;   echo "::error title=ERROR::python -m nflpipe watchdog exited $rc" ;;
+          esac
+          echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+          sed -i 's/```/'"'''"'/g' "$ALERT_DETAILS"
+          {
+            echo "### NFL pipeline watchdog: $outcome"
+            echo ""
+            echo '```text'
+            head -n 40 "$ALERT_DETAILS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Update the rolling alert issue
+        if: ${{ !cancelled() }}
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          JOB_STATUS: ${{ job.status }}
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+          GREEN_OUTCOMES: "HEALTHY"
+          CLOSING_OUTCOMES: "HEALTHY"
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set -uo pipefail
+          # CONTRACTS.md section 8 "Alerts": one issue per workflow (its own label). A red run opens or
+          # comments on it. It is closed ONLY by a run of the same workflow that proves the problem is
+          # gone (CLOSING_OUTCOMES, never in a dry run). Any other green result (a SKIP) leaves it alone.
+          state=unchanged
+          if [[ "$JOB_STATUS" != "success" || " $GREEN_OUTCOMES " != *" ${OUTCOME:-none} "* ]]; then
+            state=red
+          elif [[ " $CLOSING_OUTCOMES " == *" ${OUTCOME:-none} "* && "${DRY_RUN:-false}" != "true" ]]; then
+            state=resolved
+          fi
+          echo "alert state: $state (outcome ${OUTCOME:-none}, job status $JOB_STATUS)"
+          if [[ "$state" == "unchanged" ]]; then
+            echo "::notice::${OUTCOME:-none} does not prove an earlier problem is gone; an open $ALERT_LABEL issue stays open"
+            exit 0
+          fi
+          gh label create "$ALERT_LABEL" --color B60205 \
+            --description "Automated alert from ${WORKFLOW_NAME}" --force >/dev/null \
+            || echo "::warning::could not create or update label $ALERT_LABEL"
+          # Only an issue opened by the workflow bot counts: anyone may open issues in a public repository.
+          if ! num="$(gh issue list --label "$ALERT_LABEL" --state open --author app/github-actions \
+                      --json number --jq '.[0].number // empty')"; then
+            echo "::error::could not list issues (are issues enabled?)"
+            exit 1
+          fi
+          if [[ "$state" == "red" ]]; then
+            body="**${WORKFLOW_NAME}** ended **${OUTCOME:-ERROR}** (job status: ${JOB_STATUS}). Started by: ${EVENT:-unknown}, commit ${SHA:0:7}. Run: ${RUN_URL}"
+            if [[ -s "${ALERT_DETAILS:-}" ]]; then
+              body+=$'\n\n```text\n'"$(head -n 40 "$ALERT_DETAILS")"$'\n```'
+            fi
+            if [[ -n "$num" ]]; then
+              gh issue comment "$num" --body "$body"
+            else
+              gh issue create --label "$ALERT_LABEL" --title "NFL pipeline needs attention: ${WORKFLOW_NAME}" \
+                --body "$body"$'\n\n'"Every failing run of ${WORKFLOW_NAME} adds a comment here. Only a run of the same workflow that ends ${CLOSING_OUTCOMES} closes it; a SKIP leaves it open. What it means and how to clear it: ${GUIDE_URL}#alert-issues"
+            fi
+          elif [[ -n "$num" ]]; then
+            gh issue close "$num" --comment "Resolved: ${WORKFLOW_NAME} ended ${OUTCOME} in ${RUN_URL}"
+          else
+            echo "no open $ALERT_LABEL issue to close"
+          fi
+
+      - name: Fail the run when stale or broken
+        if: steps.outcome.outputs.outcome != 'HEALTHY'
+        env:
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+        run: |
+          echo "::error::watchdog outcome ${OUTCOME:-unknown}"
+          exit 1
