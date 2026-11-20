@@ -1,0 +1,747 @@
+﻿Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_It_Blocks,Raised,Status,Claude_Response
+Q-001,"Where should the published CSV files live so Excel can read them? The repository is private, so Excel cannot read its files from a web address without a login.","move it to https://github.com/wes-blue/sports-analysis. And create an apt titled folder for it. I may want to expand to other sports in the future, so structure it in a way that allows for expansion. For now its just NFL",Answer needed,"A (local folder): the workbook reads the 04-data folder next to it, from a clone of this repository that you sync with GitHub Desktop or git pull.","A = keep the data in this private repository and read it from a synced local folder | B = I will create a new PUBLIC repository for the data (give me its name, for example wes-blue/nfl-analysis-data) | C = something else (describe)","With A you pull the repository before each refresh. With B, Excel refreshes straight from the web and the workflow needs one extra secret; note that a public data repository shows your league scoring rules (copies of the config files) as well as the public NFL stats.",2026-11-19,Answered,"Done (2026-11-20). The project now lives in wes-blue/sports-analysis. Each sport gets a top-level folder; NFL/ is the first, and _Sport-Template/ is the skeleton for the next one. Published data is at NFL/04-data and the workbook reads it from the web address https://raw.githubusercontent.com/wes-blue/sports-analysis/main/NFL/04-data/ (decision D-033). Your 1.x archive and raw inputs stayed in the private repository (see Q-018)."
+Q-002,"The scheduled GitHub Actions workflows only run from .github/workflows/ at the repository root, which is outside the folder I am allowed to change. May I install them there, or will you copy them yourself?","install it at the new repository, https://github.com/wes-blue/sports-analysis",Action needed,"Not installed. The workflow files were ready in the project's pipeline folder, with install notes.",A = Claude may create .github/workflows/nfl-pipeline-*.yml at the repository root (one-time exception to the folder lock) | B = I will copy the files myself using INSTALL.md | C = do not schedule; I will run the pipeline by hand,Until this is done nothing runs on a schedule. You can still run the pipeline by hand.,2026-11-19,Answered,Done (2026-11-20). The four workflow files are at .github/workflows/ in wes-blue/sports-analysis. They become active when they reach the main branch (see Q-015). NFL/03-pipeline/AUTOMATION.md explains them (decision D-036).
+Q-003,"Scheduled workflows only run from the default branch (main), and all of this work was still on a branch in a draft pull request in your private repository. Until it was merged, pulling main did not give you the new folders. Will you merge it to main when you are happy with it?",move to https://github.com/wes-blue/sports-analysis,Action needed,Not merged. I do not merge pull requests.,A = I will review and merge the pull request | B = keep working on the branch for now,"Scheduled runs cannot start until the workflow files are on main. Until the merge, the 05-excel folder exists only on the branch.",2026-11-19,Answered,Done (2026-11-20). The work moved to wes-blue/sports-analysis instead of being merged in the private repository. It is on a branch with a pull request; merging that pull request is the one step left (see Q-015).
+Q-004,What should the pipeline-fed workbook be called? Your versioning policy allows a new major number (2.000) only with your approval.,You make the design decision that allows for future clarity. ,Answer needed,1.006 (continues the 1.x line; 1.005 was withdrawn because its kit was never uploaded).,A = 1.006 | B = 2.001 (new major version for the pipeline redesign),Only the file name and version labels.,2026-11-19,Answered,"Decided (D-035): the major number names the generation of the design. 1.x = everything computed inside Excel (archived, private). 2.x = the workbook fed by the pipeline in wes-blue/sports-analysis. The first workbook here is NFL-Analysis-2.001. 1.006 was the last 1.x release."
+Q-005,"Do you still plan to finish and upload the 1.005 workbook from the kit I sent on 2026-11-16? Version 1.006 includes everything 1.005 had (bonuses, long-TD bonuses, team D/ST).",No,Answer needed,No. 1.005 is treated as withdrawn and its kit is archived.,"A = No, skip 1.005 | B = Yes, I will still upload 1.005",Whether I keep a verification path open for 1.005.,2026-11-19,Answered,Confirmed: 1.005 stays withdrawn (D-028).
+Q-006,Points allowed by a team defense: does your ESPN league subtract touchdowns that the opposing DEFENSE scored? Please give your ESPN fantasy score for the Arizona D/ST in week 4 of 2026 (against the Giants) or week 8 (against Dallas).,"Outlook
+WEEK 11 Projection
+207.5points
+No outlook available
+Game Log
+WEEK
+OPP
+TD
+INT
+FR
+SCK
+SFTY
+BLK
+PA
+FPTS
+1
+@LAC
+0
+1
+1
+3
+0
+1
+14
+135.0
+2
+SEA
+0
+0
+1
+1
+0
+0
+31
+184.0
+3
+@SF
+0
+0
+1
+0
+0
+0
+36
+227.0
+4
+@NYG
+0
+2
+1
+4
+0
+0
+30
+292.0
+5
+DET
+0
+0
+0
+3
+0
+0
+45
+265.0
+6
+@LAR
+0
+0
+1
+2
+0
+0
+16
+141.0
+7
+DEN
+0
+0
+0
+1
+0
+0
+30
+211.0
+8
+@DAL
+0
+0
+0
+4
+0
+0
+30
+225.0
+9
+@SEA
+0
+0
+0
+0
+0
+0
+17
+161.0
+10
+LAR
+0
+1
+0
+2
+0
+0
+34
+110.0
+11
+@KC
+--
+--
+--
+--
+--
+--
+--
+--",Answer needed,The opponent's full final score counts (matches the two defenses you gave me for week 8).,"Week 4: 290 means full score, 292 means defensive touchdowns are subtracted. Week 8: 224 means full score, 226 means subtracted. Enter the week and the score.",Accuracy of D/ST points in the 8 of 300 team-games so far this season where a defense scored against the offense.,2026-11-17,Answered,"Settled in part by your Arizona game log (decision D-038). ESPN's points allowed leave out points scored by the opposing DEFENSE: in week 4 the Giants scored 36 including an interception or fumble returned for a touchdown, and ESPN counts 30. The ESPN league's points-allowed bands now use that rule. Result: all ten weeks of ESPN's points-allowed column match, 9 of the 10 weekly scores match exactly, and week 8 is 1 point low (in tackles or return yards, which the game log does not show). The log is saved in NFL/06-qa/evidence/ and is now an automatic check. It does not show how ESPN treats special-teams touchdowns or safeties: see Q-019."
+Q-007,Does your ESPN league count a BLOCKED field goal as a missed field goal (-1)? Please give your ESPN week 8 2026 fantasy points for the Seattle kicker J. Myers.,"STARTERS	NFL Week 8	2026 season
+SLOT
+Player
+action
+opp
+STATUS
+proj
+SCORE
+OPRK
+%ST
+%ROST
++/-
+PRK
+FPTS
+avg
+LAST
+QB
+Joe BurrowJoe Burrow
+Joe Burrow
+CIN
+QB
+TEN
+W 43-36
+24.5
+41.48
+26th
+91.8
+99.4
++0.1
+2
+249.3
+27.7
+--
+RB
+D'Andre SwiftD'Andre Swift
+D'Andre Swift
+CHI
+RB
+@SEA
+W 34-17
+19.4
+33.9
+8th
+70.6
+97.6
++0.1
+13
+192.8
+21.4
+--
+RB
+Aaron Jones Sr.Aaron Jones Sr.
+Aaron Jones Sr.
+MIN
+RB
+@DET
+L 15-19
+13.9
+8.0
+4th
+31.5
+81.7
+0
+25
+125.4
+13.9
+--
+WR
+Justin JeffersonJustin Jefferson
+Justin Jefferson
+MIN
+WR
+@DET
+L 15-19
+22.2
+17.3
+19th
+96.9
+99.9
+0
+22
+136.6
+17.1
+--
+WR
+Stefon DiggsStefon Diggs
+Stefon Diggs
+WSH
+WR
+PHI
+W 27-10
+15.3
+15.8
+30th
+58.8
+88.3
++0.6
+24
+130.6
+16.3
+--
+TE
+Tyler WarrenTyler Warren
+Tyler Warren
+IND
+TE
+@JAX
+L 7-42
+14.1
+6.8
+3rd
+69.3
+94.6
+-0.5
+15
+103.5
+12.9
+--
+FLEX
+Rashee RiceRashee Rice
+Rashee Rice
+KC
+WR
+@DEN
+L 24-28
+15.8
+20.3
+7th
+76.4
+96.1
+0
+47
+92.4
+13.2
+--
+D/ST
+Jets D/STJets D/ST
+Jets
+NYJ
+D/ST
+LV
+L 33-38
+211.0
+161.0
+10th
+25.1
+28.9
++5.9
+17
+1826.0
+182.6
+--
+K
+Chris BoswellChris Boswell
+Chris Boswell
+PIT
+K
+CLE
+W 27-6
+10.4
+8.0
+17th
+48.9
+61.2
++1
+13
+86.0
+9.6
+--
+TOTALS
+346.7
+312.58
+2942.6
+314.75
+0.0
+Bench
+Denzel BostonDenzel Boston
+Denzel Boston
+CLE
+WR
+@PIT
+L 6-27
+14.1
+12.7
+16th
+11.8
+75.7
+-1.4
+23
+134.3
+13.4
+--
+Bench
+Emanuel WilsonEmanuel Wilson
+Emanuel Wilson
+SEA
+RB
+CHI
+L 17-34
+9.3
+0.0
+6th
+2.4
+18.2
+-1.1
+30
+100.8
+12.6
+--
+Bench
+Germie BernardGermie Bernard
+Germie Bernard
+PIT
+WR
+CLE
+W 27-6
+13.4
+10.0
+15th
+11.3
+46.9
+-5
+59
+82.8
+9.2
+--
+Bench
+Packers D/STPackers D/ST
+Packers
+GB
+D/ST
+CAR
+W 27-19
+175.7
+217.0
+11th
+11.6
+30.7
+-4.3
+4
+2092.0
+209.2
+--
+Bench
+Hunter HenryHunter Henry
+Hunter Henry
+NE
+TE
+@MIA
+W 24-19
+12.6
+7.0
+29th
+8.0
+52.3
+-2.5
+10
+112.3
+11.2
+--
+Bench
+Tyler ShoughTyler Shough
+Tyler Shough
+NO
+QB
+*BYE*
+--
+--
+--
+--
+23.8
+64.8
+-1.1
+12
+172.62
+19.2
+--
+Bench
+Matthew StaffordMatthew Stafford
+Matthew Stafford
+LAR
+QB
+LAC
+W 24-9
+17.9
+8.28
+12th
+19.3
+85.2
+-0.7
+13
+169.62
+17.0
+--
+TOTALS
+243.0
+254.98
+2864.44
+291.8
+0.0",Answer needed,A blocked field goal is not counted as a miss (0 points).,Enter J. Myers' ESPN week 8 points.,Kicker points in games with a blocked field goal.,2026-11-17,Still open,"The text pasted here is your own week 8 lineup, which I already had; it does not include the Seattle kicker. Please see Q-016, which says exactly where to find his numbers. Default unchanged: a blocked field goal is not a miss."
+Q-008,"Long-touchdown bonuses and fumbles lost on returns have not been checked against ESPN yet, because none of the 12 players you sent had them. Please give ESPN week 8 2026 fantasy points for any of these players. Long touchdowns: ARI T. Allgeier, KC E. Johnson, SEA J. Smith-Njigba, NE K. Williams, NE D. Douglas, TEN T. Pollard. Fumble lost on a return: CAR J. Coker, GB C. Owen.","STARTERS	NFL Week 8	2026 season
+SLOT
+Player
+action
+opp
+STATUS
+proj
+SCORE
+OPRK
+%ST
+%ROST
++/-
+PRK
+FPTS
+avg
+LAST
+QB
+Joe BurrowJoe Burrow
+Joe Burrow
+CIN
+QB
+TEN
+W 43-36
+24.5
+41.48
+26th
+91.8
+99.4
++0.1
+2
+249.3
+27.7
+--
+RB
+D'Andre SwiftD'Andre Swift
+D'Andre Swift
+CHI
+RB
+@SEA
+W 34-17
+19.4
+33.9
+8th
+70.6
+97.6
++0.1
+13
+192.8
+21.4
+--
+RB
+Aaron Jones Sr.Aaron Jones Sr.
+Aaron Jones Sr.
+MIN
+RB
+@DET
+L 15-19
+13.9
+8.0
+4th
+31.5
+81.7
+0
+25
+125.4
+13.9
+--
+WR
+Justin JeffersonJustin Jefferson
+Justin Jefferson
+MIN
+WR
+@DET
+L 15-19
+22.2
+17.3
+19th
+96.9
+99.9
+0
+22
+136.6
+17.1
+--
+WR
+Stefon DiggsStefon Diggs
+Stefon Diggs
+WSH
+WR
+PHI
+W 27-10
+15.3
+15.8
+30th
+58.8
+88.3
++0.6
+24
+130.6
+16.3
+--
+TE
+Tyler WarrenTyler Warren
+Tyler Warren
+IND
+TE
+@JAX
+L 7-42
+14.1
+6.8
+3rd
+69.3
+94.6
+-0.5
+15
+103.5
+12.9
+--
+FLEX
+Rashee RiceRashee Rice
+Rashee Rice
+KC
+WR
+@DEN
+L 24-28
+15.8
+20.3
+7th
+76.4
+96.1
+0
+47
+92.4
+13.2
+--
+D/ST
+Jets D/STJets D/ST
+Jets
+NYJ
+D/ST
+LV
+L 33-38
+211.0
+161.0
+10th
+25.1
+28.9
++5.9
+17
+1826.0
+182.6
+--
+K
+Chris BoswellChris Boswell
+Chris Boswell
+PIT
+K
+CLE
+W 27-6
+10.4
+8.0
+17th
+48.9
+61.2
++1
+13
+86.0
+9.6
+--
+TOTALS
+346.7
+312.58
+2942.6
+314.75
+0.0
+Bench
+Denzel BostonDenzel Boston
+Denzel Boston
+CLE
+WR
+@PIT
+L 6-27
+14.1
+12.7
+16th
+11.8
+75.7
+-1.4
+23
+134.3
+13.4
+--
+Bench
+Emanuel WilsonEmanuel Wilson
+Emanuel Wilson
+SEA
+RB
+CHI
+L 17-34
+9.3
+0.0
+6th
+2.4
+18.2
+-1.1
+30
+100.8
+12.6
+--
+Bench
+Germie BernardGermie Bernard
+Germie Bernard
+PIT
+WR
+CLE
+W 27-6
+13.4
+10.0
+15th
+11.3
+46.9
+-5
+59
+82.8
+9.2
+--
+Bench
+Packers D/STPackers D/ST
+Packers
+GB
+D/ST
+CAR
+W 27-19
+175.7
+217.0
+11th
+11.6
+30.7
+-4.3
+4
+2092.0
+209.2
+--
+Bench
+Hunter HenryHunter Henry
+Hunter Henry
+NE
+TE
+@MIA
+W 24-19
+12.6
+7.0
+29th
+8.0
+52.3
+-2.5
+10
+112.3
+11.2
+--
+Bench
+Tyler ShoughTyler Shough
+Tyler Shough
+NO
+QB
+*BYE*
+--
+--
+--
+--
+23.8
+64.8
+-1.1
+12
+172.62
+19.2
+--
+Bench
+Matthew StaffordMatthew Stafford
+Matthew Stafford
+LAR
+QB
+LAC
+W 24-9
+17.9
+8.28
+12th
+19.3
+85.2
+-0.7
+13
+169.62
+17.0
+--
+TOTALS
+243.0
+254.98
+2864.44
+291.8
+0.0",Answer needed,A 50+ yard touchdown earns both the 40+ and the 50+ bonus; a fumble lost on a return costs the returner 2 points.,Enter each player's name and ESPN points. Any subset helps.,Confidence in two scoring rules. The pipeline already scores them using the defaults.,2026-11-17,Still open,"The text pasted here is your own week 8 lineup, which I already had; none of the listed players is in it. Please see Q-017, which says exactly where to find their numbers. Defaults unchanged."
+Q-009,"Two repository settings decide whether the scheduled workflow can save its results. In GitHub, under Settings for the repository: (1) are Actions enabled for this repository? (2) does main have a branch protection rule or ruleset that would block a commit made by the workflow? (The 'Workflow permissions' setting can stay on Read: the workflow files ask for the write access they need.)",move to https://github.com/wes-blue/sports-analysis,Answer needed,"Assumed: Actions enabled, and no rule blocking the workflow's commit to main.","Answer each: 1 yes/no, 2 yes/no. If 2 is yes, say whether the workflow should open a pull request instead of committing directly.","If any assumption is wrong, the first scheduled run fails at the commit step. Nothing else is affected.",2026-11-19,Answered,"No longer applies to the private repository. In wes-blue/sports-analysis (public) Actions are enabled by default and the workflows ask for the access they need. The first run after the merge will show whether anything blocks it; if it does, the run opens an alert issue."
+Q-010,"On your PC, will the cloned repository (and so the workbook) sit inside a OneDrive or SharePoint synced folder? In a synced folder Excel reports the workbook's location as a web address, and the workbook cannot find the data folder by itself.","On my Windows laptop using my local drive
+",Answer needed,Assumed: a plain local folder that is not synced by OneDrive (for example C:\GitHub\sports-analysis). The workbook then finds the 04-data folder automatically.,A = plain local folder (nothing to do) | B = OneDrive or SharePoint synced folder (then type the full local path of the 04-data folder into the DataLocation row on the Config sheet; the workbook's error message shows an example),Only the first refresh: with B and a blank DataLocation the queries stop with a message telling you what to enter.,2026-11-19,Answered,"Noted: a plain local drive, so the automatic folder search would work. It matters less now: the workbook reads the data from the web address by default, so it works from any folder (decision D-037)."
+Q-011,"Please try the experimental workbook, which has all 15 queries already installed so there is nothing to paste: NFL/05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx. Follow NFL/05-excel/experimental/README.md (open, Enable Content, save once, Refresh All, privacy = Public). Did it open without a repair message, and did Refresh All finish?",move to https://github.com/wes-blue/sports-analysis then tell me when complete and I will experiment,Action needed,Untested. The paste-ready workbook NFL-Analysis-1.006.xlsx in the same folder is the proven route and stays the fallback.,"Tell me: 1) any repair or error message, word for word; 2) whether Refresh All finished; 3) what the Checks sheet shows; 4) whether the Data Model check in the README passed. If Excel offers to repair the file, choose No and close it.",Whether you need to paste the 15 queries by hand (about 30 minutes) or not at all.,2026-11-19,Answered,"Done: the experimental workbook is in wes-blue/sports-analysis at NFL/05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx, rebuilt to read the data from the web and with your name removed from its file properties. Q-020 is where to tell me what happened when you tried it. Merge the pull request first (Q-015): the workbook reads the data from main."
+Q-012,"The weekly run stops (publishes nothing and raises an alert) if nflverse later corrects the stats of one of the 25 test player-games or the 15 ESPN week 8 lineup values, because the expected test values would then be out of date. Is stopping the right behaviour, or should it publish anyway with a warning?","Stop and alert
+",Answer needed,Stop and alert (the safer choice): nothing is published until the test values are updated.,A = stop and alert (current) | B = publish anyway and show a warning,How a rare upstream correction is handled. Corrections to all other players are published normally and listed in checks/restatements.csv.,2026-11-19,Answered,Confirmed: stop and alert (D-031).
+Q-013,"When you change a league's scoring rules in 02-config, the stored test values for that league (25 hand-checked player-games, plus your ESPN week 8 lineup for the ESPN league) no longer apply, because they were worked out with the old rules. What should happen to them?",A,Answer needed,That league's test values are skipped with a visible warning and everything still publishes. Leagues you did not change keep their tests.,"A = skip that league's test values with a warning (current) | B = after each rule change, ask Claude to work out new test values for the league",How well a changed league is protected against mistakes. Publishing is not blocked either way.,2026-11-19,Answered,Confirmed: A. A changed league's test values are skipped with a warning (D-032).
+Q-014,"Do you have Python 3.11 or later on your Windows PC? It is needed only if you want to run the pipeline yourself (for example to apply a scoring change straight away). It is not needed to use the workbook, and not needed once GitHub Actions runs the pipeline.",I rather use GitHub. My windows laptop are not always on. ,Answer needed,Assumed: not installed. The documents treat running the pipeline by hand as optional and use the Windows command 'py'.,"A = yes (type 'py --version' in a Command Prompt to check) | B = no, and I do not need it | C = no, please give me install steps","Only the optional by-hand route. Without Python, scoring changes in 02-config take effect at the next scheduled run, or when you start the weekly workflow by hand on GitHub.",2026-11-19,Answered,"Understood (decision D-037): everything runs on GitHub and nothing needs your laptop. The workbook reads the data from the web. To change scoring, edit the file in NFL/02-config on GitHub: saving it there starts the pipeline, which publishes new scores in a few minutes. Python on your PC is not needed."
+Q-015,"All of the work is on the branch agents/pensive-noether-dxfoz6 of wes-blue/sports-analysis, with a draft pull request into main. The scheduled workflows and the workbook's web address only work once the files are on main. Please merge the pull request: open it on GitHub, click 'Ready for review', then open the arrow next to the merge button, choose 'Squash and merge' and confirm. (Squash and merge makes you the author of the commit, so GitHub sends you its emails about failed scheduled runs.) A first pipeline run starts by itself within a minute of the merge; watch it on the Actions tab.",,Action needed,Not merged. I push to main only if you tell me to in chat.,"A = I will merge the pull request | B = Claude, push straight to main from now on (say so in chat)","Until main has the files: the workbook cannot read the data from the web, and no scheduled run starts.",2026-11-20,Open,
+Q-016,"Blocked field goals (follow-up to Q-007). In your ESPN league, open the Players tab, search for the Seattle kicker J. Myers, click his name, and open Game Log (the same kind of page you copied for the Arizona D/ST). Please paste his 2026 game log here.",,Answer needed,A blocked field goal is not counted as a miss (0 points).,Paste the game log. One week with a blocked kick is enough; the whole log is fine.,Kicker points in games with a blocked field goal.,2026-11-20,Open,
+Q-017,"Long-touchdown bonuses and fumbles lost on returns (follow-up to Q-008). The same way as Q-016, please paste the 2026 ESPN game log of any of these players. Long touchdowns in week 8: ARI T. Allgeier, KC E. Johnson, SEA J. Smith-Njigba, NE K. Williams, NE D. Douglas, TEN T. Pollard. Fumble lost on a return in week 8: CAR J. Coker, GB C. Owen.",,Answer needed,A 50+ yard touchdown earns both the 40+ and the 50+ bonus; a fumble lost on a return costs the returner 2 points.,"Paste one or more game logs, each starting with the player's name. Two players (one long touchdown of 50+ yards, one return fumble) settle both rules.",Confidence in two scoring rules. The pipeline already scores them using the defaults.,2026-11-20,Open,
+Q-018,"wes-blue/sports-analysis is public. I moved only what the system needs: the pipeline, your scoring rules, the published data, the workbook, the workflows, the plan and the QA records. I left in your private repository: the archived 1.x workbooks and project, the Google-search transcript, your raw ESPN pastes, and the prior-art reviews of other people's projects. Is that the split you want?",,Answer needed,The archive and raw inputs stay private.,"A = yes, keep those private (current) | B = also publish the 1.x archive | C = something else (describe)","Nothing. This only decides what else, if anything, becomes public.",2026-11-20,Open,
+Q-019,"Team defense, remaining cases (follow-up to Q-006). Your Arizona game log proved one rule and left three open. One ESPN game log each would settle them; they are the same kind of page you copied for Arizona. Please paste the 2026 game log for any of: (a) Jets D/ST, which is on your roster: week 8 PA of 38 means special-teams touchdowns count as points allowed, 32 means they do not; (b) Colts D/ST: week 6 PA of 26 or 20 settles a blocked punt returned for a touchdown; (c) Titans D/ST: week 8 PA of 43 or 41 settles a safety scored against the offense; (d) Cowboys D/ST: a week 8 TD of 0 or 1 settles whether a team's own offense recovering a fumble in the end zone counts as a D/ST touchdown.",,Answer needed,Special-teams touchdowns and blocked-kick returns (including a blocked extra point returned for 2) count as points allowed; a safety against the offense does not; a team's own end-zone fumble recovery is credited to its D/ST as a touchdown (as the nflverse data reports it).,"Paste one or more game logs, each starting with the team name. (a) is the most useful and the easiest, since the Jets D/ST is on your roster.","D/ST points in the few games each season with one of these plays: in 2026 so far, 3 special-teams touchdowns, 2 safeties and 1 own-fumble touchdown in 300 team-games.",2026-11-20,Open,
+Q-020,What happened when you tried the experimental workbook (NFL/05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx)? Please do this after merging the pull request (Q-015).,,Action needed,Untested. The paste-ready workbook NFL/05-excel/NFL-Analysis-2.001.xlsx (you add the same 15 queries by hand) is the fallback; it has not run in Excel yet either.,"Tell me: 1) any repair or error message, word for word; 2) whether Refresh All finished; 3) what the Checks sheet shows. If Excel offers to repair the file, choose No and close it.",Whether you need to paste the 15 queries by hand (about 30 minutes) or not at all.,2026-11-20,Open,
+Q-021,"The published data in NFL/04-data is derived from nflverse data, which is shared under the Creative Commons Attribution licence (CC BY 4.0). DATA-LICENSE.md says your derived files (the scores and the derived columns) are shared under the same licence, with credit to nflverse. Is that what you want?",,Answer needed,"The derived data is shared under CC BY 4.0, crediting nflverse; the code is under the MIT licence you chose when you created the repository.",A = yes (current) | B = something else (describe),Nothing technical. It is the licence statement the public sees.,2026-11-20,Open,
+Q-022,"Because the repository is public, anyone can send it a pull request, and a pull request runs the test workflow. Please make GitHub ask you first: in wes-blue/sports-analysis open Settings > Actions > General, and under 'Approval for running fork pull request workflows from contributors' choose 'Require approval for all external contributors', then Save.",,Action needed,"GitHub's default (approval only for first-time contributors). The workflows use no secrets and a read-only token on pull requests, so the exposure is limited to someone using your free Actions minutes.",A = done | B = leave the default,Nothing. It is a safety setting for a public repository.,2026-11-20,Open,

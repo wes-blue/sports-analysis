@@ -1,0 +1,83 @@
+metric,category,description,source,applies_to
+passing_yards,Passing,Passing yards,nflverse,
+passing_tds,Passing,Passing touchdowns,nflverse,
+passing_interceptions,Passing,Interceptions thrown,nflverse,
+passing_2pt_conversions,Passing,Passing two-point conversions,nflverse,
+completions,Passing,Pass completions,nflverse,
+attempts,Passing,Pass attempts,nflverse,
+passing_first_downs,Passing,Passing first downs,nflverse,
+rushing_yards,Rushing,Rushing yards,nflverse,
+rushing_tds,Rushing,Rushing touchdowns,nflverse,
+rushing_2pt_conversions,Rushing,Rushing two-point conversions,nflverse,
+carries,Rushing,Rushing attempts,nflverse,
+rushing_first_downs,Rushing,Rushing first downs,nflverse,
+receptions,Receiving,Receptions,nflverse,
+receiving_yards,Receiving,Receiving yards,nflverse,
+receiving_tds,Receiving,Receiving touchdowns,nflverse,
+receiving_2pt_conversions,Receiving,Receiving two-point conversions,nflverse,
+targets,Receiving,Targets,nflverse,
+receiving_first_downs,Receiving,Receiving first downs,nflverse,
+sack_fumbles_lost,Fumbles,Fumbles lost on sacks (QB),nflverse,
+rushing_fumbles_lost,Fumbles,Fumbles lost while rushing,nflverse,
+receiving_fumbles_lost,Fumbles,Fumbles lost while receiving,nflverse,
+fumbles_lost_total,Fumbles,Total fumbles lost (all types),nflverse,
+special_teams_tds,Misc,Special-teams touchdowns (returns),nflverse,
+fumble_recovery_tds,Misc,Fumble-recovery touchdowns,nflverse,
+fg_made,Kicking,Field goals made (all distances),nflverse,K
+fg_made_0_19,Kicking,"Field goals made, 0-19 yards",nflverse,K
+fg_made_20_29,Kicking,"Field goals made, 20-29 yards",nflverse,K
+fg_made_30_39,Kicking,"Field goals made, 30-39 yards",nflverse,K
+fg_made_40_49,Kicking,"Field goals made, 40-49 yards",nflverse,K
+fg_made_50_59,Kicking,"Field goals made, 50-59 yards",nflverse,K
+fg_made_60_,Kicking,"Field goals made, 60+ yards",nflverse,K
+fg_missed,Kicking,Field goals missed (all distances),nflverse,K
+fg_missed_0_19,Kicking,"Field goals missed, 0-19 yards",nflverse,K
+fg_missed_20_29,Kicking,"Field goals missed, 20-29 yards",nflverse,K
+fg_missed_30_39,Kicking,"Field goals missed, 30-39 yards",nflverse,K
+fg_missed_40_49,Kicking,"Field goals missed, 40-49 yards",nflverse,K
+fg_missed_50_59,Kicking,"Field goals missed, 50-59 yards",nflverse,K
+fg_missed_60_,Kicking,"Field goals missed, 60+ yards",nflverse,K
+pat_made,Kicking,Extra points made,nflverse,K
+pat_missed,Kicking,Extra points missed,nflverse,K
+def_tackles_solo,IDP (defense),Solo tackles,nflverse,"DL,LB,DB"
+def_tackles_with_assist,IDP (defense),Tackles with assist,nflverse,"DL,LB,DB"
+def_tackle_assists,IDP (defense),Assisted tackles,nflverse,"DL,LB,DB"
+def_tackles_for_loss,IDP (defense),Tackles for loss,nflverse,"DL,LB,DB"
+def_sacks,IDP (defense),Sacks,nflverse,"DL,LB,DB"
+def_qb_hits,IDP (defense),QB hits,nflverse,"DL,LB,DB"
+def_interceptions,IDP (defense),Interceptions,nflverse,"DL,LB,DB"
+def_pass_defended,IDP (defense),Passes defended,nflverse,"DL,LB,DB"
+def_fumbles_forced,IDP (defense),Forced fumbles,nflverse,"DL,LB,DB"
+fumble_recovery_opp,IDP (defense),Opponent fumble recoveries,nflverse,"DL,LB,DB"
+def_tds,IDP (defense),Defensive touchdowns,nflverse,
+def_safeties,IDP (defense),Safeties,nflverse,"DL,LB,DB"
+def_fg_blocks,IDP (defense),Field goals blocked,nflverse,"DL,LB,DB"
+def_punt_blocks,IDP (defense),Punts blocked,nflverse,"DL,LB,DB"
+def_pat_blocks,IDP (defense),Extra points blocked,nflverse,"DL,LB,DB"
+def_2pt_made,IDP (defense),Defensive two-point conversions made (returns),nflverse,
+fg_blocked,Kicking,Field goals blocked (kicker's attempts),nflverse,K
+fumble_recovery_own,IDP (defense),Own-team fumble recoveries,nflverse,"DL,LB,DB"
+pass_td_40,Long TD bonus (from LongTD),Passing TDs of 40+ yards (cumulative: a 50+ TD counts in both _40 and _50),derived:long_td,
+pass_td_50,Long TD bonus (from LongTD),Passing TDs of 50+ yards (cumulative: a 50+ TD counts in both _40 and _50),derived:long_td,
+rush_td_40,Long TD bonus (from LongTD),Rushing TDs of 40+ yards (cumulative: a 50+ TD counts in both _40 and _50),derived:long_td,
+rush_td_50,Long TD bonus (from LongTD),Rushing TDs of 50+ yards (cumulative: a 50+ TD counts in both _40 and _50),derived:long_td,
+rec_td_40,Long TD bonus (from LongTD),Receiving TDs of 40+ yards (cumulative: a 50+ TD counts in both _40 and _50),derived:long_td,
+rec_td_50,Long TD bonus (from LongTD),Receiving TDs of 50+ yards (cumulative: a 50+ TD counts in both _40 and _50),derived:long_td,
+dst_sacks,Team D/ST (from Team_DST),D/ST sacks,derived:team_dst,DST
+dst_tackles,Team D/ST (from Team_DST),D/ST tackles (solo + assists + tackles with assist),derived:team_dst,DST
+dst_blocked_kicks,Team D/ST (from Team_DST),"D/ST blocked punts, PATs and FGs",derived:team_dst,DST
+dst_interceptions,Team D/ST (from Team_DST),D/ST interceptions,derived:team_dst,DST
+dst_fumble_recoveries,Team D/ST (from Team_DST),D/ST fumble recoveries (opponent fumbles),derived:team_dst,DST
+dst_fumbles_forced,Team D/ST (from Team_DST),D/ST forced fumbles,derived:team_dst,DST
+dst_safeties,Team D/ST (from Team_DST),D/ST safeties,derived:team_dst,DST
+dst_kr_yards,Team D/ST (from Team_DST),D/ST kickoff return yards,derived:team_dst,DST
+dst_pr_yards,Team D/ST (from Team_DST),D/ST punt return yards,derived:team_dst,DST
+dst_int_tds,Team D/ST (from Team_DST),D/ST interception return TDs,derived:team_dst,DST
+dst_fumble_tds,Team D/ST (from Team_DST),D/ST fumble return TDs,derived:team_dst,DST
+dst_st_tds,Team D/ST (from Team_DST),"D/ST special-teams TDs (KR, PR, blocked-kick returns)",derived:team_dst,DST
+dst_2pt_returns,Team D/ST (from Team_DST),D/ST two-point returns,derived:team_dst,DST
+dst_points_allowed,Team D/ST (from Team_DST),Points allowed (opponent's full final score),derived:team_dst,DST
+dst_points_allowed_excl_def,Team D/ST (from Team_DST),"Points allowed as ESPN counts them: opponent's final score minus the points its defense scored against this team's offense (interception and fumble return TDs, safeties, two-point returns). Proven against ESPN for defensive return TDs; that special-teams TDs, blocked-kick returns and the extra point after a defensive TD still count, and that safeties do not, are assumptions until BLOCKERS.csv Q-019 is answered",derived:team_dst,DST
+dst_points_allowed_excl_def_st,Team D/ST (from Team_DST),"Opponent's final score minus 6 per opponent def_tds, fumble_recovery_tds and special_teams_tds in stats_team (fumble_recovery_tds also counts an offense recovering its own fumble in the end zone)",derived:team_dst,DST
+dst_yards_allowed,Team D/ST (from Team_DST),Net yards allowed (opponent passing + rushing + sack yards lost),derived:team_dst,DST
+dst_yards_allowed_gross,Team D/ST (from Team_DST),Gross yards allowed (opponent passing + rushing),derived:team_dst,DST

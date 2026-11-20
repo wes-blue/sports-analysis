@@ -1,0 +1,308 @@
+# NFL pipeline: monthly full rebuild, and the heartbeat that keeps the schedules alive.
+#
+# Owner's guide: NFL/03-pipeline/AUTOMATION.md. Contract: NFL/CONTRACTS.md section 8.
+#
+# On the 1st of every month: `run --seasons all` re-reads every season in the window, so values
+# nflverse back-corrects in finished seasons reach NFL/04-data. No resolve step: the pipeline itself
+# returns SKIP (exit 3) when nothing changed. HOLD or error opens or comments on this workflow's
+# rolling issue (label `nfl-pipeline-alert-monthly`); only a real PUBLISH of this workflow closes it.
+#
+# Heartbeat. GitHub disables every scheduled workflow of a public repository after 60 days without
+# repository activity ("Disabling and enabling a workflow", docs.github.com). The off-season (March to
+# August) has no weekly publish, and a month without nflverse corrections makes no data commit. So
+# after every run (on the 1st, and a heartbeat-only fire on the 16th) this workflow looks at the newest
+# commit on main; if it is HEARTBEAT_AFTER_DAYS or more old, it pushes one empty commit (same tree as
+# its parent: no file changes). With fires about 15 days apart, the longest gap between commits stays
+# under 21 + 16 = 37 days, and under 21 + 31 = 52 days even if one fire is dropped. In season, and
+# whenever the owner commits, no heartbeat is needed and none is made.
+
+name: nfl-pipeline-monthly
+
+on:
+  schedule:
+    - cron: "23 11 1 * *"    # 1st of each month, 11:23 UTC: full rebuild, then the heartbeat check
+    - cron: "37 11 16 * *"   # 16th of each month, 11:37 UTC: heartbeat check only (HEARTBEAT_CRON)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: compute and check everything, publish nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nfl-pipeline-publish
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: NFL/03-pipeline
+
+env:
+  PYTHONUNBUFFERED: "1"
+  DATA_PATH: NFL/04-data
+  ALERT_LABEL: nfl-pipeline-alert-monthly
+  HEARTBEAT_CRON: "37 11 16 * *"
+  HEARTBEAT_AFTER_DAYS: "21"
+  GUIDE_URL: https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md
+
+jobs:
+  monthly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write   # commit NFL/04-data, heartbeat commit
+      issues: write     # rolling alert issue
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false   # the token is handed to the commit and heartbeat steps only
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # The pipeline uses the standard library only: no pip install.
+
+      - name: Run pipeline (all seasons)
+        id: outcome
+        env:
+          IN_DRY_RUN: ${{ inputs.dry_run }}
+          REF: ${{ github.ref }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          TRIGGER: ${{ github.event_name }}-monthly
+          RUN_LOG: ${{ runner.temp }}/nflpipe-run.log
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set +e
+          dry_run="${IN_DRY_RUN:-false}"
+          if [[ "$REF" != "refs/heads/main" ]]; then
+            dry_run=true
+            echo "::notice title=Dry run::started on ${REF#refs/heads/}, not main: checks only, nothing is committed"
+          fi
+          echo "dry_run=$dry_run" >> "$GITHUB_OUTPUT"
+          : > "$ALERT_DETAILS"
+          if [[ -n "$EVENT_SCHEDULE" && "$EVENT_SCHEDULE" == "$HEARTBEAT_CRON" ]]; then
+            echo "outcome=HEARTBEAT" >> "$GITHUB_OUTPUT"
+            echo "::notice title=HEARTBEAT::mid-month fire: no pipeline run, heartbeat check only"
+            echo "### NFL pipeline monthly: HEARTBEAT (mid-month check only)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          rm -rf ../.work/last-run
+          args=(run --seasons all --trigger "$TRIGGER")
+          [[ "$dry_run" == "true" ]] && args+=(--dry-run)
+          python -m nflpipe "${args[@]}" 2>&1 | tee "$RUN_LOG"
+          rc=${PIPESTATUS[0]}
+          case "$rc" in
+            0) outcome=PUBLISH
+               if [[ "$dry_run" == "true" ]]; then
+                 echo "::notice title=PUBLISH (dry run)::checked only, nothing was committed"
+               else
+                 echo "::notice title=PUBLISH::new data published"
+               fi ;;
+            3) outcome=SKIP;    echo "::notice title=SKIP::nothing changed upstream" ;;
+            4) outcome=HOLD;    echo "::error title=HOLD::a blocking gate failed; nothing was published" ;;
+            *) outcome=ERROR;   echo "::error title=ERROR::python -m nflpipe run exited $rc; nothing was published" ;;
+          esac
+          echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+          {
+            if [[ -f ../.work/last-run/run_summary.csv ]]; then
+              python - ../.work/last-run <<'PY'
+          import csv, sys
+          from pathlib import Path
+          report = Path(sys.argv[1])
+          for row in csv.DictReader((report / "run_summary.csv").open(encoding="utf-8")):
+              if row["key"] in ("detail", "notes") and row["value"]:
+                  print(f"{row['key']}: {row['value']}")
+          gates = report / "checks" / "gates.csv"
+          if gates.is_file():
+              for row in csv.DictReader(gates.open(encoding="utf-8")):
+                  if row.get("result") in ("FAIL", "WARN"):
+                      print(f"{row['gate_id']} {row['result']} ({row['severity']}): {row['detail']}")
+          PY
+            elif [[ "$outcome" == "ERROR" ]]; then
+              echo "last lines of the pipeline log:"
+              tail -n 25 "$RUN_LOG"
+            fi
+          } 2>&1 | cut -c1-400 | head -n 40 | sed 's/```/'"'''"'/g' > "$ALERT_DETAILS"
+          {
+            echo "### NFL pipeline monthly: $outcome"
+            echo ""
+            echo "- run exit code: $rc"
+            echo "- dry run: $dry_run"
+            if [[ -s "$ALERT_DETAILS" ]]; then
+              echo ""
+              echo '```text'
+              cat "$ALERT_DETAILS"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Keep the gate report (run artifact, 30 days)
+        if: ${{ !cancelled() && (steps.outcome.outputs.outcome == 'PUBLISH' || steps.outcome.outputs.outcome == 'HOLD' || steps.outcome.outputs.outcome == 'ERROR') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-report-${{ github.run_id }}
+          path: NFL/.work/last-run/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Commit 04-data
+        if: steps.outcome.outputs.outcome == 'PUBLISH' && steps.outcome.outputs.dry_run != 'true' && github.ref == 'refs/heads/main'
+        working-directory: ${{ github.workspace }}
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # The token is used by this step's fetch and push only and is never written to .git/config.
+          auth="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$auth"
+          g() { git -c "http.${GITHUB_SERVER_URL}/.extraheader=AUTHORIZATION: basic $auth" "$@"; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          msg="nfl-pipeline: publish NFL/04-data (monthly, run ${GITHUB_RUN_ID})"
+          git add -- "$DATA_PATH"
+          if git diff --cached --quiet; then
+            echo "::notice::NFL/04-data unchanged; nothing to commit"
+            exit 0
+          fi
+          git commit -q -m "$msg" -m "$RUN_URL"
+          for attempt in 1 2 3; do
+            if g push origin "HEAD:refs/heads/${BRANCH}"; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "::warning::push rejected (attempt $attempt); re-applying NFL/04-data on top of origin/${BRANCH}"
+            keep="$(mktemp -d)"
+            cp -a "$DATA_PATH/." "$keep/"
+            g fetch --depth=1 origin "$BRANCH"
+            git reset -q --hard FETCH_HEAD
+            rm -rf "$DATA_PATH"
+            mkdir -p "$DATA_PATH"
+            cp -a "$keep/." "$DATA_PATH/"
+            git add -- "$DATA_PATH"
+            if git diff --cached --quiet; then
+              echo "::notice::origin already has this NFL/04-data"
+              exit 0
+            fi
+            git commit -q -m "$msg" -m "$RUN_URL"
+            sleep $((attempt * 10))
+          done
+          echo "::error::could not push NFL/04-data after 3 attempts"
+          exit 1
+
+      - name: Heartbeat (keep the schedules alive)
+        # Runs after HOLD and ERROR too: a broken pipeline must not also let GitHub switch the schedules off.
+        if: ${{ !cancelled() && steps.outcome.outputs.dry_run != 'true' && github.ref == 'refs/heads/main' }}
+        working-directory: ${{ github.workspace }}
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          auth="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$auth"
+          g() { git -c "http.${GITHUB_SERVER_URL}/.extraheader=AUTHORIZATION: basic $auth" "$@"; }
+          msg="nfl-pipeline: heartbeat (no file changes; keeps the scheduled workflows enabled)"
+          for attempt in 1 2 3; do
+            g fetch -q --depth=1 origin "$BRANCH"
+            head="$(git rev-parse FETCH_HEAD)"
+            age_days=$(( ($(date +%s) - $(git log -1 --format=%ct "$head")) / 86400 ))
+            if (( age_days < HEARTBEAT_AFTER_DAYS )); then
+              echo "::notice title=Heartbeat not needed::newest commit on ${BRANCH} is ${age_days} day(s) old (threshold ${HEARTBEAT_AFTER_DAYS})"
+              echo "- heartbeat: not needed (newest commit ${age_days} day(s) old)" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            # An empty commit: the same tree as its parent, so no file in the repository changes.
+            commit="$(git commit-tree "${head}^{tree}" -p "$head" -m "$msg" -m "$RUN_URL")"
+            if g push -q origin "${commit}:refs/heads/${BRANCH}"; then
+              echo "::notice title=Heartbeat::newest commit was ${age_days} day(s) old; pushed empty commit ${commit:0:7}"
+              echo "- heartbeat: pushed empty commit ${commit:0:7} (newest commit was ${age_days} day(s) old)" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::warning::heartbeat push rejected (attempt $attempt); checking ${BRANCH} again"
+            sleep $((attempt * 10))
+          done
+          echo "::error::could not push the heartbeat commit after 3 attempts"
+          exit 1
+
+      - name: Update the rolling alert issue
+        if: ${{ !cancelled() }}
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          JOB_STATUS: ${{ job.status }}
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+          GREEN_OUTCOMES: "PUBLISH SKIP HEARTBEAT"
+          CLOSING_OUTCOMES: "PUBLISH"
+          DRY_RUN: ${{ steps.outcome.outputs.dry_run }}
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set -uo pipefail
+          # CONTRACTS.md section 8 "Alerts": one issue per workflow (its own label). A red run opens or
+          # comments on it. It is closed ONLY by a run of the same workflow that proves the problem is
+          # gone (CLOSING_OUTCOMES, never in a dry run). Any other green result (a SKIP) leaves it alone.
+          state=unchanged
+          if [[ "$JOB_STATUS" != "success" || " $GREEN_OUTCOMES " != *" ${OUTCOME:-none} "* ]]; then
+            state=red
+          elif [[ " $CLOSING_OUTCOMES " == *" ${OUTCOME:-none} "* && "${DRY_RUN:-false}" != "true" ]]; then
+            state=resolved
+          fi
+          echo "alert state: $state (outcome ${OUTCOME:-none}, job status $JOB_STATUS)"
+          if [[ "$state" == "unchanged" ]]; then
+            echo "::notice::${OUTCOME:-none} does not prove an earlier problem is gone; an open $ALERT_LABEL issue stays open"
+            exit 0
+          fi
+          gh label create "$ALERT_LABEL" --color B60205 \
+            --description "Automated alert from ${WORKFLOW_NAME}" --force >/dev/null \
+            || echo "::warning::could not create or update label $ALERT_LABEL"
+          # Only an issue opened by the workflow bot counts: anyone may open issues in a public repository.
+          if ! num="$(gh issue list --label "$ALERT_LABEL" --state open --author app/github-actions \
+                      --json number --jq '.[0].number // empty')"; then
+            echo "::error::could not list issues (are issues enabled?)"
+            exit 1
+          fi
+          if [[ "$state" == "red" ]]; then
+            body="**${WORKFLOW_NAME}** ended **${OUTCOME:-ERROR}** (job status: ${JOB_STATUS}). Started by: ${EVENT:-unknown}, commit ${SHA:0:7}. Run: ${RUN_URL}"
+            if [[ -s "${ALERT_DETAILS:-}" ]]; then
+              body+=$'\n\n```text\n'"$(cat "$ALERT_DETAILS")"$'\n```'
+            fi
+            if [[ -n "$num" ]]; then
+              gh issue comment "$num" --body "$body"
+            else
+              gh issue create --label "$ALERT_LABEL" --title "NFL pipeline needs attention: ${WORKFLOW_NAME}" \
+                --body "$body"$'\n\n'"Every failing run of ${WORKFLOW_NAME} adds a comment here. Only a run of the same workflow that ends ${CLOSING_OUTCOMES} closes it; a SKIP leaves it open. What it means and how to clear it: ${GUIDE_URL}#alert-issues"
+            fi
+          elif [[ -n "$num" ]]; then
+            gh issue close "$num" --comment "Resolved: ${WORKFLOW_NAME} ended ${OUTCOME} in ${RUN_URL}"
+          else
+            echo "no open $ALERT_LABEL issue to close"
+          fi
+
+      - name: Fail the run on HOLD or error
+        if: steps.outcome.outputs.outcome != 'PUBLISH' && steps.outcome.outputs.outcome != 'SKIP' && steps.outcome.outputs.outcome != 'HEARTBEAT'
+        env:
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+        run: |
+          echo "::error::outcome ${OUTCOME:-unknown}: nothing was published"
+          exit 1

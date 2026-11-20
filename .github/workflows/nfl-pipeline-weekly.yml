@@ -1,0 +1,365 @@
+# NFL pipeline: weekly refresh in season, and a publish after every config change on main.
+#
+# Owner's guide: NFL/03-pipeline/AUTOMATION.md. Contract: NFL/CONTRACTS.md section 8.
+#
+# Three ways in:
+# - schedule (Tue, Wed, Thu in months 1, 2, 9-12): `resolve` decides whether there is work
+#   (new nflverse data, or a config / pipeline version that differs from what was published);
+#   when there is, `run --seasons current` publishes and NFL/04-data is committed.
+# - push to main that changes NFL/02-config (the owner edited or uploaded a CSV on GitHub):
+#   `run --seasons current --force`, so every config commit gets a definite answer, PUBLISH or HOLD.
+#   A changed config makes `current` rebuild every season (run.py choose_seasons), which is what
+#   CONTRACTS.md section 8 asks of `all`; an unchanged one (an Excel re-save) rebuilds only the
+#   latest season instead of downloading every season again.
+# - manual dispatch, with optional seasons / dry_run / force. Started on a branch other than main,
+#   it is always a dry run.
+# Exit codes of `python -m nflpipe run`: 0 PUBLISH, 3 SKIP, 4 HOLD, anything else = error.
+# HOLD or error turns the run red and opens or comments on this workflow's rolling issue (label
+# `nfl-pipeline-alert-weekly`). Only a real PUBLISH of this workflow closes it; a SKIP never does.
+# No loop: a push made with the workflow token starts no workflow (GitHub rule), and the workflow
+# commits only NFL/04-data, which is outside the push filter below anyway.
+
+name: nfl-pipeline-weekly
+
+on:
+  schedule:
+    # UTC. Months 1,2,9-12 = September to February (playoffs included). Off-the-hour minutes.
+    - cron: "17 15 * 1,2,9-12 2"   # Tue 15:17 UTC (11:17 EDT / 10:17 EST): first attempt after Monday night
+    - cron: "17 10 * 1,2,9-12 3"   # Wed 10:17 UTC: the normal publish
+    - cron: "17 10 * 1,2,9-12 4"   # Thu 10:17 UTC: catches late or restated stats before Thursday night
+  push:
+    branches: [main]
+    paths:
+      - "NFL/02-config/**"
+      - "!NFL/02-config/**/*.md"      # editing the folder's README is not a config change
+  workflow_dispatch:
+    inputs:
+      seasons:
+        description: "Seasons to refresh: current, all, YYYY or YYYY-YYYY"
+        type: string
+        default: current
+      dry_run:
+        description: "Dry run: compute and check everything, publish nothing"
+        type: boolean
+        default: false
+      force:
+        description: "Run even if resolve says there is nothing new"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nfl-pipeline-publish
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: NFL/03-pipeline
+
+env:
+  PYTHONUNBUFFERED: "1"
+  DATA_PATH: NFL/04-data
+  CONFIG_FILES: "leagues.csv scoring_weights.csv bonus_rules.csv pipeline_config.csv README.md"
+  ALERT_LABEL: nfl-pipeline-alert-weekly
+  GUIDE_URL: https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write   # commit NFL/04-data
+      issues: write     # rolling alert issue
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false   # the token is handed to the commit step only
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # The pipeline uses the standard library only: no pip install.
+
+      - name: Resolve (is there work?)
+        id: resolve
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+          IN_SEASONS: ${{ inputs.seasons }}
+          IN_FORCE: ${{ inputs.force }}
+          IN_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set +e
+          out() { printf '%s\n' "$@" >> "$GITHUB_OUTPUT"; }
+          seasons="${IN_SEASONS:-current}"
+          force="${IN_FORCE:-false}"
+          dry_run="${IN_DRY_RUN:-false}"
+          if [[ "$REF" != "refs/heads/main" ]]; then
+            dry_run=true
+            echo "::notice title=Dry run::started on ${REF#refs/heads/}, not main: checks only, nothing is committed"
+          fi
+          out "seasons=$seasons" "dry_run=$dry_run"
+          # NFL/02-config may hold only the files the pipeline reads. A CSV uploaded under another
+          # name (for example "scoring_weights (1).csv" from a browser download) would otherwise be
+          # ignored without a word while the old rules kept being published.
+          stray=""
+          while IFS= read -r -d '' path; do
+            name="${path##*/}"
+            [[ " $CONFIG_FILES " == *" $name "* && -f "$path" ]] || stray+="${stray:+, }$name"
+          done < <(find ../02-config -mindepth 1 -maxdepth 1 -print0)
+          if [[ -n "$stray" ]]; then
+            out "decision=hold"
+            out "reason=NFL/02-config holds file(s) the pipeline does not read: ${stray}. Give the file the exact name of the one it replaces (${CONFIG_FILES% README.md}) or delete it."
+            echo "::error title=HOLD: unexpected file in NFL/02-config::${stray}"
+            exit 0
+          fi
+          if [[ "$EVENT" == "push" ]]; then
+            out "decision=run"
+            out "force=true"
+            out "reason=NFL/02-config changed on main (commit ${SHA:0:7}): rebuilding and publishing"
+            echo "::notice title=Config change::commit ${SHA:0:7} changed NFL/02-config; resolve bypassed"
+            exit 0
+          fi
+          out "force=$force"
+          if [[ "$force" == "true" || "$seasons" != "current" ]]; then
+            out "decision=run"
+            out "reason=started by hand (force=${force}, seasons=${seasons}); resolve bypassed"
+            echo "::notice title=Resolve bypassed::force=${force}, seasons=${seasons}"
+            exit 0
+          fi
+          python -m nflpipe resolve
+          rc=$?
+          case "$rc" in
+            0) out "decision=run" ;;
+            3) out "decision=skip" ;;
+            *) out "decision=error"
+               echo "::error title=Resolve failed::python -m nflpipe resolve exited $rc" ;;
+          esac
+          exit 0
+
+      - name: Run pipeline
+        id: run
+        if: steps.resolve.outputs.decision == 'run'
+        env:
+          SEASONS: ${{ steps.resolve.outputs.seasons }}
+          DRY_RUN: ${{ steps.resolve.outputs.dry_run }}
+          FORCE: ${{ steps.resolve.outputs.force }}
+          TRIGGER: ${{ github.event_name }}-weekly
+          RUN_LOG: ${{ runner.temp }}/nflpipe-run.log
+        run: |
+          set +e
+          rm -rf ../.work/last-run
+          args=(run --seasons "${SEASONS:-current}" --trigger "$TRIGGER")
+          [[ "$DRY_RUN" == "true" ]] && args+=(--dry-run)
+          [[ "$FORCE" == "true" ]] && args+=(--force)
+          python -m nflpipe "${args[@]}" 2>&1 | tee "$RUN_LOG"
+          rc=${PIPESTATUS[0]}
+          case "$rc" in
+            0) outcome=PUBLISH ;;
+            3) outcome=SKIP ;;
+            4) outcome=HOLD ;;
+            *) outcome=ERROR ;;
+          esac
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Record outcome
+        id: outcome
+        env:
+          DECISION: ${{ steps.resolve.outputs.decision }}
+          RESOLVE_REASON: ${{ steps.resolve.outputs.reason }}
+          RUN_OUTCOME: ${{ steps.run.outputs.outcome }}
+          RUN_RC: ${{ steps.run.outputs.rc }}
+          DRY_RUN: ${{ steps.resolve.outputs.dry_run }}
+          EVENT: ${{ github.event_name }}
+          RUN_LOG: ${{ runner.temp }}/nflpipe-run.log
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set +e
+          case "$DECISION" in
+            skip)  outcome=SKIP ;;
+            hold)  outcome=HOLD ;;
+            error) outcome=ERROR ;;
+            run)   outcome="${RUN_OUTCOME:-ERROR}" ;;
+            *)     outcome=ERROR ;;
+          esac
+          echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+          heading="$outcome"
+          if [[ "$outcome" == "PUBLISH" && "$DRY_RUN" == "true" ]]; then
+            heading="PUBLISH (dry run: checked only, nothing was committed)"
+          fi
+          # What happened, in words: why it ran, the gate report's FAIL/WARN rows, or the log's end.
+          {
+            [[ -n "$RESOLVE_REASON" ]] && echo "why: $RESOLVE_REASON"
+            if [[ "$DECISION" == "run" && -f ../.work/last-run/run_summary.csv ]]; then
+              python - ../.work/last-run <<'PY'
+          import csv, sys
+          from pathlib import Path
+          report = Path(sys.argv[1])
+          for row in csv.DictReader((report / "run_summary.csv").open(encoding="utf-8")):
+              if row["key"] in ("detail", "notes") and row["value"]:
+                  print(f"{row['key']}: {row['value']}")
+          gates = report / "checks" / "gates.csv"
+          if gates.is_file():
+              for row in csv.DictReader(gates.open(encoding="utf-8")):
+                  if row.get("result") in ("FAIL", "WARN"):
+                      print(f"{row['gate_id']} {row['result']} ({row['severity']}): {row['detail']}")
+          PY
+            elif [[ "$outcome" == "ERROR" && -f "$RUN_LOG" ]]; then
+              echo "last lines of the pipeline log:"
+              tail -n 25 "$RUN_LOG"
+            fi
+          } 2>&1 | cut -c1-400 | head -n 40 | sed 's/```/'"'''"'/g' > "$ALERT_DETAILS"
+          {
+            echo "### NFL pipeline weekly: $heading"
+            echo ""
+            echo "- started by: ${EVENT}"
+            echo "- resolve: ${DECISION:-not run}"
+            echo "- run exit code: ${RUN_RC:-not run}"
+            echo "- dry run: ${DRY_RUN:-false}"
+            if [[ -s "$ALERT_DETAILS" ]]; then
+              echo ""
+              echo '```text'
+              cat "$ALERT_DETAILS"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$outcome" in
+            PUBLISH) echo "::notice title=${heading}::new data passed every blocking gate" ;;
+            SKIP)    echo "::notice title=SKIP::${RESOLVE_REASON:-nothing changed upstream}" ;;
+            HOLD)    echo "::error title=HOLD::a blocking check failed; nothing was published (details on the run summary page)" ;;
+            *)       echo "::error title=ERROR::the pipeline failed; nothing was published (details on the run summary page)" ;;
+          esac
+          exit 0
+
+      - name: Keep the gate report (run artifact, 30 days)
+        if: ${{ !cancelled() && (steps.outcome.outputs.outcome == 'PUBLISH' || steps.outcome.outputs.outcome == 'HOLD' || steps.outcome.outputs.outcome == 'ERROR') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-report-${{ github.run_id }}
+          path: NFL/.work/last-run/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Commit 04-data
+        if: steps.outcome.outputs.outcome == 'PUBLISH' && steps.resolve.outputs.dry_run != 'true' && github.ref == 'refs/heads/main'
+        working-directory: ${{ github.workspace }}
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # The token is used by this step's fetch and push only and is never written to .git/config.
+          auth="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$auth"
+          g() { git -c "http.${GITHUB_SERVER_URL}/.extraheader=AUTHORIZATION: basic $auth" "$@"; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          msg="nfl-pipeline: publish NFL/04-data (weekly, ${EVENT}, run ${GITHUB_RUN_ID})"
+          git add -- "$DATA_PATH"
+          if git diff --cached --quiet; then
+            echo "::notice::NFL/04-data unchanged; nothing to commit"
+            exit 0
+          fi
+          git commit -q -m "$msg" -m "$RUN_URL"
+          for attempt in 1 2 3; do
+            if g push origin "HEAD:refs/heads/${BRANCH}"; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "::warning::push rejected (attempt $attempt); re-applying NFL/04-data on top of origin/${BRANCH}"
+            keep="$(mktemp -d)"
+            cp -a "$DATA_PATH/." "$keep/"
+            g fetch --depth=1 origin "$BRANCH"
+            git reset -q --hard FETCH_HEAD
+            rm -rf "$DATA_PATH"
+            mkdir -p "$DATA_PATH"
+            cp -a "$keep/." "$DATA_PATH/"
+            git add -- "$DATA_PATH"
+            if git diff --cached --quiet; then
+              echo "::notice::origin already has this NFL/04-data"
+              exit 0
+            fi
+            git commit -q -m "$msg" -m "$RUN_URL"
+            sleep $((attempt * 10))
+          done
+          echo "::error::could not push NFL/04-data after 3 attempts"
+          exit 1
+
+      - name: Update the rolling alert issue
+        if: ${{ !cancelled() }}
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          JOB_STATUS: ${{ job.status }}
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+          GREEN_OUTCOMES: "PUBLISH SKIP"
+          CLOSING_OUTCOMES: "PUBLISH"
+          DRY_RUN: ${{ steps.resolve.outputs.dry_run }}
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set -uo pipefail
+          # CONTRACTS.md section 8 "Alerts": one issue per workflow (its own label). A red run opens or
+          # comments on it. It is closed ONLY by a run of the same workflow that proves the problem is
+          # gone (CLOSING_OUTCOMES, never in a dry run). Any other green result (a SKIP) leaves it alone.
+          state=unchanged
+          if [[ "$JOB_STATUS" != "success" || " $GREEN_OUTCOMES " != *" ${OUTCOME:-none} "* ]]; then
+            state=red
+          elif [[ " $CLOSING_OUTCOMES " == *" ${OUTCOME:-none} "* && "${DRY_RUN:-false}" != "true" ]]; then
+            state=resolved
+          fi
+          echo "alert state: $state (outcome ${OUTCOME:-none}, job status $JOB_STATUS)"
+          if [[ "$state" == "unchanged" ]]; then
+            echo "::notice::${OUTCOME:-none} does not prove an earlier problem is gone; an open $ALERT_LABEL issue stays open"
+            exit 0
+          fi
+          gh label create "$ALERT_LABEL" --color B60205 \
+            --description "Automated alert from ${WORKFLOW_NAME}" --force >/dev/null \
+            || echo "::warning::could not create or update label $ALERT_LABEL"
+          # Only an issue opened by the workflow bot counts: anyone may open issues in a public repository.
+          if ! num="$(gh issue list --label "$ALERT_LABEL" --state open --author app/github-actions \
+                      --json number --jq '.[0].number // empty')"; then
+            echo "::error::could not list issues (are issues enabled?)"
+            exit 1
+          fi
+          if [[ "$state" == "red" ]]; then
+            body="**${WORKFLOW_NAME}** ended **${OUTCOME:-ERROR}** (job status: ${JOB_STATUS}). Started by: ${EVENT:-unknown}, commit ${SHA:0:7}. Run: ${RUN_URL}"
+            if [[ -s "${ALERT_DETAILS:-}" ]]; then
+              body+=$'\n\n```text\n'"$(cat "$ALERT_DETAILS")"$'\n```'
+            fi
+            if [[ -n "$num" ]]; then
+              gh issue comment "$num" --body "$body"
+            else
+              gh issue create --label "$ALERT_LABEL" --title "NFL pipeline needs attention: ${WORKFLOW_NAME}" \
+                --body "$body"$'\n\n'"Every failing run of ${WORKFLOW_NAME} adds a comment here. Only a run of the same workflow that ends ${CLOSING_OUTCOMES} closes it; a SKIP leaves it open. What it means and how to clear it: ${GUIDE_URL}#alert-issues"
+            fi
+          elif [[ -n "$num" ]]; then
+            gh issue close "$num" --comment "Resolved: ${WORKFLOW_NAME} ended ${OUTCOME} in ${RUN_URL}"
+          else
+            echo "no open $ALERT_LABEL issue to close"
+          fi
+
+      - name: Fail the run on HOLD or error
+        if: steps.outcome.outputs.outcome != 'PUBLISH' && steps.outcome.outputs.outcome != 'SKIP'
+        env:
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+        run: |
+          echo "::error::outcome ${OUTCOME:-unknown}: nothing was published"
+          exit 1

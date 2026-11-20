@@ -1,0 +1,6 @@
+League,Description,Active,Reconcile_To,Notes
+Standard,Standard scoring: no reception points. Control league that reproduces nflverse fantasy_points.,Yes,fantasy_points,Offense only; kicking and IDP weights are 0 so it can reconcile
+Half_PPR,Half point per reception.,Yes,,Same as Standard plus 0.5 per reception
+PPR,Full point per reception. Control league that reproduces nflverse fantasy_points_ppr.,Yes,fantasy_points_ppr,Offense only; kicking and IDP weights are 0 so it can reconcile
+League_1,"Custom example: Half-PPR base plus typical ESPN kicking (FG 0-39 = 3, 40-49 = 4, 50+ = 5, FG missed -1, PAT 1, PAT missed -1).",Yes,,Rename or edit freely: the pipeline still publishes (after a rule change its test values are skipped with a WARN note); keep the League name identical in tblScoring
+ESPN_League,"The owner's ESPN league (scoring copied 2026-11-15): per-unit rules, yardage bonuses, 40+/50+ yard TD bonuses, kicker distance buckets and team D/ST.",Yes,,"Source: the owner's ESPN league scoring settings, copied 2026-11-15. Reconciled to ESPN: a week 8 2026 lineup and the Arizona D/ST game log for weeks 1-10 (06-qa/fixtures, 06-qa/evidence)."

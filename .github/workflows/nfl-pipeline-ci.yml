@@ -1,0 +1,114 @@
+# NFL pipeline: tests on every push or pull request that touches the NFL project, and a dry run of
+# the pipeline on pull requests.
+#
+# Owner's guide: NFL/03-pipeline/AUTOMATION.md. Contract: NFL/CONTRACTS.md section 8.
+#
+# Read-only: no secrets, no writes, the token can only read. Uses `pull_request` (never
+# `pull_request_target`), so code from a pull request, including one from a fork, never sees a token
+# with write access. GitHub asks a maintainer to approve runs from first-time contributors.
+# The `config-check` job runs the real pipeline with --dry-run on a pull request, so a scoring change
+# proposed through a pull request shows PASS or FAIL before it is merged and published.
+
+name: nfl-pipeline-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "NFL/03-pipeline/**"
+      - "NFL/02-config/**"
+      - "NFL/06-qa/fixtures/**"
+      - ".github/workflows/nfl-pipeline-*.yml"
+  pull_request:
+    paths:
+      - "NFL/03-pipeline/**"
+      - "NFL/02-config/**"
+      - "NFL/06-qa/fixtures/**"
+      - ".github/workflows/nfl-pipeline-*.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nfl-pipeline-ci-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: NFL/03-pipeline
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: NFL/03-pipeline/requirements-dev.txt
+
+      - name: Install test dependencies (pytest, PyYAML; the pipeline itself needs none)
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest
+
+  config-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Dry run of the pipeline with this pull request's config (publishes nothing)
+        run: |
+          set +e
+          python -m nflpipe run --seasons current --dry-run --trigger pull_request-check
+          rc=$?
+          case "$rc" in
+            0|3) result=PASS ;;
+            4)   result="FAIL (HOLD: a blocking gate failed)" ;;
+            *)   result="FAIL (error, exit $rc)" ;;
+          esac
+          {
+            echo "### NFL config check: $result"
+            echo ""
+            echo '```text'
+            python - ../.work/last-run <<'PY' 2>&1 | cut -c1-400 | sed 's/```/'"'''"'/g'
+          import csv, sys
+          from pathlib import Path
+          report = Path(sys.argv[1])
+          if (report / "run_summary.csv").is_file():
+              for row in csv.DictReader((report / "run_summary.csv").open(encoding="utf-8")):
+                  if row["key"] in ("detail", "notes") and row["value"]:
+                      print(f"{row['key']}: {row['value']}")
+          if (report / "checks" / "gates.csv").is_file():
+              for row in csv.DictReader((report / "checks" / "gates.csv").open(encoding="utf-8")):
+                  print(f"{row['gate_id']} {row['result']}: {row['detail']}")
+          PY
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          [[ "$result" == "PASS" ]]
