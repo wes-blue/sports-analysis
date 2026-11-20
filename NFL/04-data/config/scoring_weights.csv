@@ -1,0 +1,83 @@
+Metric,Category,Description,Standard,Half_PPR,PPR,League_1,ESPN_League,Notes,Applies_To
+passing_yards,Passing,Passing yards,0.04,0.04,0.04,0.04,0.04,1 point per 25 yards,
+passing_tds,Passing,Passing touchdowns,4,4,4,4,4,,
+passing_interceptions,Passing,Interceptions thrown,-2,-2,-2,-2,-2,nflverse name is passing_interceptions (not interceptions),
+passing_2pt_conversions,Passing,Passing two-point conversions,2,2,2,2,2,,
+completions,Passing,Pass completions,0,0,0,0,0,,
+attempts,Passing,Pass attempts,0,0,0,0,0,,
+passing_first_downs,Passing,Passing first downs,0,0,0,0,0,,
+rushing_yards,Rushing,Rushing yards,0.1,0.1,0.1,0.1,0.1,1 point per 10 yards,
+rushing_tds,Rushing,Rushing touchdowns,6,6,6,6,6,,
+rushing_2pt_conversions,Rushing,Rushing two-point conversions,2,2,2,2,2,,
+carries,Rushing,Rushing attempts,0,0,0,0,0,,
+rushing_first_downs,Rushing,Rushing first downs,0,0,0,0,1,,
+receptions,Receiving,Receptions,0,0.5,1,0.5,1,The only difference between Standard / Half_PPR / PPR,
+receiving_yards,Receiving,Receiving yards,0.1,0.1,0.1,0.1,0.1,1 point per 10 yards,
+receiving_tds,Receiving,Receiving touchdowns,6,6,6,6,6,,
+receiving_2pt_conversions,Receiving,Receiving two-point conversions,2,2,2,2,2,,
+targets,Receiving,Targets,0,0,0,0,0,,
+receiving_first_downs,Receiving,Receiving first downs,0,0,0,0,1,,
+sack_fumbles_lost,Fumbles,Fumbles lost on sacks (QB),-2,-2,-2,-2,0,"Component of fumbles_lost_total: use the three component rows OR fumbles_lost_total, never both",
+rushing_fumbles_lost,Fumbles,Fumbles lost while rushing,-2,-2,-2,-2,0,Component of fumbles_lost_total,
+receiving_fumbles_lost,Fumbles,Fumbles lost while receiving,-2,-2,-2,-2,0,Component of fumbles_lost_total,
+fumbles_lost_total,Fumbles,Total fumbles lost (all types),0,0,0,0,-2,"WARNING: overlaps sack_/rushing_/receiving_fumbles_lost. Use one or the other, never both. Verified 2017-2026: exceeds the sum of the three components on 393 of 174237 rows (mostly return-play fumbles); nflverse fantasy_points uses the three components. Keep 0 here unless you set the three components to 0",
+special_teams_tds,Misc,Special-teams touchdowns (returns),6,6,6,6,6,ESPN_League: 6 = KRTD + PRTD + BLKKRTD (high; blocked-kick TD medium-high),
+fumble_recovery_tds,Misc,Fumble-recovery touchdowns,0,0,0,0,6,Not part of the nflverse fantasy_points formula | ESPN_League: 6 = FRTD/FTD; if ESPN pays both rules for one play it is 12 (UNVERIFIED),
+fg_made,Kicking,Field goals made (all distances),0,0,0,0,0,"WARNING: overlaps the fg_made_<range> rows. Use this row OR the range rows, never both",K
+fg_made_0_19,Kicking,"Field goals made, 0-19 yards",0,0,0,3,3,Overlaps fg_made,K
+fg_made_20_29,Kicking,"Field goals made, 20-29 yards",0,0,0,3,3,Overlaps fg_made,K
+fg_made_30_39,Kicking,"Field goals made, 30-39 yards",0,0,0,3,3,Overlaps fg_made,K
+fg_made_40_49,Kicking,"Field goals made, 40-49 yards",0,0,0,4,4,Overlaps fg_made,K
+fg_made_50_59,Kicking,"Field goals made, 50-59 yards",0,0,0,5,5,Overlaps fg_made,K
+fg_made_60_,Kicking,"Field goals made, 60+ yards",0,0,0,5,6,Overlaps fg_made; the column name really ends with an underscore,K
+fg_missed,Kicking,Field goals missed (all distances),0,0,0,-1,-1,"WARNING: overlaps the fg_missed_<range> rows. Use this row OR the range rows, never both",K
+fg_missed_0_19,Kicking,"Field goals missed, 0-19 yards",0,0,0,0,0,Overlaps fg_missed,K
+fg_missed_20_29,Kicking,"Field goals missed, 20-29 yards",0,0,0,0,0,Overlaps fg_missed,K
+fg_missed_30_39,Kicking,"Field goals missed, 30-39 yards",0,0,0,0,0,Overlaps fg_missed,K
+fg_missed_40_49,Kicking,"Field goals missed, 40-49 yards",0,0,0,0,0,Overlaps fg_missed,K
+fg_missed_50_59,Kicking,"Field goals missed, 50-59 yards",0,0,0,0,0,Overlaps fg_missed,K
+fg_missed_60_,Kicking,"Field goals missed, 60+ yards",0,0,0,0,0,Overlaps fg_missed,K
+pat_made,Kicking,Extra points made,0,0,0,1,1,,K
+pat_missed,Kicking,Extra points missed,0,0,0,-1,0,,K
+def_tackles_solo,IDP (defense),Solo tackles,0,0,0,0,2,IDP rows are 0 by default; set weights to score defensive players | ESPN_League: 2 = TK 1 + TKS 1 (high for solo; combined-total definition medium),"DL,LB,DB"
+def_tackles_with_assist,IDP (defense),Tackles with assist,0,0,0,0,0,"May overlap def_tackles_solo / def_tackle_assists depending on source definition; verify before combining | ESPN_League: 0, UNVERIFIED (treatment of a tackle-with-assist unknown; about 18% of defender weeks)","DL,LB,DB"
+def_tackle_assists,IDP (defense),Assisted tackles,0,0,0,0,2,ESPN_League: 2 = TK 1 + TKA 1 (high as defined; combined-total definition medium),"DL,LB,DB"
+def_tackles_for_loss,IDP (defense),Tackles for loss,0,0,0,0,1,"ESPN_League: 1 for Stuffs, an approximation (low-medium)","DL,LB,DB"
+def_sacks,IDP (defense),Sacks,0,0,0,0,1,,"DL,LB,DB"
+def_qb_hits,IDP (defense),QB hits,0,0,0,0,0,,"DL,LB,DB"
+def_interceptions,IDP (defense),Interceptions,0,0,0,0,2,,"DL,LB,DB"
+def_pass_defended,IDP (defense),Passes defended,0,0,0,0,1,,"DL,LB,DB"
+def_fumbles_forced,IDP (defense),Forced fumbles,0,0,0,0,1,,"DL,LB,DB"
+fumble_recovery_opp,IDP (defense),Opponent fumble recoveries,0,0,0,0,2,ESPN_League: 2 for FR (medium-high),"DL,LB,DB"
+def_tds,IDP (defense),Defensive touchdowns,0,0,0,0,6,"ESPN_League: 6 = INTTD (high that columns are disjoint, medium for weight)",
+def_safeties,IDP (defense),Safeties,0,0,0,0,2,,"DL,LB,DB"
+def_fg_blocks,IDP (defense),Field goals blocked,0,0,0,0,2,,"DL,LB,DB"
+def_punt_blocks,IDP (defense),Punts blocked,0,0,0,0,2,,"DL,LB,DB"
+def_pat_blocks,IDP (defense),Extra points blocked,0,0,0,0,2,,"DL,LB,DB"
+def_2pt_made,IDP (defense),Defensive two-point conversions made (returns),0,0,0,0,2,"ESPN rule 2PTRET (2pt return); nflverse def_2pt_made (provisional mapping, ESPN_League only)",
+fg_blocked,Kicking,Field goals blocked (kicker's attempts),0,0,0,0,0,Not an ESPN rule; optional -1 for ESPN_League if ESPN counts a blocked FG as 'FG missed'. UNVERIFIED,K
+fumble_recovery_own,IDP (defense),Own-team fumble recoveries,0,0,0,0,0,Not an ESPN rule as listed; optional 2 if ESPN credits own recoveries. UNVERIFIED,"DL,LB,DB"
+pass_td_40,Long TD bonus (from LongTD),Passing TDs of 40+ yards (cumulative: a 50+ TD counts in both _40 and _50),0,0,0,0,1,ESPN PTD40: +1 per passing TD of 40+ yards (from LongTD; stacking with 50+ UNVERIFIED),
+pass_td_50,Long TD bonus (from LongTD),Passing TDs of 50+ yards (cumulative: a 50+ TD counts in both _40 and _50),0,0,0,0,1,"ESPN PTD50: +1 per passing TD of 50+ yards (from LongTD; also counted in the 40+ row, stacking UNVERIFIED)",
+rush_td_40,Long TD bonus (from LongTD),Rushing TDs of 40+ yards (cumulative: a 50+ TD counts in both _40 and _50),0,0,0,0,1,ESPN RTD40: +1 per rushing TD of 40+ yards (from LongTD; stacking with 50+ UNVERIFIED),
+rush_td_50,Long TD bonus (from LongTD),Rushing TDs of 50+ yards (cumulative: a 50+ TD counts in both _40 and _50),0,0,0,0,1,"ESPN RTD50: +1 per rushing TD of 50+ yards (from LongTD; also counted in the 40+ row, stacking UNVERIFIED)",
+rec_td_40,Long TD bonus (from LongTD),Receiving TDs of 40+ yards (cumulative: a 50+ TD counts in both _40 and _50),0,0,0,0,1,ESPN RETD40: +1 per receiving TD of 40+ yards (from LongTD; stacking with 50+ UNVERIFIED),
+rec_td_50,Long TD bonus (from LongTD),Receiving TDs of 50+ yards (cumulative: a 50+ TD counts in both _40 and _50),0,0,0,0,1,"ESPN RETD50: +1 per receiving TD of 50+ yards (from LongTD; also counted in the 40+ row, stacking UNVERIFIED)",
+dst_sacks,Team D/ST (from Team_DST),D/ST sacks,0,0,0,0,1,ESPN SK: +1 per D/ST sack,DST
+dst_tackles,Team D/ST (from Team_DST),D/ST tackles (solo + assists + tackles with assist),0,0,0,0,1,"ESPN TK: +1 per tackle (solo + assists + tackles-with-assist); reconciled to ESPN week 8 2026 and season totals (+-1), D-021",DST
+dst_blocked_kicks,Team D/ST (from Team_DST),"D/ST blocked punts, PATs and FGs",0,0,0,0,2,"ESPN BLKK: +2 per blocked punt, PAT or FG",DST
+dst_interceptions,Team D/ST (from Team_DST),D/ST interceptions,0,0,0,0,2,ESPN INT: +2 per D/ST interception,DST
+dst_fumble_recoveries,Team D/ST (from Team_DST),D/ST fumble recoveries (opponent fumbles),0,0,0,0,2,ESPN FR: +2 per opponent fumble recovered (own-team recoveries excluded; reconciled D-021),DST
+dst_fumbles_forced,Team D/ST (from Team_DST),D/ST forced fumbles,0,0,0,0,1,ESPN FF: +1 per D/ST forced fumble,DST
+dst_safeties,Team D/ST (from Team_DST),D/ST safeties,0,0,0,0,2,ESPN SF: +2 per D/ST safety,DST
+dst_kr_yards,Team D/ST (from Team_DST),D/ST kickoff return yards,0,0,0,0,1,"ESPN KR: +1 per kickoff return yard; reconciled to ESPN week 8 2026 and season totals (+-1), D-021",DST
+dst_pr_yards,Team D/ST (from Team_DST),D/ST punt return yards,0,0,0,0,1,"ESPN PR: +1 per punt return yard; reconciled to ESPN week 8 2026 and season totals (+-1), D-021",DST
+dst_int_tds,Team D/ST (from Team_DST),D/ST interception return TDs,0,0,0,0,6,ESPN INTTD: +6 per interception return TD,DST
+dst_fumble_tds,Team D/ST (from Team_DST),D/ST fumble return TDs,0,0,0,0,6,ESPN FRTD / FTD (stacking UNVERIFIED),DST
+dst_st_tds,Team D/ST (from Team_DST),"D/ST special-teams TDs (KR, PR, blocked-kick returns)",0,0,0,0,6,ESPN KRTD + PRTD + BLKKRTD: +6 per special-teams TD,DST
+dst_2pt_returns,Team D/ST (from Team_DST),D/ST two-point returns,0,0,0,0,2,ESPN 2PTRET: +2 per two-point return (rare),DST
+dst_points_allowed,Team D/ST (from Team_DST),Points allowed (opponent's full final score),0,0,0,0,0,"Reference only: the ESPN_League points-allowed tiers use dst_points_allowed_excl_def since D-038 (until then this full score was used, D-021)",DST
+dst_points_allowed_excl_def,Team D/ST (from Team_DST),"Points allowed as ESPN counts them: opponent's final score minus the points its defense scored against this team's offense (interception and fumble return TDs, safeties, two-point returns). Proven against ESPN for defensive return TDs; that special-teams TDs, blocked-kick returns and the extra point after a defensive TD still count, and that safeties do not, are assumptions until BLOCKERS.csv Q-019 is answered",0,0,0,0,0,"ESPN PA0..PA46: tiers via tblBonus (matches ESPN's PA for all 10 weeks of the ARI D/ST 2026 game log, D-038)",DST
+dst_points_allowed_excl_def_st,Team D/ST (from Team_DST),"Opponent's final score minus 6 per opponent def_tds, fumble_recovery_tds and special_teams_tds in stats_team (fumble_recovery_tds also counts an offense recovering its own fumble in the end zone)",0,0,0,0,0,Reference only; not ESPN's rule (D-038),DST
+dst_yards_allowed,Team D/ST (from Team_DST),Net yards allowed (opponent passing + rushing + sack yards lost),0,0,0,0,0,"ESPN YA100..YA550: tiers via tblBonus (net yards; reconciled to ESPN week 8 2026, D-021)",DST
+dst_yards_allowed_gross,Team D/ST (from Team_DST),Gross yards allowed (opponent passing + rushing),0,0,0,0,0,Alternative variant; not used (D-021),DST

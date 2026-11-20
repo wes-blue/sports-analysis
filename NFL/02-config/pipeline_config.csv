@@ -1,0 +1,7 @@
+Setting,Value,Allowed_Values,Description
+StartSeason,Latest-9,"A year (1999 or later, e.g. 2017) | Latest | Latest-N (N = 0 to 30)","First season to load. Latest-9 = the newest published season minus 9, a rolling 10 seasons. Set a year such as 2017 to pin the start. Must not be after EndSeason."
+EndSeason,Latest,A year (1999 or later) | Latest | Latest-N (N = 0 to 30),"Last season to load. Latest = the newest season nflverse has published, including the live season; it moves forward by itself when the next season's file appears."
+SeasonTypes,REG+POST,REG | POST | REG+POST,"Which season types to keep: regular season, playoffs, or both."
+RoundDecimals,2,0-6 (whole number),Decimals kept in each FF_<League> column.
+PublishExtraColumns,,blank | comma-separated nflverse column names | ALL,"Extra nflverse stat columns to publish in player_week files, beyond the metrics listed in scoring_weights.csv and bonus_rules.csv. ALL publishes every numeric nflverse column (larger files)."
+ReconcileTolerance,0.005,0 or a small positive number,Largest absolute difference allowed between a control league and its nflverse reference column before a row counts as a mismatch.

@@ -1,0 +1,26 @@
+season,week,season_type,player_id,player_display_name,team,position,league,espn_points,tolerance,row_expected,note
+2026,8,REG,00-0036442,Joe Burrow,CIN,QB,ESPN_League,41.48,0,Yes,ESPN lineup: Joe Burrow CIN QB vs TEN W 43-36
+2026,8,REG,00-0036275,D'Andre Swift,CHI,RB,ESPN_League,33.9,0,Yes,ESPN lineup: D'Andre Swift CHI RB @ SEA W 34-17
+2026,8,REG,00-0033293,Aaron Jones,MIN,RB,ESPN_League,8,0,Yes,ESPN lineup: Aaron Jones Sr. MIN RB @ DET L 15-19 (nflverse name: Aaron Jones)
+2026,8,REG,00-0036322,Justin Jefferson,MIN,WR,ESPN_League,17.3,0,Yes,ESPN lineup: Justin Jefferson MIN WR @ DET L 15-19 (the CLE LB of the same name is a different player)
+2026,8,REG,00-0031588,Stefon Diggs,WAS,WR,ESPN_League,15.8,0,Yes,ESPN lineup: Stefon Diggs WSH WR vs PHI W 27-10 (ESPN WSH = nflverse WAS)
+2026,8,REG,00-0040128,Tyler Warren,IND,TE,ESPN_League,6.8,0,Yes,ESPN lineup: Tyler Warren IND TE @ JAX L 7-42
+2026,8,REG,00-0039067,Rashee Rice,KC,WR,ESPN_League,20.3,0,Yes,ESPN lineup: Rashee Rice KC WR @ DEN L 24-28
+2026,8,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,161,1,Yes,ESPN lineup: Jets D/ST vs LV L 33-38; nflverse stat feed differs from ESPN by about one point (D-021)
+2026,8,REG,00-0031136,Chris Boswell,PIT,K,ESPN_League,8,0,Yes,ESPN lineup: Chris Boswell PIT K vs CLE W 27-6
+2026,8,REG,00-0041037,Denzel Boston,CLE,WR,ESPN_League,12.7,0,Yes,ESPN lineup (bench): Denzel Boston CLE WR @ PIT L 6-27
+2026,8,REG,00-0038797,Emanuel Wilson,SEA,RB,ESPN_League,0,0,No,ESPN lineup (bench): Emanuel Wilson SEA RB vs CHI status O; did not play so nflverse has no row and he counts as 0
+2026,8,REG,00-0041489,Germie Bernard,PIT,WR,ESPN_League,10,0,Yes,ESPN lineup (bench): Germie Bernard PIT WR vs CLE W 27-6
+2026,8,REG,DST_GB,GB D/ST,GB,DST,ESPN_League,217,1,Yes,ESPN lineup (bench): Packers D/ST vs CAR W 27-19
+2026,8,REG,00-0033090,Hunter Henry,NE,TE,ESPN_League,7,0,Yes,ESPN lineup (bench): Hunter Henry NE TE @ MIA W 24-19
+2026,8,REG,00-0026498,Matthew Stafford,LA,QB,ESPN_League,8.28,0,Yes,ESPN lineup (bench): Matthew Stafford LAR QB vs LAC W 24-9 (ESPN LAR = nflverse LA)
+2026,1,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,135,1,Yes,ESPN game log: Cardinals D/ST week 1 @LAC (PA 14); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,2,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,184,1,Yes,ESPN game log: Cardinals D/ST week 2 SEA (PA 31); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,3,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,227,1,Yes,ESPN game log: Cardinals D/ST week 3 @SF (PA 36); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,4,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,292,1,Yes,ESPN game log: Cardinals D/ST week 4 @NYG (PA 30); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,5,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,265,1,Yes,ESPN game log: Cardinals D/ST week 5 DET (PA 45); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,6,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,141,1,Yes,ESPN game log: Cardinals D/ST week 6 @LAR (PA 16); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,7,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,211,1,Yes,ESPN game log: Cardinals D/ST week 7 DEN (PA 30); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,8,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,225,1,Yes,ESPN game log: Cardinals D/ST week 8 @DAL (PA 30); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,9,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,161,1,Yes,ESPN game log: Cardinals D/ST week 9 @SEA (PA 17); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,10,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,110,1,Yes,ESPN game log: Cardinals D/ST week 10 LAR (PA 34); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
