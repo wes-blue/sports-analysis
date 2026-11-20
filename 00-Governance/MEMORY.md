@@ -10,7 +10,7 @@ Read this after `CLAUDE.md`. The decision log (`00-Governance/DECISIONS.md`), th
   - It is **paste-ready**: the owner adds the 15 queries once in Excel, or uses the experimental workbook.
   - **Experimental workbook:** `NFL/05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx` (version `2.001-experimental`, SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`): the owner's own Excel-built workbook with the 15 queries installed and personal data removed. Not a release. The owner also has a private copy whose Data Model was left untouched, as a second chance if this one fails to load.
 - **2026-11-20: the NFL project moved** from the owner's private repository to this public repository (D-033), in the multi-sport layout. No git history was copied. The 1.x archive, raw inputs and 1.006 QA records stay private (D-034).
-- **Pipeline 1.2.0**, data contract version 1. 377 tests pass on Python 3.11 and 3.13. Published data: 174,945 player rows plus 5,288 D/ST rows, 2017–2026 through week 10; all 13 gates pass.
+- **Pipeline 1.2.1**, data contract version 1. 381 tests pass on Python 3.11 and 3.13, here and on GitHub's runners. Published data: 174,945 player rows plus 5,288 D/ST rows, 2017–2026 through week 10; all 13 gates pass.
 - **ESPN points allowed (D-038)** now follow the owner's ESPN game log: all ten Arizona weeks of ESPN's points-allowed column reproduced, 9 of 10 weekly scores exact.
 - **Nothing has run on GitHub yet.** The workflows become active when the work reaches `main`. All work is on branch `agents/pensive-noether-dxfoz6` with a pull request into `main`; the owner merges it (Q-015). The merge itself starts the first pipeline run, because it adds `NFL/02-config` to `main`.
 - **Power Query has not run in Excel** for the pipeline-fed design. Reading nflverse from a web address with `Web.Contents` did run in real Excel in 1.003 and 1.004.
@@ -79,7 +79,7 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 - The build container has Linux, Python 3.13 with openpyxl, pandas, lxml and PyYAML, LibreOffice (used to recalculate workbooks) and Node 22 with npm. `pytest` is installed into a virtual environment under `NFL/.work/` when needed.
 - **There is no Excel, so Power Query cannot run here, and GitHub Actions cannot be run from here.** Both are tested only by parsing, emulation and unit tests until they run for real.
 - Microsoft's M parser (`@microsoft/powerquery-parser` 5.0.0) was set up in `NFL/.work/legacy-1.x/t3/` (`node parse_m.js <dir>`). `.work/` is not in git, so a new container must set it up again.
-- Downloads go through a proxy; Python reads nflverse files through it with the CA bundle `/root/.ccr/ca-bundle.crt`. `raw.githubusercontent.com` and `git ls-remote` on public repositories work.
+- Downloads go through a proxy; Python reads nflverse files through it with the CA bundle named by `SSL_CERT_FILE`. `raw.githubusercontent.com` and `git ls-remote` on public repositories work.
 - Subagents' Write tool refuses some report-style files; they return the text and the orchestrator saves it.
 
 ## Lessons
@@ -88,4 +88,5 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 - Engineers leave generators and validators in `.work/`, which git ignores. Promote anything a later change needs into the repository (done on 2026-11-20 for the plan validator, the workbook verifier and the M parser runner; originally at `NFL/.work/a1/validate_plan.py`).
 - An independent QA pass that re-derives the results found a critical defect that every builder's own tests missed (1.006, finding C-01). Always run one, and re-test the fixes independently.
 - Publishing cannot be undone. Scan everything for personal details, local paths and private content before each commit, including workbook file properties, and keep paths into the private repository out of public files.
+- The build container runs as the administrator; a GitHub runner does not. The first real run on GitHub failed on a hard-coded certificate path that only the container can read (fixed in pipeline 1.2.1). Treat the pull request's `config-check` job as the real end-to-end test, and never build a machine-specific path into the pipeline (a test now enforces this).
 - Documents copied from an earlier setup keep describing it. After a move, check every document against the new contract before release.

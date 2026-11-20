@@ -38,7 +38,7 @@ NFL/
 | `resolve.py`, `freshness.py` | The `resolve` command: is there new work for a scheduled run? |
 | `watchdog.py` | The `watchdog` command: has a publish landed recently enough? |
 
-The version is `pipeline_version` in `nflpipe/__init__.py` (now **1.2.0**). Following `/00-Governance/VERSIONING.md`, a change to scoring arithmetic or to a derived-metric rule raises the middle number and a breaking change the first. Every publish records it in `status.csv` and `run_log.csv`; a new version makes the next run rebuild every season.
+The version is `pipeline_version` in `nflpipe/__init__.py` (now **1.2.1**). Following `/00-Governance/VERSIONING.md`, a change to scoring arithmetic or to a derived-metric rule raises the middle number and a breaking change the first. Every publish records it in `status.csv` and `run_log.csv`; a new version makes the next run rebuild every season.
 
 ## How a run works
 

@@ -96,7 +96,7 @@ The same order, dependencies and load settings are in `manifest.json`. Every que
 
 **Data › Refresh All.** The first refresh downloads the data and scores about 180,000 rows for every league (row by row, as in 1.x). How long it takes in Excel has not been measured: allow several minutes, and note the time. Each loaded check is evaluated on its own; whether Excel then downloads a file once per refresh or once per check that needs it is not known yet (only Excel can show it).
 
-Expected with the default settings (Latest-9 to Latest, REG+POST) on the data published 2026-11-20 by pipeline 1.2.0 (seasons 2017–2026, 2026 through REG week 10). Numbers grow each week.
+Expected with the default settings (Latest-9 to Latest, REG+POST) on the data published 2026-11-20 by pipeline 1.2.1 (seasons 2017–2026, 2026 through REG week 10). Numbers grow each week.
 
 **What each status means** (the same legend is on the workbook's Start_Here sheet, section 6, which also explains each check): Green = good: `PASS`, `OK`, `same`, `matches pipeline`. Amber = read the row; often expected after you change a rule: `NOT APPLICABLE`, `RULES CHANGED`, `DECIMALS CHANGED`, `NO TEST VALUES`, `WARN`, `CHECK`, `changed`, `differs`, `only in workbook`, `only in pipeline`, `not in pipeline`, `not scored in workbook`, `NOT PUBLISHED`, `NO ROWS`, `MISSING (zero weight everywhere)`. Red = act: `FAIL`, `MISSING`, `MISSING COLUMN`, `NOT NUMERIC`, `UNSUPPORTED`. `INFO` = information only.
 

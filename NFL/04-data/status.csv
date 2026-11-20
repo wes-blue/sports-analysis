@@ -1,7 +1,7 @@
 key,value
-run_id,20261120T014100Z
-generated_utc,2026-11-20T01:41:29Z
-pipeline_version,1.2.0
+run_id,20261120T020628Z
+generated_utc,2026-11-20T02:06:57Z
+pipeline_version,1.2.1
 data_contract_version,1
 outcome,PUBLISH
 window_start,2017
@@ -10,7 +10,7 @@ season_types,REG+POST
 latest_season,2026
 latest_week,10
 latest_season_type,REG
-upstream_last_modified_max,2026-11-20T01:36:38Z
+upstream_last_modified_max,2026-11-20T01:46:24Z
 config_sha256,65eabafe974e6a961cb19ab58dfa0503ab50160ba9ea94fdb9a14ceccf5687a0
 gates_pass,13
 gates_warn,0

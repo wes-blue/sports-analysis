@@ -35,8 +35,14 @@ Every finding is **Fixed**, **Fixed in part** (with what remains) or **Accepted*
 
 The fixes above changed files after the review. The orchestrator re-ran, on the final state: the test suite on Python 3.11 and 3.13 (377 passed each); `run --seasons all` (PUBLISH once, then SKIP) and `check` (pass); the plan validator; Microsoft's M parser on all 15 queries; the workbook verifier (284 passed), a LibreOffice recalculation (262 formulas, 0 errors) and M-text equality on the released workbook; both verifiers of the experimental workbook (SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`); and a byte-level search of both workbooks for strings derived from the owner's private base workbook (none found; the only matches are the public GitHub username). This was not a second independent review.
 
+## Found by the first run on GitHub (after the QA report)
+
+| ID | Finding | Disposition |
+|---|---|---|
+| GH-1 | On the pull request, the `config-check` job failed: `Permission denied: '/root/.ccr/ca-bundle.crt'`. The download code looked for a certificate file at a path that exists only in the build environment. There the process runs as the administrator and the path is readable; a GitHub runner runs as an ordinary user, and even asking whether the path exists is refused. Every scheduled run would have failed at its first download. No local test, lint or simulation could show it, because all of them ran in the build environment. | **Fixed** in pipeline 1.2.1: no machine-specific path is built in; certificate bundles named by the environment are used only when readable. Three regression tests, including one that fails if any machine-specific absolute path appears in the pipeline. The data was re-published under 1.2.1 with no change to any `player_week`, `scored` or `long_td` file. 381 tests pass on Python 3.11 and 3.13. The same job on GitHub is the proof; its result is recorded in the pull request. |
+
 ## Not verifiable here (carried into 2.002 and 2.003)
 
 1. Neither workbook has run in Excel: the web refresh and its prompts, the edited Data Model in the experimental file, refresh time.
 2. The workflows have never run on GitHub: token rights, the alert-issue commands, schedule timing, and whether the heartbeat commit counts as activity.
-3. Whether the session's GitHub access may push workflow files at all is only known at the first push.
+3. Of the workflows, only the test workflow has run on GitHub so far (on the pull request). The weekly, monthly and watchdog workflows first run after the merge.

@@ -27,7 +27,7 @@ The 2.x line is the workbook fed by the pipeline in this repository, reading the
 | Experimental workbook | `../05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx` | The owner's own Excel-built workbook with the 15 queries installed and personal data removed. Version `2.001-experimental`; **not a release; never opened in Excel.** SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`. |
 | Power Query | `../05-excel/powerquery/` | 15 queries with a runbook. Parse and lint clean. |
 | Published data | `../04-data/` | 174,945 player rows plus 5,288 D/ST rows, 2017–2026 through week 10. All 13 gates pass. |
-| Pipeline | `../03-pipeline/` (version 1.2.0) | 377 tests, passing on Python 3.11 and 3.13. |
+| Pipeline | `../03-pipeline/` (version 1.2.1) | 381 tests, passing on Python 3.11 and 3.13, here and on GitHub's runners. |
 | Workflows | `/.github/workflows/` | Weekly, monthly, watchdog and CI. Lint clean; their logic was executed locally. **Never run on GitHub.** |
 
 **Verification.**
@@ -35,7 +35,7 @@ The 2.x line is the workbook fed by the pipeline in this repository, reading the
 | Gate | Result |
 |---|---|
 | G1 Source | Pass. Live nflverse files and column names checked. |
-| G2 Code | Pass. 377 tests on Python 3.11 and 3.13; 15 of 15 queries parse with Microsoft's M parser and pass the firewall lint; actionlint clean; pinned action versions match their tags. |
+| G2 Code | Pass. 381 tests on Python 3.11 and 3.13; 15 of 15 queries parse with Microsoft's M parser and pass the firewall lint; actionlint clean; pinned action versions match their tags. |
 | G3 Workbook | Pass. 284 structural checks; LibreOffice recalculation of 262 formulas with 0 errors; M text identical to the `.pq` files; a rebuild gives the same SHA-256. |
 | G4 Release | Pass. 2.001 in the file name, Cover, file properties, Version_Log and this register. |
 | G5 Data | Pass. `check` passes. An independent reviewer recomputed all 901,165 league scores with its own scorer (0 mismatches) and rebuilt the new points-allowed metric from play-by-play for all 5,288 team-games (0 mismatches). ESPN evidence: 25 of 25 values reproduced (23 exact, 2 within 1 point), and all 70 of ESPN's D/ST stat cells match. |
@@ -44,7 +44,7 @@ The 2.x line is the workbook fed by the pipeline in this repository, reading the
 
 **Known limits.**
 - Neither workbook has run in Excel. The first refresh by the owner is the first real test (roadmap 2.002; `/BLOCKERS.csv` Q-020).
-- The workflows have never run on GitHub. The first run starts when the pull request is merged (roadmap 2.003).
+- Of the workflows, only the test workflow has run on GitHub (on the pull request). It caught one defect before the merge: the download code looked for a certificate file at a path that exists only in the build environment, which GitHub's runners refuse to read. Fixed in pipeline 1.2.1. The scheduled workflows first run when the pull request is merged (roadmap 2.003).
 - Three rarer D/ST cases and two player rules are scored on assumptions until the owner supplies ESPN game logs (`/BLOCKERS.csv` Q-016, Q-017, Q-019).
 - Whether the off-season heartbeat commit counts as repository activity for GitHub is unverified.
 

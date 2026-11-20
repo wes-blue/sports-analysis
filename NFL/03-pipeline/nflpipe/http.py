@@ -1,8 +1,10 @@
 """Downloads from the nflverse GitHub releases, with retries and a local cache.
 
 * Proxy settings come from the environment (``HTTPS_PROXY`` etc.); ``urllib`` reads them.
-* CA certificates: ``SSL_CERT_FILE`` is honoured by Python itself; ``REQUESTS_CA_BUNDLE``,
-  ``CURL_CA_BUNDLE`` or ``/root/.ccr/ca-bundle.crt`` (an agent sandbox) are used when present.
+* CA certificates: ``SSL_CERT_FILE`` is honoured by Python itself; ``REQUESTS_CA_BUNDLE`` or
+  ``CURL_CA_BUNDLE`` are used when they name a readable file. No path is built in: a path that
+  exists on one machine can be unreadable on another (the first run on a GitHub runner failed on
+  exactly that).
 * A cached file is re-used when the upstream ``Last-Modified`` is unchanged, so a weekly run
   only downloads what nflverse actually re-published.
 * Every downloaded file is untrusted data: it is saved, hashed and parsed as CSV, never run.
@@ -74,9 +76,9 @@ def _ssl_context() -> ssl.SSLContext:
     """Default TLS context, plus a CA bundle named by the environment when Python would miss it."""
     if os.environ.get("SSL_CERT_FILE"):
         return ssl.create_default_context()
-    for candidate in (os.environ.get("REQUESTS_CA_BUNDLE"), os.environ.get("CURL_CA_BUNDLE"),
-                      "/root/.ccr/ca-bundle.crt"):
-        if candidate and Path(candidate).is_file():
+    for candidate in (os.environ.get("REQUESTS_CA_BUNDLE"), os.environ.get("CURL_CA_BUNDLE")):
+        # os.path.isfile never raises: a missing or unreadable path is simply not used
+        if candidate and os.path.isfile(candidate):
             return ssl.create_default_context(cafile=candidate)
     return ssl.create_default_context()
 

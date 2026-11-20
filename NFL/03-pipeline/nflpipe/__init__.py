@@ -8,7 +8,9 @@ CC BY 4.0 (``DATA-LICENSE.md`` at the repository root). The file formats are spe
 """
 
 # 1.2.0 (2026-11-20): new derived metric dst_points_allowed_excl_def, ESPN's points allowed (D-038).
-pipeline_version = "1.2.0"
+# 1.2.1 (2026-11-20): the download code no longer looks for a CA bundle at a machine-specific path; the first run
+#   on a GitHub runner failed there (PermissionError). No change to any published value.
+pipeline_version = "1.2.1"
 
 # Version of the published file formats (CONTRACTS.md, "data contract version").
 data_contract_version = "1"
