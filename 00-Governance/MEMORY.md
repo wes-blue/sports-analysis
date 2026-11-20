@@ -1,6 +1,6 @@
 # Memory: what a new session must know
 
-_Last updated: 2026-11-20, at the release of 2.001._
+_Last updated: 2026-11-20, after the merge and the first live pipeline run._
 
 Read this after `CLAUDE.md`. The decision log (`00-Governance/DECISIONS.md`), the NFL contract (`NFL/CONTRACTS.md`), the plan (`NFL/PLAN.md`) and `BLOCKERS.csv` hold the detail; this file says where things stand and what is not written anywhere else.
 
@@ -12,12 +12,12 @@ Read this after `CLAUDE.md`. The decision log (`00-Governance/DECISIONS.md`), th
 - **2026-11-20: the NFL project moved** from the owner's private repository to this public repository (D-033), in the multi-sport layout. No git history was copied. The 1.x archive, raw inputs and 1.006 QA records stay private (D-034).
 - **Pipeline 1.2.1**, data contract version 1. 381 tests pass on Python 3.11 and 3.13, here and on GitHub's runners. Published data: 174,945 player rows plus 5,288 D/ST rows, 2017–2026 through week 10; all 13 gates pass.
 - **ESPN points allowed (D-038)** now follow the owner's ESPN game log: all ten Arizona weeks of ESPN's points-allowed column reproduced, 9 of 10 weekly scores exact.
-- **Nothing has run on GitHub yet.** The workflows become active when the work reaches `main`. All work is on branch `agents/pensive-noether-dxfoz6` with a pull request into `main`; the owner merges it (Q-015). The merge itself starts the first pipeline run, because it adds `NFL/02-config` to `main`.
+- **Merged and live (2026-11-20 23:31Z).** The owner merged pull request #1 (a regular merge commit, `5fbad73`). The merge started `nfl-pipeline-weekly` (push trigger on `NFL/02-config/**`): PUBLISH in 17 seconds, all 13 gates PASS, data commit `ff90d3b` pushed to `main` by `github-actions[bot]` on the first attempt. It picked up week 11's Thursday game (HOU at IND; 66 player rows plus 2 D/ST rows), so `status.csv` reads `latest_week` 11 while week 11 is still being played. `nfl-pipeline-ci` passed on the merge. Proven on GitHub by this run: workflow token write access to `main`, the alert-issue step (`gh issue list --author app/github-actions` accepted, issues enabled), no loop (the bot's commit started no workflow). The data address serves the files (HTTP 200 for `status.csv`, `seasons.csv`, `player_week_2026.csv`, `scored_2026.csv`). Not yet seen: a scheduled run (first: Tue 2026-11-24 15:17 UTC), the watchdog (Fri 2026-11-27), the monthly run (2026-12-01), a red run and its alert issue.
 - **Power Query has not run in Excel** for the pipeline-fed design. Reading nflverse from a web address with `Web.Contents` did run in real Excel in 1.003 and 1.004.
 
 ## Next steps
 
-1. **When the owner has merged (Q-015):**
+1. **Done 2026-11-20 (owner merged; first run PUBLISH). Kept for reference:**
    - The merge adds `NFL/02-config/**` to `main`, which by the contract (§8) starts the weekly workflow. Expect a first run; check the Actions tab and `NFL/04-data/status.csv`. UNVERIFIED until it happens.
    - Confirm that the data address in the `NFL/CONTRACTS.md` header serves `NFL/04-data/status.csv`.
    - The owner then tries the experimental workbook and reports under Q-020 (the owner asked: "tell me when complete and I will experiment").
