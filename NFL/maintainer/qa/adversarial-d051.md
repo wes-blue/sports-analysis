@@ -20,12 +20,12 @@ None.
 - Where: `NFL/maintainer/plan/validate_plan.py`, line 214 (the `FORBIDDEN` list). The list names six folders of the private repository. Five of them were already on `main`. The sixth, the 40-numbered workshop folder, is **new compared with `origin/main`** (`git grep` on `origin/main` finds none). It is also in commit `7ad635a`, which is on the public branch.
 - It breaks the rule in `.claude/CLAUDE.md` section 2: never commit the name, folders or content of the private repositories. Sensitivity is low: it is a folder name, not the repository name or a path.
 - Reproduce: `git diff origin/main -U0 -- NFL/maintainer/plan/validate_plan.py | grep Workshop`.
-- Fix: in the `FORBIDDEN` list, replace the six folder-name patterns (all but `Personal/`) with one generic pattern: `r"\b[1-9]0-[A-Z][A-Za-z]+"`. I tested it. It finds 0 matches in `plan.json` and still catches every numbered folder name, without naming one. Then run `python3 NFL/maintainer/plan/validate_plan.py`. Use **Squash and merge** so `main` never holds the old line, and delete the branch afterwards. The old text stays public while the branch exists.
+- Fix: in the `FORBIDDEN` list, replace the six numbered folder-name patterns with one generic pattern: `r"\b[1-9]0-[A-Z][A-Za-z]+"`. I tested it. It finds 0 matches in `plan.json` and still catches every numbered folder name, without naming one. Then run `python3 NFL/maintainer/plan/validate_plan.py`. Use **Squash and merge** so `main` never holds the old line, and delete the branch afterwards. The old text stays public while the branch exists.
 
 **m-2. A regression guard was deleted.**
 - Where: `NFL/03-pipeline/tests/test_workflows.py`, in `test_scoped_to_the_nfl_folder`. The assertion that no workflow text contains the private-repository paths was removed. The decoy path `00-Governance/MEMORY.md` was also replaced with `docs/notes.md`.
 - Impact: a workflow that regained a private-repository path would no longer fail CI. The assertion did name private folders, so removing it is understandable.
-- Fix: put back a name-free check, for example `assert not re.search(r"\b[1-9]0-[A-Z][a-z]+/", text)` plus `assert "Personal/" not in text`. This is a test-only change, so the weekly workflow does not start (CI does).
+- Fix: put back a name-free check, for example `assert not re.search(r"\b[1-9]0-[A-Z][a-z]+/", text)` plus a check for the private top-level folder name. This is a test-only change, so the weekly workflow does not start (CI does).
 
 **m-3. The `BLOCKERS.csv` line-ending guard was dropped.**
 - Where: `.gitattributes` lost `BLOCKERS.csv -text` and nothing replaced it for `NFL/maintainer/BLOCKERS.csv`. The file ends each record with CRLF and has LF inside quoted fields (`git ls-files --eol` reports `i/mixed`).
