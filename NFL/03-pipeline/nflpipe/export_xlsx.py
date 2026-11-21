@@ -15,6 +15,10 @@ How the file is built, and why:
 * **Tables.** Each table part has a unique id and name, a ``ref`` that covers the header and every
   data row, an ``autoFilter`` over the same range, and one ``tableColumn`` per column whose name is
   exactly the header cell text. The sheet has no sheet-level autoFilter (it would conflict).
+* **Validated before it is written.** Column names are checked against Excel's rules (unique after
+  case and white space are normalised, at most 255 characters, the same text in the header cell and
+  in the table definition); every number must be finite and storable; ``generated_utc`` must be an ISO
+  8601 UTC time stamp; scored values are matched to ``player_week`` rows by key and column name.
 * **Deterministic.** Time stamps come from ``status.csv``; zip entries have a fixed date, fixed
   attributes and a fixed order; dictionaries keep insertion order.
 * **All or nothing.** The file is written beside ``--out`` under a temporary name and renamed into
@@ -25,12 +29,12 @@ from __future__ import annotations
 
 import argparse
 import csv
-import math
+import datetime
 import os
 import re
 import sys
 import zipfile
-from decimal import ROUND_HALF_UP, Decimal, InvalidOperation, localcontext
+from decimal import ROUND_HALF_UP, Context, Decimal, InvalidOperation, localcontext
 from operator import itemgetter
 from pathlib import Path
 
@@ -39,7 +43,9 @@ DATA_CONTRACT_VERSION = "1"          # the data contract (CONTRACTS.md section 5
 AUTHOR = "NFL-Analysis pipeline"
 MAX_DATA_ROWS = 1_048_575
 MAX_COLUMNS = 16_384
-MAX_CELL_CHARS = 32_767
+MAX_CELL_CHARS = 32_767              # Excel's limit, counted in UTF-16 code units
+MAX_NAME_CHARS = 255                 # Excel's limit for a table column name / header text
+MAX_COL_WIDTH = 255
 RELEASE_URL = "https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx"
 AUTOMATION_URL = "https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md"
 NFLVERSE_URL = "https://github.com/nflverse/nflverse-data"
@@ -47,9 +53,16 @@ LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 
 PROJECT = Path(__file__).resolve().parent.parent.parent
 IDENTITY = ("season", "week", "season_type", "player_id", "player_display_name", "position",
-            "position_group", "team", "opponent_team")
+            "position_group", "team", "opponent_team")      # the first columns of every player_week file (CONTRACTS.md section 5)
 TEXT_IDENTITY = frozenset(IDENTITY) - {"season", "week"}
 POINTS = ("fantasy_points", "fantasy_points_ppr")
+# PlayerGames layout (section 13.2): FRONT, the league columns, then BACK, then the metric columns.
+FRONT = ("season", "week", "season_type", "player_display_name", "position", "team", "opponent_team")
+BACK = ("player_id", "position_group", *POINTS)
+FREEZE_PLAYER_GAMES = 4              # season, week, season_type, player_display_name
+FREEZE_SEASON_TOTALS = 3             # season, season_type, player_display_name
+SEASON_TYPE_ORDER = {"REG": 0, "POST": 1}
+SCORED_KEY = ("season", "week", "season_type", "player_id")
 
 NS_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 NS_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -61,12 +74,24 @@ XML_DECL = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
 S_GENERAL, S_INT, S_POINTS, S_BOLD, S_TITLE, S_WRAP, S_NOTE, S_LINK, S_BOLD_TOP = range(9)
 
 _NUMBER = re.compile(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\Z")
+_NONFINITE = re.compile(r"[+-]?(?:nan|inf|infinity)\Z", re.IGNORECASE)
+_UTC = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\Z")
+_WEEK = re.compile(r"[0-9]{1,3}\Z")
 _BAD_XML = re.compile("[^\u0009\u000a\u000d -퟿-�\U00010000-\U0010ffff]")
-_X_ESCAPE = re.compile(r"_x([0-9A-Fa-f]{4})_")
+_X_ESCAPE = re.compile(r"_(?=x[0-9A-Fa-f]{4}_)")      # an underscore that would start Excel's _xHHHH_ escape
 
 
 class ExportError(Exception):
     """A problem the owner can understand; becomes the one-line error message (exit 1)."""
+
+
+class BadValue(ExportError):
+    """One value that cannot go into the workbook. ``column`` (an output column index) is filled in by the
+    emitter; the code that knows the file and line turns this into a message that names them."""
+
+    def __init__(self, reason: str, value: str = "", column: int | None = None):
+        self.reason, self.value, self.column = reason, value, column
+        super().__init__(f"the value {value[:40]!r} {reason}")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -86,25 +111,46 @@ def clean_text(s: str) -> str:
     return _BAD_XML.sub("", s)
 
 
+def protect_x(s: str) -> str:
+    """Excel reads ``_xHHHH_`` as an escaped character, in shared strings and in table column names alike.
+    Write the underscore that starts such a sequence as ``_x005F_`` so the text reads back unchanged."""
+    return _X_ESCAPE.sub("_x005F_", s)
+
+
 def esc(s: str) -> str:
     """Escape text for an XML text node (also protects Excel's ``_xHHHH_`` escape syntax)."""
-    s = _X_ESCAPE.sub(r"_x005F_x\1_", s)
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\r", "&#13;")
+    return protect_x(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\r", "&#13;")
 
 
 def esc_attr(s: str) -> str:
-    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    """Escape text for an XML attribute that Excel decodes like a cell string (a table column name)."""
+    return (protect_x(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
             .replace("\r", "&#13;").replace("\n", "&#10;").replace("\t", "&#9;"))
+
+
+def utf16_len(s: str) -> int:
+    """Length in UTF-16 code units, which is how Excel counts characters."""
+    return len(s) if len(s) <= MAX_CELL_CHARS // 2 else len(s.encode("utf-16-le", "surrogatepass")) // 2
+
+
+def number_problem(v: str) -> str | None:
+    """None for text and for a number Excel can store; otherwise why this value cannot be a cell."""
+    if _NUMBER.match(v):
+        try:
+            d = Decimal(v)
+            if not d.is_zero() and not -300 <= d.adjusted() <= 300:
+                return "is outside the range Excel can store (about 1e-300 to 1e300)"
+        except ArithmeticError:
+            return "is not a number Excel can store"
+        return None
+    if _NONFINITE.match(v):
+        return "is not a finite number"
+    return None
 
 
 def is_number(v: str) -> bool:
     """True when the CSV text is a plain finite number (leading zeros or '+' make it text)."""
-    if not _NUMBER.match(v):
-        return False
-    try:
-        return math.isfinite(float(v))
-    except (ValueError, OverflowError):
-        return False
+    return bool(_NUMBER.match(v)) and number_problem(v) is None
 
 
 def dec_text(d: Decimal) -> str:
@@ -122,17 +168,27 @@ def round_dec(d: Decimal, decimals: int) -> Decimal:
     return d.quantize(Decimal(1).scaleb(-decimals), rounding=ROUND_HALF_UP)
 
 
-def read_csv_rows(path: Path):
-    """Yield the rows of a published CSV (UTF-8, RFC 4180)."""
+def iter_csv(path: Path):
+    """Yield ``(line number, row)`` of a published CSV (UTF-8, RFC 4180). Blank lines are skipped everywhere."""
     try:
         with open(path, encoding="utf-8-sig", newline="") as handle:
-            yield from csv.reader(handle)
+            reader = csv.reader(handle)
+            for row in reader:
+                if row:
+                    yield reader.line_num, row
     except FileNotFoundError:
         raise ExportError(f"missing file {path}") from None
     except UnicodeDecodeError as exc:
         raise ExportError(f"{path.name}: not valid UTF-8 ({exc})") from None
     except csv.Error as exc:
         raise ExportError(f"{path.name}: {exc}") from None
+    except OSError as exc:
+        raise ExportError(f"cannot read {path}: {exc.strerror or exc}") from None
+
+
+def read_csv_rows(path: Path):
+    for _, row in iter_csv(path):
+        yield row
 
 
 def read_table(path: Path) -> tuple[list[str], list[list[str]]]:
@@ -159,9 +215,9 @@ class SharedStrings:
 
     def add(self, text: str) -> int:
         text = clean_text(text)
-        if len(text) > MAX_CELL_CHARS:
-            raise ExportError(f"a text value is {len(text):,} characters; Excel allows {MAX_CELL_CHARS:,} "
-                              f"(starts: {text[:40]!r})")
+        units = utf16_len(text)
+        if units > MAX_CELL_CHARS:
+            raise BadValue(f"is {units:,} characters long (counted as Excel counts them); Excel allows {MAX_CELL_CHARS:,}", text)
         i = self.index.get(text)
         if i is None:
             i = self.index[text] = len(self.index)
@@ -177,11 +233,14 @@ class SharedStrings:
 
 
 class Col:
-    """One column: header text, whether values are forced to text, cell style and width."""
+    """One column: header text, whether values are forced to text, cell style and width.
 
-    def __init__(self, name: str, text: bool = False, style: int = S_GENERAL, width: float | None = None):
-        self.name, self.text, self.style = name, text, style
-        self.width = width if width is not None else min(max(len(name) + 4, 9), 28)
+    ``strict`` columns (the league points) must hold a number or nothing; anything else is an error."""
+
+    def __init__(self, name: str, text: bool = False, style: int = S_GENERAL, width: float | None = None,
+                 strict: bool = False):
+        self.name, self.text, self.style, self.strict = name, text, style, strict
+        self.width = min(width if width is not None else min(max(len(name) + 4, 9), 28), MAX_COL_WIDTH)
 
 
 class Emitter:
@@ -195,9 +254,21 @@ class Emitter:
     def _make(self, k: int, v: str) -> str:
         col = self.cols[k]
         st = f' s="{col.style}"' if col.style else ""
-        if col.text or not is_number(v):
+        try:
+            if not col.text:
+                problem = number_problem(v)
+                if problem:
+                    raise BadValue(problem, v)
+                if _NUMBER.match(v):
+                    if col.strict and Decimal(v).adjusted() >= 15:
+                        raise BadValue("is too large for a fantasy-points value (more than 15 digits)", v)
+                    return f'{st}><v>{v}</v></c>'
+                if col.strict:
+                    raise BadValue("is not a number", v)
             return f' t="s"{st}><v>{self.sst.add(v)}</v></c>'
-        return f'{st}><v>{v}</v></c>'
+        except BadValue as exc:
+            exc.column = k
+            raise
 
     def row(self, rn: int, vals) -> str:
         rs = str(rn)
@@ -231,17 +302,27 @@ class Emitter:
 
 
 def check_columns(cols: list[Col], sheet: str) -> None:
+    """Make every column name a legal, unique Excel table column name, before anything is written.
+
+    The cleaned name is stored back in ``Col.name`` and is the one text used for both the header cell and the
+    table definition, so the two cannot differ. Excel compares names case-insensitively with white space
+    collapsed, allows at most 255 characters, and decodes ``_xHHHH_`` in both places (handled by ``esc``)."""
     if len(cols) > MAX_COLUMNS:
         raise ExportError(f"{sheet}: {len(cols):,} columns; Excel allows {MAX_COLUMNS:,}")
-    seen: set[str] = set()
+    seen: dict[str, str] = {}
     for c in cols:
-        key = clean_text(c.name).lower()
-        if not clean_text(c.name).strip():
+        name = re.sub(r"[\t\r\n]+", " ", clean_text(c.name))
+        if not name.strip():
             raise ExportError(f"{sheet}: a column has no name")
+        if utf16_len(name) > MAX_NAME_CHARS:
+            raise ExportError(f"{sheet}: the column name '{name[:40]}...' is {utf16_len(name)} characters; "
+                              f"Excel allows {MAX_NAME_CHARS} in a table header")
+        key = " ".join(name.split()).casefold()
         if key in seen:
-            raise ExportError(f"{sheet}: duplicate column name '{c.name}'")
-        seen.add(key)
-        c.name = re.sub(r"[\t\r\n]+", " ", clean_text(c.name))
+            same = "" if seen[key] == name else f" ('{seen[key]}' and '{name}' are the same to Excel)"
+            raise ExportError(f"{sheet}: duplicate column name '{name}'{same}")
+        seen[key] = name
+        c.name = name
 
 
 # ---------------------------------------------------------------------------------------------
@@ -252,6 +333,7 @@ class Package:
 
     def __init__(self, path: Path):
         self.zf = zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED)
+        self.open_streams: list = []
 
     def _info(self, name: str) -> zipfile.ZipInfo:
         zi = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
@@ -266,10 +348,25 @@ class Package:
         self.zf.writestr(self._info(name), data)
 
     def stream(self, name: str):
-        return self.zf.open(self._info(name), "w")
+        w = self.zf.open(self._info(name), "w")
+        self.open_streams.append(w)
+        return w
 
     def close(self) -> None:
         self.zf.close()
+
+    def abort(self) -> None:
+        """Close everything after a failure (an open stream first, or the zip cannot close; Windows cannot
+        delete a file that is still open)."""
+        for w in self.open_streams:
+            try:
+                w.close()
+            except Exception:                                   # noqa: BLE001
+                pass
+        try:
+            self.zf.close()
+        except Exception:                                       # noqa: BLE001
+            pass
 
 
 class SheetOut:
@@ -392,21 +489,39 @@ class Data:
         self.status = self._status()
         found = self.status.get("data_contract_version")
         if found != DATA_CONTRACT_VERSION:
-            raise ExportError(f"status.csv data_contract_version is {found!r}; this exporter understands "
+            shown = "missing" if found is None else repr(found)
+            raise ExportError(f"status.csv data_contract_version is {shown}; this exporter understands "
                               f"version {DATA_CONTRACT_VERSION!r}")
         for key in ("generated_utc", "latest_season", "latest_week", "latest_season_type", "run_id"):
             if not self.status.get(key):
                 raise ExportError(f"status.csv has no value for '{key}'")
+        self._check_generated_utc(self.status["generated_utc"])
         self.round_decimals = self._round_decimals()
         self.leagues_header, self.leagues_rows = read_table(data_dir / "config" / "leagues.csv")
         for need in ("League", "Active"):
             if need not in self.leagues_header:
                 raise ExportError(f"config/leagues.csv has no '{need}' column")
         li, ai = self.leagues_header.index("League"), self.leagues_header.index("Active")
+        self.league_desc_idx = self.leagues_header.index("Description") if "Description" in self.leagues_header else None
         self.active = [r[li] for r in self.leagues_rows if r[ai].strip().lower() == "yes"]
         if not self.active:
             raise ExportError("config/leagues.csv: no league is Active")
+        self.league_desc = {r[li]: (r[self.league_desc_idx] if self.league_desc_idx is not None else "")
+                            for r in self.leagues_rows}
         self.seasons = self._season_files()
+        self.in_progress = self._latest_in_progress()
+
+    @staticmethod
+    def _check_generated_utc(value: str) -> None:
+        try:
+            if not _UTC.match(value):
+                raise ValueError
+            stamp = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+            if stamp.year < 1900:
+                raise ValueError
+        except ValueError:
+            raise ExportError(f"status.csv generated_utc is {clean_text(value)[:40]!r}; expected an ISO 8601 UTC "
+                              "time stamp such as 2026-01-02T03:04:05Z") from None
 
     def _status(self) -> dict[str, str]:
         rows = list(read_csv_rows(self.dir / "status.csv"))
@@ -427,6 +542,16 @@ class Data:
                 raise ExportError(f"config/pipeline_config.csv: RoundDecimals '{r[1]}' is not a whole number from 0 to 6")
         raise ExportError("config/pipeline_config.csv has no RoundDecimals setting")
 
+    def _latest_in_progress(self) -> bool:
+        """True when ``seasons.csv`` says the latest season is still being played."""
+        header, rows = read_table(self.dir / "seasons.csv")
+        for need in ("season", "season_status"):
+            if need not in header:
+                raise ExportError(f"seasons.csv has no '{need}' column")
+        si, ti = header.index("season"), header.index("season_status")
+        latest = self.status["latest_season"]
+        return any(r[si] == latest and r[ti].strip().lower() == "in_progress" for r in rows)
+
     def _season_files(self) -> list[tuple[int, Path, Path]]:
         found = []
         for p in (self.dir / "player_week").glob("player_week_*.csv"):
@@ -446,9 +571,96 @@ class Data:
 
 def count_rows(path: Path) -> int:
     n = -1
-    for _ in read_csv_rows(path):
+    for _ in iter_csv(path):
         n += 1
     return max(n, 0)
+
+
+def first_row(path: Path) -> list[str]:
+    for _, row in iter_csv(path):
+        return row
+    raise ExportError(f"{path.name} is empty")
+
+
+# ---------------------------------------------------------------------------------------------
+# PlayerGames layout
+
+class Layout:
+    """The PlayerGames columns, planned from the ``player_week`` header before anything is written."""
+
+    def __init__(self, data: Data):
+        _, self.header_path, _ = data.seasons[-1]
+        hdr = self.header0 = first_row(self.header_path)
+        if tuple(hdr[:len(IDENTITY)]) != IDENTITY:
+            raise ExportError(f"{self.header_path.name}: first columns are not {','.join(IDENTITY)}")
+        for need in POINTS:
+            if need not in hdr:
+                raise ExportError(f"{self.header_path.name}: missing column '{need}'")
+        self.league_cols = ["FF_" + n for n in data.active]
+        self.metrics = [h for i, h in enumerate(hdr) if i >= len(IDENTITY) and h not in POINTS]
+        self.front_get = itemgetter(*[hdr.index(n) for n in FRONT])
+        self.rest_get = itemgetter(*[hdr.index(n) for n in (*BACK, *self.metrics)])
+        self.names = [*FRONT, *self.league_cols, *BACK, *self.metrics]
+        self.cols: list[Col] = []
+        wide = {"player_id": 13, "player_display_name": 26, "season_type": 12, "position_group": 15, "opponent_team": 14}
+        for nm in self.names:
+            if nm in TEXT_IDENTITY:
+                self.cols.append(Col(nm, text=True, width=wide.get(nm, 9)))
+            elif nm in ("season", "week"):
+                self.cols.append(Col(nm, style=S_INT, width=8))
+            elif nm in self.league_cols:
+                self.cols.append(Col(nm, style=S_POINTS, width=max(len(nm) + 4, 12), strict=True))
+            elif nm in POINTS:
+                self.cols.append(Col(nm, style=S_POINTS, width=max(len(nm) + 4, 12)))
+            else:
+                self.cols.append(Col(nm))
+        check_columns(self.cols, "PlayerGames")
+
+
+def scored_columns(sc_path: Path, header: list[str], league_cols: list[str]) -> tuple[list[int], list[int]]:
+    """Positions (by column name) of the key columns and of the league columns in one scored file."""
+    where: dict[str, int] = {}
+    for i, h in enumerate(header):
+        if h in SCORED_KEY or h in league_cols:
+            if h in where:
+                raise ExportError(f"{sc_path.name}: column '{h}' appears twice")
+            where[h] = i
+    for need in (*SCORED_KEY, *league_cols):
+        if need not in where:
+            raise ExportError(f"{sc_path.name}: missing column '{need}' (the leagues in config/leagues.csv and "
+                              f"the scored file do not match)")
+    return [where[n] for n in SCORED_KEY], [where[n] for n in league_cols]
+
+
+def check_headers(data: Data, layout: Layout) -> None:
+    """Cheap pass over every season's two headers, so a mismatch fails before any sheet is written."""
+    for season, pw_path, sc_path in data.seasons:
+        hdr = first_row(pw_path)
+        if hdr != layout.header0:
+            raise ExportError(f"{pw_path.name}: columns differ from {layout.header_path.name}")
+        scored_columns(sc_path, first_row(sc_path), layout.league_cols)
+
+
+def load_scored(sc_path: Path, league_cols: list[str]) -> dict[tuple, list[tuple[int, tuple]]]:
+    """Read one scored file into ``{key: [(line, league values), ...]}``, found by column name, never by position.
+
+    A key is unique in published data (gate G-GRAIN); if one does repeat, its rows are matched to the repeated
+    ``player_week`` rows in published order, and any row left over is an error."""
+    rows = iter_csv(sc_path)
+    try:
+        _, header = next(rows)
+    except StopIteration:
+        raise ExportError(f"{sc_path.name} is empty") from None
+    key_idx, lg_idx = scored_columns(sc_path, header, league_cols)
+    kget = itemgetter(*key_idx)
+    lget = itemgetter(*lg_idx) if len(lg_idx) > 1 else (lambda r, i=lg_idx[0]: (r[i],))
+    n = len(header)
+    out: dict[tuple, list[tuple[int, tuple]]] = {}
+    for line, row in rows:
+        if len(row) != n:
+            raise ExportError(f"{sc_path.name} line {line}: {len(row)} values but {n} columns")
+        out.setdefault(kget(row), []).append((line, lget(row)))
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
@@ -456,31 +668,86 @@ def count_rows(path: Path) -> int:
 
 SHEETS = [
     ("About", "Title, version, data date, licence and a guide to the sheets"),
-    ("PlayerGames", "One row per player-game and team defense game: identity, your leagues' fantasy points, nflverse points and every stat"),
-    ("SeasonTotals", "Per player, season and season type: games, and each league's total and average fantasy points"),
+    ("PlayerGames", "One row per player-game and team defense game, newest first: identity, your leagues' fantasy points (the FF_ columns), "
+                    "nflverse points and every stat"),
+    ("SeasonTotals", "Per player, season and season type, newest first: games, and each league's total and average fantasy points"),
     ("Leagues", "The leagues these scores were made for (copy of NFL/02-config/leagues.csv)"),
     ("Scoring", "The scoring weights per league (copy of NFL/02-config/scoring_weights.csv)"),
     ("Bonus", "The bonus bands per league (copy of NFL/02-config/bonus_rules.csv)"),
     ("Checks", "The quality gates of the latest run (pass, warn, fail)"),
-    ("Dictionary", "What every stat column in PlayerGames means"),
+    ("Dictionary", "What every column in PlayerGames means"),
 ]
 CONFIG_TEXT = frozenset({"league", "metric", "category", "description", "notes", "applies_to", "reconcile_to", "active",
                          "gate_id", "gate", "severity", "result", "detail", "checked_utc", "source"})
+
+IDENTITY_TEXT = {
+    "season": "The season (the year it starts in).",
+    "week": "Week of the season. Playoff weeks continue the numbering after the regular season, so they sort above it.",
+    "season_type": "REG = regular season, POST = playoffs.",
+    "player_display_name": "Player name; for a team defense row, the team code followed by D/ST.",
+    "position": "Position as nflverse lists it; DST for a team defense row.",
+    "team": "The player's team in that game.",
+    "opponent_team": "The opposing team in that game.",
+    "player_id": "nflverse player id (a GSIS id); for a team defense row, DST_ followed by the team code. Use it, not the name, to follow a player.",
+    "position_group": "nflverse position group (QB, RB, WR, TE, K, DL, LB, DB, ...; DST for a team defense row).",
+    "fantasy_points": "nflverse's own fantasy points, standard scoring (no points for receptions). Not your league.",
+    "fantasy_points_ppr": "nflverse's own fantasy points with one point per reception. Not your league.",
+}
+
+
+def dictionary_table(data: Data, layout: Layout) -> tuple[list[str], list[list[str]]]:
+    """One row per PlayerGames column: the identity, league and points columns (written here), then dictionary.csv."""
+    header, rows = read_table(data.dir / "dictionary.csv")
+    lower = [h.strip().lower() for h in header]
+    for need in ("metric", "category", "description", "source"):
+        if need not in lower:
+            raise ExportError(f"dictionary.csv has no '{need}' column")
+
+    def make(metric: str, category: str, description: str, source: str) -> list[str]:
+        row = [""] * len(header)
+        for name, value in (("metric", metric), ("category", category), ("description", description), ("source", source)):
+            row[lower.index(name)] = value
+        return row
+
+    out = []
+    for nm in layout.names[:len(FRONT)]:
+        out.append(make(nm, "Identity", IDENTITY_TEXT[nm], "nflverse"))
+    for league in data.active:
+        text = data.league_desc.get(league, "")
+        out.append(make("FF_" + league, "Your league", f"Fantasy points under the scoring of the league '{league}'"
+                        + (f": {text}" if text else "."), "scored"))
+    for nm in BACK[:2]:
+        out.append(make(nm, "Identity", IDENTITY_TEXT[nm], "nflverse"))
+    for nm in POINTS:
+        out.append(make(nm, "nflverse points", IDENTITY_TEXT[nm], "nflverse"))
+    return header, out + rows
 
 
 def about_rows(data: Data) -> list[tuple[str, str, str | None]]:
     """(item, value, link) rows for the About sheet."""
     st = data.status
     through = f"{st['latest_season']} week {st['latest_week']} ({st['latest_season_type']})"
+    leagues = ", ".join(data.active)
     rows: list[tuple[str, str, str | None]] = [
         ("Workbook version", WORKBOOK_VERSION, None),
-        ("Data through", through, None),
+        ("Leagues scored", f"{leagues}. Each league has one column in PlayerGames (FF_ followed by the league name) "
+                           "and a total and an average in SeasonTotals.", None),
+    ]
+    for n in data.active:
+        text = data.league_desc.get(n, "")
+        rows.append((f"Column FF_{n}", f"Fantasy points under the scoring of the league '{n}'" + (f": {text}" if text else "."), None))
+    rows.append(("Data through", through, None))
+    if data.in_progress:
+        rows.append(("Latest week", f"Season {st['latest_season']} is still being played, so the latest week "
+                                    f"(week {st['latest_week']}) may be incomplete, and so may the {st['latest_season']} totals.", None))
+    rows += [
+        ("Opening this file", "This is a large file (hundreds of thousands of rows). Excel may take a minute or more to open it; "
+                              "let it finish.", None),
         ("Generated (UTC)", st["generated_utc"], None),
         ("Data run id", st["run_id"], None),
         ("Pipeline version", st.get("pipeline_version", ""), None),
         ("Data contract version", st.get("data_contract_version", ""), None),
         ("Seasons", f"{st.get('window_start', '')} to {st.get('window_end', '')} ({st.get('season_types', '')})", None),
-        ("Leagues scored", ", ".join(data.active), None),
         ("Gates passed", st.get("gates_pass", ""), None),
         ("Gates warned", st.get("gates_warn", ""), None),
         ("Gates failed", st.get("gates_fail", ""), None),
@@ -531,10 +798,10 @@ def write_about(pkg: Package, sst: SharedStrings, data: Data, part: str) -> list
     return links
 
 
-def write_table_sheet(pkg: Package, sst: SharedStrings, part: str, cols: list[Col], rows, *, note: str | None,
+def write_table_sheet(pkg: Package, sst: SharedStrings, part: str, sheet: str, cols: list[Col], rows, *, note: str | None,
                       freeze_cols: int = 0) -> int:
-    """Write a sheet that is one table (optionally under a note row). Returns the data row count."""
-    check_columns(cols, part)
+    """Write a sheet that is one table (optionally under a note row). Returns the data row count.
+    The column names were checked by ``check_columns`` before the file was started."""
     em = Emitter(sst, cols)
     out = SheetOut(pkg, part)
     first = 1
@@ -545,11 +812,15 @@ def write_table_sheet(pkg: Package, sst: SharedStrings, part: str, cols: list[Co
         first = 2
     out.put(em.header(first))
     rn = first
+    limit = MAX_DATA_ROWS - (first - 1)           # the sheet ends at Excel's last row, note row included
     for vals in rows:
         rn += 1
-        if rn - first > MAX_DATA_ROWS:
-            raise ExportError(f"{part}: more than {MAX_DATA_ROWS:,} data rows")
-        out.put(em.row(rn, vals))
+        if rn - first > limit:
+            raise ExportError(f"{sheet}: more than {limit:,} data rows")
+        try:
+            out.put(em.row(rn, vals))
+        except BadValue as exc:
+            raise ExportError(f"{sheet} row {rn}, column '{cols[exc.column].name}': {exc}") from None
     n = rn - first
     if n == 0:                                   # Excel tables need at least one data row
         rn += 1
@@ -564,90 +835,76 @@ def csv_cols(header: list[str]) -> list[Col]:
     return [Col(h, text=h.strip().lower() in CONFIG_TEXT) for h in header]
 
 
-def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, totals: dict, total_rows: int) -> tuple[list[Col], int]:
-    """Stream PlayerGames and, in the same pass, collect the SeasonTotals sums."""
-    pts_style = S_POINTS
-    header0 = None
-    cols: list[Col] = []
-    getters = None
-    league_cols = ["FF_" + n for n in data.active]
-    out = None
-    em = None
+def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, layout: Layout, totals: dict,
+                 total_rows: int) -> int:
+    """Stream PlayerGames, newest first, and in the same pass collect the SeasonTotals sums.
+
+    Scored values are looked up by key (season, week, season_type, player_id) and column name, so the order of
+    rows or columns in a scored file cannot put a value under the wrong player or league."""
+    cols, nfront, nleague = layout.cols, len(FRONT), len(layout.league_cols)
+    i_week, i_name, i_pos, i_team = (layout.header0.index(n) for n in ("week", "player_display_name", "position", "team"))
+    out = SheetOut(pkg, part)
+    out.put(sheet_head(cols, FREEZE_PLAYER_GAMES, 1, selected=False))
+    em = Emitter(sst, cols)
+    out.put(em.header(1))
+    ctx = Context(prec=60)
     rn = 1
-    for season, pw_path, sc_path in data.seasons:
-        pw, sc = read_csv_rows(pw_path), read_csv_rows(sc_path)
+    for season, pw_path, sc_path in reversed(data.seasons):            # newest season first
+        pw = iter_csv(pw_path)
         try:
-            hdr = next(pw)
-            shdr = next(sc)
+            _, hdr = next(pw)
         except StopIteration:
-            raise ExportError(f"{pw_path.name} or {sc_path.name} is empty") from None
-        if header0 is None:
-            header0 = hdr
-            if tuple(hdr[:len(IDENTITY)]) != IDENTITY:
-                raise ExportError(f"{pw_path.name}: first columns are not {','.join(IDENTITY)}")
-            for need in (*POINTS, *league_cols):
-                if need not in (shdr if need in league_cols else hdr):
-                    raise ExportError(f"{pw_path.name if need in POINTS else sc_path.name}: missing column '{need}'")
-            metric_idx = [i for i, h in enumerate(hdr) if i >= len(IDENTITY) and h not in POINTS]
-            names = list(IDENTITY) + league_cols + list(POINTS) + [hdr[i] for i in metric_idx]
-            for nm in names:
-                if nm in TEXT_IDENTITY:
-                    cols.append(Col(nm, text=True, width={"player_id": 13, "player_display_name": 26, "season_type": 12,
-                                                          "position_group": 15, "opponent_team": 14}.get(nm, 9)))
-                elif nm in ("season", "week"):
-                    cols.append(Col(nm, style=S_INT, width=8))
-                elif nm in league_cols or nm in POINTS:
-                    cols.append(Col(nm, style=pts_style, width=max(len(nm) + 4, 12)))
-                else:
-                    cols.append(Col(nm))
-            check_columns(cols, "PlayerGames")
-            id_get = itemgetter(*range(len(IDENTITY)))
-            pts_get = itemgetter(*[hdr.index(c) for c in POINTS])
-            met_get = (itemgetter(*metric_idx) if len(metric_idx) > 1 else
-                       (lambda r, i=metric_idx[0]: (r[i],)) if metric_idx else (lambda r: ()))
-            sc_idx = [shdr.index(c) for c in league_cols]
-            getters = (id_get, sc_idx, pts_get, met_get)
-            out = SheetOut(pkg, part)
-            out.put(sheet_head(cols, 5, 1, selected=False))
-            em = Emitter(sst, cols)
-            out.put(em.header(1))
-        elif hdr != header0:
-            raise ExportError(f"{pw_path.name}: columns differ from {data.seasons[0][1].name}")
-        id_get, sc_idx, pts_get, met_get = getters
-        nlen, slen = len(hdr), len(shdr)
-        for line, (row, srow) in enumerate(zip(pw, sc), start=2):
+            raise ExportError(f"{pw_path.name} is empty") from None
+        if hdr != layout.header0:
+            raise ExportError(f"{pw_path.name}: columns differ from {layout.header_path.name}")
+        scored = load_scored(sc_path, layout.league_cols)
+        nlen = len(hdr)
+        rows = []
+        for line, row in pw:
             if len(row) != nlen:
                 raise ExportError(f"{pw_path.name} line {line}: {len(row)} values but {nlen} columns")
-            if len(srow) != slen:
-                raise ExportError(f"{sc_path.name} line {line}: {len(srow)} values but {slen} columns")
-            if row[:2] != srow[:2] or row[2:4] != srow[2:4]:
-                raise ExportError(f"{sc_path.name} line {line}: key differs from {pw_path.name} "
-                                  f"({srow[:4]} vs {row[:4]})")
-            ff = [srow[j] for j in sc_idx]
+            if row[0] != str(season):
+                raise ExportError(f"{pw_path.name} line {line}: season is '{row[0]}' but the file is for {season}")
+            if not _WEEK.match(row[i_week]):
+                raise ExportError(f"{pw_path.name} line {line}: week '{row[i_week][:20]}' is not a whole number")
+            rows.append((-int(row[i_week]), line, row))
+        rows.sort(key=itemgetter(0, 1))                                # week descending, then published order
+        for negweek, line, row in rows:
+            key = (row[0], row[1], row[2], row[3])
+            waiting = scored.get(key)
+            if not waiting:
+                raise ExportError(f"{pw_path.name} line {line}: {sc_path.name} has no row for season {key[0]}, week {key[1]}, "
+                                  f"{key[2]}, player {key[3]}")
+            sline, ff = waiting.pop(0)
+            if not waiting:
+                del scored[key]
             rn += 1
-            out.put(em.row(rn, (*id_get(row), *ff, *pts_get(row), *met_get(row))))
-            # SeasonTotals sums (exact decimal arithmetic)
-            key = (season, row[2], row[3])
-            rec = totals.get(key)
             try:
-                wk = float(row[1])
-            except ValueError:
-                wk = 0.0
+                out.put(em.row(rn, (*layout.front_get(row), *ff, *layout.rest_get(row))))
+            except BadValue as exc:
+                if nfront <= exc.column < nfront + nleague:
+                    src, ln, name = sc_path.name, sline, layout.league_cols[exc.column - nfront]
+                else:
+                    src, ln, name = pw_path.name, line, cols[exc.column].name
+                raise ExportError(f"{src} line {ln}, column '{name}': {exc}") from None
+            # SeasonTotals sums (exact decimal arithmetic)
+            tkey = (season, row[2], row[3])
+            rank = (-negweek, line)                                    # the last game: highest week, later published row
+            rec = totals.get(tkey)
             if rec is None:
-                rec = totals[key] = [wk, row[4], row[5], row[7], 0, [Decimal(0)] * len(ff)]
-            elif wk >= rec[0]:
-                rec[0], rec[1], rec[2], rec[3] = wk, row[4], row[5], row[7]
+                rec = totals[tkey] = [rank, row[i_name], row[i_pos], row[i_team], 0, [Decimal(0)] * nleague]
+            elif rank > rec[0]:
+                rec[0], rec[1], rec[2], rec[3] = rank, row[i_name], row[i_pos], row[i_team]
             rec[4] += 1
             sums = rec[5]
             for j, v in enumerate(ff):
                 if v != "":
-                    try:
-                        sums[j] += Decimal(v)
-                    except InvalidOperation:
-                        raise ExportError(f"{sc_path.name} line {line}: '{v}' is not a number in {league_cols[j]}") from None
-        extra = next(pw, None)
-        if extra is not None or next(sc, None) is not None:
-            raise ExportError(f"{pw_path.name} and {sc_path.name} have different row counts")
+                    sums[j] = ctx.add(sums[j], Decimal(v))
+        if scored:
+            line = min(w[0][0] for w in scored.values())
+            left = sum(len(w) for w in scored.values())
+            raise ExportError(f"{sc_path.name} line {line}: no matching row in {pw_path.name} "
+                              f"({left} scored rows have no player_week row)")
     n = rn - 1
     if n != total_rows:
         raise ExportError(f"PlayerGames: read {n} rows but counted {total_rows}")
@@ -657,30 +914,39 @@ def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, totals
     out.put(sheet_tail(table=True))
     out.close()
     pkg.last_table = (1, rn)                      # type: ignore[attr-defined]
-    return cols, n
+    return n
 
 
-def season_totals(data: Data, totals: dict) -> tuple[list[Col], list[list[str]]]:
-    decimals = data.round_decimals
+def season_total_cols(data: Data) -> list[Col]:
     cols = [Col("season", style=S_INT, width=8), Col("season_type", text=True, width=12),
-            Col("player_id", text=True, width=13), Col("player_display_name", text=True, width=26),
-            Col("position", text=True, width=9), Col("team", text=True, width=8), Col("games", style=S_INT, width=8)]
+            Col("player_display_name", text=True, width=26), Col("position", text=True, width=9),
+            Col("team", text=True, width=8), Col("games", style=S_INT, width=8)]
     for n in data.active:
         cols.append(Col(f"FF_{n}_total", style=S_POINTS, width=max(len(n) + 14, 14)))
         cols.append(Col(f"FF_{n}_avg", style=S_POINTS, width=max(len(n) + 12, 14)))
-    rows = []
+    cols.append(Col("player_id", text=True, width=13))
+    return cols
+
+
+def season_totals(data: Data, totals: dict) -> list[list[str]]:
+    """Rows in the section 13.2 order: newest season first, REG before POST, first league's total (highest first), player_id."""
+    decimals = data.round_decimals
+    items = []
     with localcontext() as ctx:
         ctx.prec = 60
-        for key in sorted(totals):
-            season, stype, pid = key
-            _, name, pos, team, games, sums = totals[key]
-            row = [str(season), stype, pid, name, pos, team, str(games)]
-            for s in sums:
-                total = round_dec(s, decimals)
-                row.append(dec_text(total))
-                row.append(dec_text(round_dec(total / Decimal(games), decimals)))
-            rows.append(row)
-    return cols, rows
+        for (season, stype, pid), (_, name, pos, team, games, sums) in totals.items():
+            try:
+                totals_r = [round_dec(s, decimals) for s in sums]
+                row = [str(season), stype, name, pos, team, str(games)]
+                for total in totals_r:
+                    row.append(dec_text(total))
+                    row.append(dec_text(round_dec(total / Decimal(games), decimals)))
+            except InvalidOperation:
+                raise ExportError(f"SeasonTotals: cannot add up the points of player {pid} in {season} {stype}") from None
+            row.append(pid)
+            items.append((-season, SEASON_TYPE_ORDER.get(stype, 2), stype, -totals_r[0], pid, row))
+    items.sort(key=itemgetter(0, 1, 2, 3, 4))
+    return [it[5] for it in items]
 
 
 # ---------------------------------------------------------------------------------------------
@@ -688,37 +954,49 @@ def season_totals(data: Data, totals: dict) -> tuple[list[Col], list[list[str]]]
 
 def build(data_dir: Path, out_path: Path) -> dict:
     data = Data(data_dir)
+    layout = Layout(data)
+    check_headers(data, layout)
     counts = [count_rows(p) for _, p, _ in data.seasons]
     for (season, p, sc), n in zip(data.seasons, counts):
         m = count_rows(sc)
         if m != n:
             raise ExportError(f"{p.name} has {n} rows but {sc.name} has {m}: different row counts")
     total_rows = sum(counts)
-    n_cols = len(IDENTITY) + len(data.active) + len(POINTS)
-    with open(data.seasons[0][1], encoding="utf-8-sig", newline="") as handle:
-        n_cols += max(len(next(csv.reader(handle))) - len(IDENTITY) - len(POINTS), 0)
     if total_rows > MAX_DATA_ROWS:
         raise ExportError(f"PlayerGames would have {total_rows:,} data rows; Excel allows {MAX_DATA_ROWS:,}")
-    if n_cols > MAX_COLUMNS:
-        raise ExportError(f"PlayerGames would have {n_cols:,} columns; Excel allows {MAX_COLUMNS:,}")
 
-    # Small tables are read up front so a bad file fails before the big sheet is written.
+    # Everything that can be checked is checked before the file is started.
+    st_cols = season_total_cols(data)
+    check_columns(st_cols, "SeasonTotals")
     small = []
     note = "These are the rules this workbook's scores were made with. To change them, edit {} in NFL/02-config/ on GitHub."
     for sheet, rel, edit in (("Leagues", "config/leagues.csv", "leagues.csv"), ("Scoring", "config/scoring_weights.csv", "scoring_weights.csv"),
                              ("Bonus", "config/bonus_rules.csv", "bonus_rules.csv"), ("Checks", "checks/gates.csv", None),
                              ("Dictionary", "dictionary.csv", None)):
-        header, rows = (data.leagues_header, data.leagues_rows) if sheet == "Leagues" else read_table(data_dir / rel)
-        small.append((sheet, header, rows, note.format(edit) if edit else None))
+        if sheet == "Leagues":
+            header, rows = data.leagues_header, data.leagues_rows
+        elif sheet == "Dictionary":
+            header, rows = dictionary_table(data, layout)
+        else:
+            header, rows = read_table(data_dir / rel)
+        cols = csv_cols(header)
+        check_columns(cols, sheet)
+        small.append((sheet, cols, rows, note.format(edit) if edit else None))
+    created = data.status["generated_utc"]
 
-    tmp = out_path.with_name(out_path.name + ".tmp")
-    out_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out_path.with_name(f"{out_path.name}.{os.getpid()}.tmp")
+    try:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise ExportError(f"cannot create the folder {out_path.parent}: {exc.strerror or exc}") from None
     sst = SharedStrings()
-    tables: list[tuple[str, str, str]] = []           # (sheet part, table name, table xml)
-    pkg = Package(tmp)
+    tables: list[tuple[int, str, str]] = []           # (sheet number, table name, table xml)
+    try:
+        pkg = Package(tmp)
+    except OSError as exc:
+        raise ExportError(f"cannot write {out_path}: {exc.strerror or exc}") from None
     try:
         part = lambda i: f"xl/worksheets/sheet{i}.xml"                      # noqa: E731
-        created = data.status["generated_utc"]
         names = [s for s, _ in SHEETS]
         # Parts that do not depend on the data volume.
         pkg.add("[Content_Types].xml", content_types(len(SHEETS), 7))
@@ -741,21 +1019,20 @@ def build(data_dir: Path, out_path: Path) -> dict:
                 [(rid, f"{REL_TYPE}/hyperlink", url, True) for rid, url in links]))
 
         totals: dict = {}
-        pg_cols, pg_rows = player_games(pkg, sst, data, part(2), totals, total_rows)
-        tables.append((2, "tblPlayerGames", table_xml(1, "tblPlayerGames", pg_cols, *pkg.last_table)))   # type: ignore[attr-defined]
+        n_games = player_games(pkg, sst, data, part(2), layout, totals, total_rows)
+        tables.append((2, "tblPlayerGames", table_xml(1, "tblPlayerGames", layout.cols, *pkg.last_table)))   # type: ignore[attr-defined]
         pkg.add("xl/worksheets/_rels/sheet2.xml.rels", table_rels(1))
 
-        st_cols, st_rows = season_totals(data, totals)
-        write_table_sheet(pkg, sst, part(3), st_cols, st_rows, note=None, freeze_cols=4)
+        st_rows = season_totals(data, totals)
+        write_table_sheet(pkg, sst, part(3), "SeasonTotals", st_cols, st_rows, note=None, freeze_cols=FREEZE_SEASON_TOTALS)
         tables.append((3, "tblSeasonTotals", table_xml(2, "tblSeasonTotals", st_cols, *pkg.last_table)))   # type: ignore[attr-defined]
         pkg.add("xl/worksheets/_rels/sheet3.xml.rels", table_rels(2))
         n_totals = len(st_rows)
         del st_rows
 
-        for k, (sheet, header, rows, nt) in enumerate(small):
+        for k, (sheet, cols, rows, nt) in enumerate(small):
             idx, tid = 4 + k, 3 + k
-            cols = csv_cols(header)
-            write_table_sheet(pkg, sst, part(idx), cols, rows, note=nt)
+            write_table_sheet(pkg, sst, part(idx), sheet, cols, rows, note=nt)
             tname = "tbl" + {"Checks": "Gates"}.get(sheet, sheet)
             tables.append((idx, tname, table_xml(tid, tname, cols, *pkg.last_table)))                  # type: ignore[attr-defined]
             pkg.add(f"xl/worksheets/_rels/sheet{idx}.xml.rels", table_rels(tid))
@@ -765,17 +1042,16 @@ def build(data_dir: Path, out_path: Path) -> dict:
         pkg.add("xl/sharedStrings.xml", sst.xml())
         pkg.close()
         os.replace(tmp, out_path)
-    except BaseException:
-        try:
-            pkg.close()
-        except Exception:
-            pass
+    except BaseException as exc:
+        pkg.abort()
         try:
             tmp.unlink()
-        except FileNotFoundError:
+        except OSError:
             pass
+        if isinstance(exc, OSError):
+            raise ExportError(f"cannot write {out_path}: {exc.strerror or exc}") from None
         raise
-    return {"player_rows": total_rows, "player_columns": len(pg_cols), "totals_rows": n_totals,
+    return {"player_rows": total_rows, "player_columns": len(layout.cols), "totals_rows": n_totals,
             "strings": len(sst.index), "bytes": out_path.stat().st_size}
 
 
@@ -799,13 +1075,15 @@ def content_types(n_sheets: int, n_tables: int) -> str:
 
 
 def core_xml(created: str) -> str:
+    """File properties. The time stamp is the validated ``generated_utc``; everything is cleaned and escaped."""
+    stamp = esc(clean_text(created))
     return (f'{XML_DECL}<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" '
             'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" '
             'xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
             f"<dc:title>NFL-Analysis {WORKBOOK_VERSION}</dc:title><dc:creator>{AUTHOR}</dc:creator>"
             f"<cp:lastModifiedBy>{AUTHOR}</cp:lastModifiedBy>"
-            f'<dcterms:created xsi:type="dcterms:W3CDTF">{esc(created)}</dcterms:created>'
-            f'<dcterms:modified xsi:type="dcterms:W3CDTF">{esc(created)}</dcterms:modified></cp:coreProperties>')
+            f'<dcterms:created xsi:type="dcterms:W3CDTF">{stamp}</dcterms:created>'
+            f'<dcterms:modified xsi:type="dcterms:W3CDTF">{stamp}</dcterms:modified></cp:coreProperties>')
 
 
 def app_xml(names: list[str]) -> str:
@@ -832,8 +1110,13 @@ def main(argv: list[str]) -> int:
     except ExportError as exc:
         print(f"nflpipe export: error: {exc}", file=sys.stderr)
         return 1
+    except OSError as exc:
+        where = f" ({exc.filename})" if exc.filename else ""
+        print(f"nflpipe export: error: a file could not be read or written{where}: {exc.strerror or exc}", file=sys.stderr)
+        return 1
     except Exception as exc:                                         # noqa: BLE001  never leave a traceback-only failure
-        print(f"nflpipe export: error: {type(exc).__name__}: {exc}", file=sys.stderr)
+        print(f"nflpipe export: error: unexpected {type(exc).__name__}: {exc}. Nothing was written; this is a bug in "
+              "the exporter, please report it.", file=sys.stderr)
         return 1
     print(f"wrote {args.out} ({info['bytes'] / 1_048_576:.1f} MB): PlayerGames {info['player_rows']:,} rows x "
           f"{info['player_columns']} columns, SeasonTotals {info['totals_rows']:,} rows, {info['strings']:,} distinct strings")

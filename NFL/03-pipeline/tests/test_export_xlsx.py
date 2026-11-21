@@ -60,7 +60,7 @@ def write(path: Path, header, rows) -> None:
 
 def tiny_data(root: Path, players: list[list[str]], scored_values: list[list[str]], *, leagues=("Alpha", "Beta"),
               decimals: int = 2, metrics=("passing_yards", "receptions"), season: int = 2024,
-              extra_seasons: dict | None = None) -> Path:
+              extra_seasons: dict | None = None, in_progress: bool = False) -> Path:
     """Hand-written minimal ``04-data``. ``players`` rows: week, season_type, player_id, name, position, team.
     ``scored_values`` has one list of league values per player row."""
     data = root / "04-data"
@@ -79,6 +79,8 @@ def tiny_data(root: Path, players: list[list[str]], scored_values: list[list[str
           [["RoundDecimals", str(decimals), "0-6", "d"]])
     write(data / "checks" / "gates.csv", ["gate_id", "gate", "severity", "result", "detail", "checked_utc"],
           [["G-X", "A gate", "blocking", "PASS", "13", "2026-01-02T03:04:05Z"]])
+    write(data / "seasons.csv", ["season", "season_type", "player_rows", "dst_rows", "max_week", "season_status", "refreshed_utc"],
+          [[str(season), "REG", "1", "0", "3", "in_progress" if in_progress else "complete", "2026-01-02T03:04:05Z"]])
     write(data / "dictionary.csv", ["metric", "category", "description", "source", "applies_to"],
           [[m, "Cat", m, "nflverse", ""] for m in metrics])
     seasons = {season: (players, scored_values)}
@@ -94,6 +96,39 @@ def tiny_data(root: Path, players: list[list[str]], scored_values: list[list[str
     return data
 
 
+FRONT = ["season", "week", "season_type", "player_display_name", "position", "team", "opponent_team"]
+BACK = ["player_id", "position_group", "fantasy_points", "fantasy_points_ppr"]
+
+
+def active_leagues(data: Path) -> list[str]:
+    with open(data / "config" / "leagues.csv", encoding="utf-8") as handle:
+        return [r["League"] for r in csv.DictReader(handle) if r["Active"].lower() == "yes"]
+
+
+def expected_player_games(data: Path) -> tuple[list[str], list[list]]:
+    """Written independently of the exporter: header and rows, newest first, scored values matched by key."""
+    active = active_leagues(data)
+    header = None
+    rows = []
+    for pw_file in sorted((data / "player_week").glob("player_week_*.csv"), reverse=True):
+        pw_header, pw_rows = read_csv(pw_file)
+        sc_header, sc_rows = read_csv(data / "scored" / pw_file.name.replace("player_week", "scored"))
+        scored = {tuple(r[sc_header.index(k)] for k in ("season", "week", "season_type", "player_id")): dict(zip(sc_header, r))
+                  for r in sc_rows}
+        assert len(scored) == len(sc_rows)
+        metrics = [c for c in pw_header[9:] if c not in BACK]
+        header = FRONT + [f"FF_{n}" for n in active] + BACK + metrics
+        part = []
+        for r in pw_rows:
+            full = dict(zip(pw_header, r))
+            full.update({f"FF_{n}": scored[(full["season"], full["week"], full["season_type"], full["player_id"])][f"FF_{n}"]
+                         for n in active})
+            part.append([expected_cell(c, full[c]) for c in header])
+        part.sort(key=lambda row: -row[1])                       # week descending; sort is stable
+        rows += part
+    return header, rows
+
+
 def one_player(name: str, pid: str = "00-1", week: str = "1") -> list[str]:
     return [week, "REG", pid, name, "QB", "NE"]
 
@@ -107,28 +142,21 @@ def test_mini_publish_workbook(mini, tmp_path):
     wb = openpyxl.load_workbook(out)
     assert wb.sheetnames == ["About", "PlayerGames", "SeasonTotals", "Leagues", "Scoring", "Bonus", "Checks", "Dictionary"]
 
-    # PlayerGames: identity, FF_ from scored, nflverse points, then the metrics; every cell checked
-    active = [r["League"] for r in csv.DictReader(open(mini.data / "config" / "leagues.csv", encoding="utf-8"))
-              if r["Active"].lower() == "yes"]
-    expected_rows = []
-    header = None
-    for pw_file in sorted((mini.data / "player_week").glob("player_week_*.csv")):
-        pw_header, pw_rows = read_csv(pw_file)
-        sc_header, sc_rows = read_csv(mini.data / "scored" / pw_file.name.replace("player_week", "scored"))
-        pts = ["fantasy_points", "fantasy_points_ppr"]
-        header = pw_header[:9] + [f"FF_{n}" for n in active] + pts + [c for c in pw_header[9:] if c not in pts]
-        for a, b in zip(pw_rows, sc_rows):
-            full = dict(zip(pw_header, a))
-            full.update(dict(zip(sc_header, b)))
-            expected_rows.append([expected_cell(c, full[c]) for c in header])
+    # PlayerGames: newest first, league columns up front, scored values matched by key; every cell checked
+    header, expected_rows = expected_player_games(mini.data)
+    active = active_leagues(mini.data)
+    assert header[:7] == FRONT and header[7:7 + len(active)] == [f"FF_{n}" for n in active]
+    assert header[7 + len(active):11 + len(active)] == BACK
     assert expected_rows, "the mini publish should have player rows"
     got = sheet_rows(wb, "PlayerGames")
     assert list(got[0]) == header
     assert len(got) - 1 == len(expected_rows)
     for g, e in zip(got[1:], expected_rows):
         assert list(g) == e
+    seasons = [r[0] for r in got[1:]]
+    assert seasons == sorted(seasons, reverse=True)
     ws = wb["PlayerGames"]
-    assert ws.freeze_panes == "F2"
+    assert ws.freeze_panes == "E2"                   # through player_display_name
     assert list(ws.tables) == ["tblPlayerGames"]
     assert ws.tables["tblPlayerGames"].ref == f"A1:{openpyxl.utils.get_column_letter(len(header))}{len(expected_rows) + 1}"
     assert ws.tables["tblPlayerGames"].autoFilter is not None
@@ -136,8 +164,7 @@ def test_mini_publish_workbook(mini, tmp_path):
 
     # small sheets equal their CSVs
     for sheet, rel, first in (("Leagues", "config/leagues.csv", 2), ("Scoring", "config/scoring_weights.csv", 2),
-                              ("Bonus", "config/bonus_rules.csv", 2), ("Checks", "checks/gates.csv", 1),
-                              ("Dictionary", "dictionary.csv", 1)):
+                              ("Bonus", "config/bonus_rules.csv", 2), ("Checks", "checks/gates.csv", 1)):
         csv_header, csv_rows = read_csv(mini.data / rel)
         rows = sheet_rows(wb, sheet, first)
         assert list(rows[0]) == csv_header
@@ -182,8 +209,7 @@ def test_mini_season_totals_match_recomputation(mini, tmp_path):
     out = tmp_path / "x.xlsx"
     assert export(mini.data, out) == 0
     wb = openpyxl.load_workbook(out)
-    active = [r["League"] for r in csv.DictReader(open(mini.data / "config" / "leagues.csv", encoding="utf-8"))
-              if r["Active"].lower() == "yes"]
+    active = active_leagues(mini.data)
     sums, games = {}, {}
     last = {}
     for f in sorted((mini.data / "scored").glob("scored_*.csv")):
@@ -195,18 +221,24 @@ def test_mini_season_totals_match_recomputation(mini, tmp_path):
             for n in active:
                 sums[k, n] = sums.get((k, n), Decimal(0)) + Decimal(r[f"FF_{n}"])
     got = sheet_rows(wb, "SeasonTotals")
-    assert got[0][:7] == ("season", "season_type", "player_id", "player_display_name", "position", "team", "games")
+    leagues = [c for n in active for c in (f"FF_{n}_total", f"FF_{n}_avg")]
+    assert list(got[0]) == ["season", "season_type", "player_display_name", "position", "team", "games", *leagues, "player_id"]
     assert len(got) - 1 == len(games)
-    assert [tuple(r[:3]) for r in got[1:]] == sorted(games)
+    q = Decimal("0.01")
+
+    def total(k, n):
+        return float(sums[k, n].quantize(q, ROUND_HALF_UP))
+    expected_order = sorted(games, key=lambda k: (-k[0], 0 if k[1] == "REG" else 1, -total(k, active[0]), k[2]))
+    assert [(r[0], r[1], r[-1]) for r in got[1:]] == expected_order
     for r in got[1:]:
-        k = (r[0], r[1], r[2])
-        assert r[3:6] == last[k][2:4] + (last[k][1],)
-        assert r[6] == games[k]
+        k = (r[0], r[1], r[-1])
+        assert r[2:5] == (last[k][2], last[k][3], last[k][1])
+        assert r[5] == games[k]
         for i, n in enumerate(active):
-            total = sums[k, n].quantize(Decimal("0.01"), ROUND_HALF_UP)
-            assert r[7 + 2 * i] == pytest.approx(float(total), abs=1e-9)
-            assert r[8 + 2 * i] == pytest.approx(float((total / games[k]).quantize(Decimal("0.01"), ROUND_HALF_UP)), abs=1e-9)
-    assert wb["SeasonTotals"].freeze_panes == "E2"
+            t = sums[k, n].quantize(q, ROUND_HALF_UP)
+            assert r[6 + 2 * i] == pytest.approx(float(t), abs=1e-9)
+            assert r[7 + 2 * i] == pytest.approx(float((t / games[k]).quantize(q, ROUND_HALF_UP)), abs=1e-9)
+    assert wb["SeasonTotals"].freeze_panes == "D2"          # through player_display_name
 
 
 def test_dispatcher_wiring(mini, tmp_path):
@@ -261,10 +293,10 @@ def test_hostile_text_stays_text_and_valid_xml(tmp_path):
     out = tmp_path / "h.xlsx"
     assert export(data, out) == 0
     wb = openpyxl.load_workbook(out)
-    got = [r[4] for r in sheet_rows(wb, "PlayerGames", 2)]
+    got = [r[3] for r in sheet_rows(wb, "PlayerGames", 2)]
     expect = [re.sub("[\x00-\x08\x0b\x0c\x0e-\x1f]", "", n) for n in names]
-    assert got == expect
-    for cell in wb["PlayerGames"]["E"][1:]:
+    assert got == expect[::-1]                       # newest week first
+    for cell in wb["PlayerGames"]["D"][1:]:
         assert cell.data_type == "s"           # a string, never a formula
     with zipfile.ZipFile(out) as z:
         import xml.etree.ElementTree as ET
@@ -275,7 +307,7 @@ def test_hostile_text_stays_text_and_valid_xml(tmp_path):
         assert "\x00" not in sst and "\x07" not in sst
         assert "<script>" not in sst
     # SeasonTotals carries the same names
-    assert [r[3] for r in sheet_rows(wb, "SeasonTotals", 2)] == [expect[names.index(n)] for n in
+    assert [r[2] for r in sheet_rows(wb, "SeasonTotals", 2)] == [expect[names.index(n)] for n in
                                                                  sorted(names, key=lambda n: f"00-{names.index(n)}")]
 
 
@@ -314,13 +346,14 @@ def test_season_totals_rounding(tmp_path, decimals, values, total, avg):
     assert len(rows) == 1
     t = Decimal(sum(Decimal(v) for v in values)).quantize(Decimal(1).scaleb(-decimals), ROUND_HALF_UP)
     a = (t / games).quantize(Decimal(1).scaleb(-decimals), ROUND_HALF_UP)
-    assert rows[0][6] == games
-    assert rows[0][7] == pytest.approx(float(t), abs=1e-12)
-    assert rows[0][8] == pytest.approx(float(a), abs=1e-12)
+    assert rows[0][5] == games
+    assert rows[0][6] == pytest.approx(float(t), abs=1e-12)
+    assert rows[0][7] == pytest.approx(float(a), abs=1e-12)
     if decimals != 3:
-        assert rows[0][7] == pytest.approx(float(Decimal(total)), abs=1e-12)
-        assert rows[0][8] == pytest.approx(float(Decimal(avg)), abs=1e-12)
-    assert rows[0][9:] == (0, 0)                          # the second league: zeros stay numbers
+        assert rows[0][6] == pytest.approx(float(Decimal(total)), abs=1e-12)
+        assert rows[0][7] == pytest.approx(float(Decimal(avg)), abs=1e-12)
+    assert rows[0][8:10] == (0, 0)                        # the second league: zeros stay numbers
+    assert rows[0][10] == "00-1"                          # player_id is the last column
 
 
 def test_season_totals_groups_and_last_team(tmp_path):
@@ -331,18 +364,19 @@ def test_season_totals_groups_and_last_team(tmp_path):
     out = tmp_path / "g.xlsx"
     assert export(data, out) == 0
     rows = sheet_rows(openpyxl.load_workbook(out), "SeasonTotals", 2)
-    assert [(r[0], r[1], r[2], r[5], r[6], r[7], r[8]) for r in rows] == [
-        (2024, "POST", "00-9", "BBB", 1, 8, 8), (2024, "REG", "00-8", "CCC", 1, 4, 4), (2024, "REG", "00-9", "BBB", 2, 3, 1.5)]
+    # REG before POST; within REG the higher Alpha total first; team of the later week
+    assert [(r[0], r[1], r[10], r[4], r[5], r[6], r[7]) for r in rows] == [
+        (2024, "REG", "00-8", "CCC", 1, 4, 4), (2024, "REG", "00-9", "BBB", 2, 3, 1.5), (2024, "POST", "00-9", "BBB", 1, 8, 8)]
 
 
-def test_multiple_seasons_in_published_order(tmp_path):
+def test_multiple_seasons_newest_first(tmp_path):
     first = ([one_player("Old")], [["1", "1"]])
     data = tiny_data(tmp_path, [one_player("New")], [["2", "2"]], season=2024, extra_seasons={2023: first})
     out = tmp_path / "m.xlsx"
     assert export(data, out) == 0
     wb = openpyxl.load_workbook(out)
-    assert [(r[0], r[4]) for r in sheet_rows(wb, "PlayerGames", 2)] == [(2023, "Old"), (2024, "New")]
-    assert [r[0] for r in sheet_rows(wb, "SeasonTotals", 2)] == [2023, 2024]
+    assert [(r[0], r[3]) for r in sheet_rows(wb, "PlayerGames", 2)] == [(2024, "New"), (2023, "Old")]
+    assert [r[0] for r in sheet_rows(wb, "SeasonTotals", 2)] == [2024, 2023]
 
 
 def test_empty_bonus_table_still_valid(tmp_path):
@@ -403,7 +437,7 @@ def test_long_text_is_an_error_not_truncated(tmp_path, capsys):
     no_leftovers(out)
     ok = tiny_data(tmp_path / "ok", [one_player("N" * 32_767)], [["1", "1"]])      # exactly the limit is fine
     assert export(ok, tmp_path / "ok.xlsx") == 0
-    assert len(sheet_rows(openpyxl.load_workbook(tmp_path / "ok.xlsx"), "PlayerGames", 2)[0][4]) == 32_767
+    assert len(sheet_rows(openpyxl.load_workbook(tmp_path / "ok.xlsx"), "PlayerGames", 2)[0][3]) == 32_767
 
 
 @pytest.mark.parametrize("damage, message", [
@@ -411,7 +445,7 @@ def test_long_text_is_an_error_not_truncated(tmp_path, capsys):
     ("no_status", "status.csv"),
     ("no_generated", "generated_utc"),
     ("bad_round", "RoundDecimals"),
-    ("key_mismatch", "key differs"),
+    ("key_mismatch", "has no row for"),
     ("short_scored", "different row counts"),
     ("ragged", "values but"),
     ("no_active", "Active"),
@@ -541,5 +575,598 @@ def test_unknown_data_contract_version_is_refused(tmp_path, capsys, value):
     assert export(data, out) == 1
     err = capsys.readouterr().err
     assert "data_contract_version" in err and "understands version '1'" in err
-    assert (repr(value) if value is not None else "None") in err
+    assert (repr(value) if value is not None else "is missing") in err
     no_leftovers(out)
+
+
+# ============================================================================================
+# Revision 2 (contract 13.2 / 13.3 as revised; findings A1-01..A1-18, R1-m1..m6, R2-04, R2-13, R2-14)
+# ============================================================================================
+
+NSM = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+
+
+def raw_header_vs_table(path: Path) -> int:
+    """For every table: the raw (still _xHHHH_ escaped) text of each header cell equals the tableColumn name,
+    the names are unique the way Excel compares them, and `ref` covers the header and every row. Returns the
+    number of tables checked."""
+    import xml.etree.ElementTree as ET
+    checked = 0
+    with zipfile.ZipFile(path) as z:
+        sst = ["".join(t.text or "" for t in si.iter(NSM + "t")) for si in ET.fromstring(z.read("xl/sharedStrings.xml"))]
+        for i in range(1, 9):
+            rel = f"xl/worksheets/_rels/sheet{i}.xml.rels"
+            m = re.search(r"table(\d+)\.xml", z.read(rel).decode()) if rel in z.namelist() else None
+            if not m:
+                continue
+            table = ET.fromstring(z.read(f"xl/tables/table{m.group(1)}.xml"))
+            ref = table.get("ref")
+            first, last = (int(re.sub("[A-Z]", "", x)) for x in ref.split(":"))
+            rows = {int(r.get("r")): r for r in ET.fromstring(z.read(f"xl/worksheets/sheet{i}.xml")).iter(NSM + "row")}
+            header = [sst[int(c.find(NSM + "v").text)] for c in rows[first]]
+            names = [c.get("name") for c in table.find(NSM + "tableColumns")]
+            assert header == names
+            assert len(names) <= 16384 and all(0 < len(n) <= 255 for n in names)
+            keys = [" ".join(n.split()).casefold() for n in names]
+            assert len(set(keys)) == len(keys)
+            assert ref.split(":")[1].rstrip("0123456789") == export_xlsx.col_letter(len(names))
+            assert max(rows) == last
+            checked += 1
+    return checked
+
+
+def two_season_data(tmp_path: Path, **kw) -> Path:
+    older = ([one_player("Old", pid="00-1", week="1"), one_player("Old", pid="00-1", week="2")], [["7", "70"], ["8", "80"]])
+    return tiny_data(tmp_path, [one_player("New", pid="00-1", week="1"), one_player("Other", pid="00-2", week="1")],
+                     [["1", "10"], ["2", "20"]], season=2024, extra_seasons={2023: older}, **kw)
+
+
+def played(path: Path) -> dict:
+    """{(season, week, season_type, player_id): {column: value}} of PlayerGames."""
+    rows = sheet_rows(openpyxl.load_workbook(path), "PlayerGames")
+    return {(r[0], r[1], r[2], r[rows[0].index("player_id")]): dict(zip(rows[0], r)) for r in rows[1:]}
+
+
+# --- layout (13.2) ---------------------------------------------------------------------------
+
+def test_player_games_layout_order_and_freeze(tmp_path):
+    # POST weeks (19+) sort above REG; same week keeps the published order; seasons newest first.
+    players = [["1", "REG", "00-1", "A", "QB", "NE"], ["19", "POST", "00-2", "B", "QB", "NE"],
+               ["2", "REG", "00-3", "C", "QB", "NE"], ["19", "POST", "00-4", "D", "QB", "NE"], ["2", "REG", "00-5", "E", "QB", "NE"]]
+    older = ([["3", "REG", "00-9", "Z", "QB", "NE"]], [["5", "5"]])
+    data = tiny_data(tmp_path, players, [["1", "1"]] * 5, extra_seasons={2023: older})
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    rows = sheet_rows(wb, "PlayerGames")
+    assert list(rows[0]) == FRONT + ["FF_Alpha", "FF_Beta"] + BACK + ["passing_yards", "receptions"]
+    assert [(r[0], r[1], r[3]) for r in rows[1:]] == [(2024, 19, "B"), (2024, 19, "D"), (2024, 2, "C"), (2024, 2, "E"),
+                                                      (2024, 1, "A"), (2023, 3, "Z")]
+    assert wb["PlayerGames"].freeze_panes == "E2" and wb["SeasonTotals"].freeze_panes == "D2"
+
+
+def test_season_totals_order_newest_first_reg_before_post_then_total_then_id(tmp_path):
+    players = [["1", "REG", "00-B", "B", "QB", "NE"], ["1", "REG", "00-A", "A", "QB", "NE"], ["1", "REG", "00-C", "C", "QB", "NE"],
+               ["1", "REG", "00-D", "D", "QB", "NE"], ["19", "POST", "00-A", "A", "QB", "NE"]]
+    older = ([["1", "REG", "00-Z", "Z", "QB", "NE"]], [["99", "0"]])
+    data = tiny_data(tmp_path, players, [["5", "0"], ["5", "0"], ["9", "0"], ["-3", "0"], ["100", "0"]], extra_seasons={2023: older})
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    rows = sheet_rows(openpyxl.load_workbook(out), "SeasonTotals", 2)
+    assert [(r[0], r[1], r[-1]) for r in rows] == [(2024, "REG", "00-C"), (2024, "REG", "00-A"), (2024, "REG", "00-B"),
+                                                   (2024, "REG", "00-D"), (2024, "POST", "00-A"), (2023, "REG", "00-Z")]
+
+
+def test_dictionary_has_one_row_per_player_games_column(mini, tmp_path):
+    out = tmp_path / "d.xlsx"
+    assert export(mini.data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    header = [c.value for c in wb["PlayerGames"][1]]
+    d = sheet_rows(wb, "Dictionary")
+    with open(mini.data / "dictionary.csv", encoding="utf-8") as handle:
+        file_rows = list(csv.reader(handle))[1:]
+    metrics_in_file = file_rows
+    assert list(d[0]) == ["metric", "category", "description", "source", "applies_to"]
+    assert [r[0] for r in d[1:]] == header                  # every column, in the sheet's order
+    assert all(r[2] for r in d[1:1 + len(header) - len(metrics_in_file)])     # every column the exporter writes has a description
+    leagues = {r["League"]: r["Description"] for r in csv.DictReader(open(mini.data / "config" / "leagues.csv", encoding="utf-8"))}
+    for r in d[1:]:
+        if r[0].startswith("FF_"):
+            assert r[0][3:] in r[2] and leagues[r[0][3:]] in r[2]
+    assert [[x or "" for x in r[:4]] for r in d[1 + len(header) - len(file_rows):]] == [r[:4] for r in file_rows]
+
+
+def test_about_rows_leagues_in_progress_and_links(tmp_path):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]], in_progress=True)
+    out = tmp_path / "a.xlsx"
+    assert export(data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    ws = wb["About"]
+    rows = [(r[0], r[1]) for r in ws.iter_rows(min_row=5, values_only=True) if r[0]]
+    items = [i for i, _ in rows]
+    assert items == ["Workbook version", "Leagues scored", "Column FF_Alpha", "Column FF_Beta", "Data through", "Latest week",
+                     "Opening this file", "Generated (UTC)", "Data run id", "Pipeline version", "Data contract version", "Seasons",
+                     "Gates passed", "Gates warned", "Gates failed", "Data source", "Data licence", "nflverse address",
+                     "Licence address", "Latest file", "How to change scoring", "Guide",
+                     *[f"Sheet {n}" for n in wb.sheetnames]]
+    about = dict(rows)
+    assert "Alpha, Beta" in about["Leagues scored"]
+    assert "FF_Alpha" in about["Column FF_Alpha"] or "Alpha" in about["Column FF_Alpha"]
+    assert "incomplete" in about["Latest week"] and "week 3" in about["Latest week"]
+    links = {c.value: c.hyperlink.target for r in ws.iter_rows(min_row=5) for c in r if c.hyperlink}
+    assert links[export_xlsx.RELEASE_URL] == export_xlsx.RELEASE_URL
+    assert links[export_xlsx.AUTOMATION_URL] == export_xlsx.AUTOMATION_URL
+    assert set(links) == {export_xlsx.NFLVERSE_URL, export_xlsx.LICENSE_URL, export_xlsx.RELEASE_URL, export_xlsx.AUTOMATION_URL}
+    done = tiny_data(tmp_path / "done", [one_player("A")], [["1", "2"]], in_progress=False)
+    assert export(done, tmp_path / "b.xlsx") == 0
+    assert "Latest week" not in [r[0] for r in openpyxl.load_workbook(tmp_path / "b.xlsx")["About"].iter_rows(min_row=5, values_only=True)]
+
+
+# --- A1-01: scored values by key and column name ----------------------------------------------
+
+def edit_scored(data: Path, season: int, fn) -> None:
+    path = data / "scored" / f"scored_{season}.csv"
+    h, r = read_csv(path)
+    h, r = fn(h, r)
+    write(path, h, r)
+
+
+def test_scored_extra_column_before_a_league_changes_nothing(tmp_path):
+    """A1-01 reproduction: an inserted column before FF_Alpha used to shift every value in that season."""
+    data = two_season_data(tmp_path)
+    clean = tmp_path / "clean.xlsx"
+    assert export(data, clean) == 0
+    edit_scored(data, 2024, lambda h, r: (h[:7] + ["FF_New"] + h[7:], [x[:7] + ["999"] + x[7:] for x in r]))
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    assert played(out) == played(clean)
+    assert played(out)[(2024, 1, "REG", "00-1")]["FF_Alpha"] == 1
+
+
+def test_scored_columns_swapped_and_rows_reordered_still_match_by_key(tmp_path):
+    data = two_season_data(tmp_path)
+    clean = tmp_path / "clean.xlsx"
+    assert export(data, clean) == 0
+
+    def shuffle(h, r):
+        i, j = h.index("FF_Alpha"), h.index("FF_Beta")
+        h[i], h[j] = h[j], h[i]
+        for x in r:
+            x[i], x[j] = x[j], x[i]
+        return h, r[::-1]
+    for season in (2023, 2024):
+        edit_scored(data, season, shuffle)
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    assert played(out) == played(clean)
+    pg = played(out)
+    assert pg[(2023, 2, "REG", "00-1")]["FF_Alpha"] == 8 and pg[(2023, 2, "REG", "00-1")]["FF_Beta"] == 80
+
+
+def test_totals_use_the_same_matched_values(tmp_path):
+    data = two_season_data(tmp_path)
+    edit_scored(data, 2023, lambda h, r: (h[:7] + ["FF_New"] + h[7:], [x[:7] + ["999"] + x[7:] for x in r]))
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    rows = {(r[0], r[-1]): r for r in sheet_rows(openpyxl.load_workbook(out), "SeasonTotals", 2)}
+    assert rows[(2023, "00-1")][6] == 15 and rows[(2023, "00-1")][8] == 150
+
+
+@pytest.mark.parametrize("damage, message", [
+    ("drop_league_col", "missing column 'FF_Beta'"),
+    ("drop_key_col", "missing column 'player_id'"),
+    ("duplicate_league_col", "appears twice"),
+    ("extra_scored_row", "different row counts"),
+    ("missing_scored_row", "different row counts"),
+    ("other_key", "has no row for"),
+    ("wrong_week", "has no row for"),
+    ("empty_scored", "is empty"),
+])
+def test_scored_that_does_not_match_player_week_is_an_error(tmp_path, capsys, damage, message):
+    data = two_season_data(tmp_path)
+    if damage == "drop_league_col":
+        edit_scored(data, 2023, lambda h, r: (h[:-1], [x[:-1] for x in r]))
+    elif damage == "drop_key_col":
+        edit_scored(data, 2023, lambda h, r: (h[:3] + h[4:], [x[:3] + x[4:] for x in r]))
+    elif damage == "duplicate_league_col":
+        edit_scored(data, 2023, lambda h, r: (h + ["FF_Alpha"], [x + ["1"] for x in r]))
+    elif damage == "extra_scored_row":
+        edit_scored(data, 2023, lambda h, r: (h, r + [["2023", "9", "REG", "00-7", "X", "QB", "NE", "1", "1", "1", "1"]]))
+    elif damage == "missing_scored_row":
+        edit_scored(data, 2024, lambda h, r: (h, r[:1]))
+    elif damage == "other_key":
+        edit_scored(data, 2024, lambda h, r: (h, [r[0], [r[1][0], r[1][1], r[1][2], "00-7", *r[1][4:]]]))
+    elif damage == "wrong_week":
+        edit_scored(data, 2024, lambda h, r: (h, [[x[0], "5", *x[2:]] for x in r]))
+    elif damage == "empty_scored":
+        (data / "scored" / "scored_2023.csv").write_bytes(b"")
+    out = tmp_path / "o" / "x.xlsx"
+    assert export(data, out) == 1
+    err = capsys.readouterr().err
+    assert message in err and "Traceback" not in err
+    no_leftovers(out)
+
+
+def test_week_tie_keeps_the_later_published_row(tmp_path):
+    """The last-game rule: highest week; on a tie the later published row. (Only reachable with a repeated key,
+    which published data never has, so the matching of repeated keys is tested here too.)"""
+    players = [["3", "REG", "00-1", "Early", "WR", "AAA"], ["3", "REG", "00-1", "Late", "TE", "BBB"], ["2", "REG", "00-1", "Wk2", "QB", "CCC"]]
+    data = tiny_data(tmp_path, players, [["1", "1"], ["2", "2"], ["4", "4"]])
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    (row,) = sheet_rows(wb, "SeasonTotals", 2)
+    assert (row[2], row[3], row[4], row[5]) == ("Late", "TE", "BBB", 3)
+    assert row[6] == 7                                        # 1 + 2 + 4: repeated keys matched in published order
+    assert [r[3] for r in sheet_rows(wb, "PlayerGames", 2)] == ["Early", "Late", "Wk2"]
+    assert [r[7] for r in sheet_rows(wb, "PlayerGames", 2)] == [1, 2, 4]
+    edit_scored(data, 2024, lambda h, r: (h, r + [r[0]]))      # one scored row too many for a repeated key
+    assert export(data, tmp_path / "x.xlsx") == 1
+
+
+def test_inactive_league_between_active_ones_and_config_order(tmp_path):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]], leagues=("Alpha", "Beta"))
+    h, r = read_csv(data / "config" / "leagues.csv")
+    write(data / "config" / "leagues.csv", h, [["Beta", "b", "Yes", "", ""], ["Mid", "m", "No", "", ""], ["Alpha", "a", "Yes", "", ""]])
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    hdr = [c.value for c in wb["PlayerGames"][1]]
+    assert hdr[7:9] == ["FF_Beta", "FF_Alpha"] and "FF_Mid" not in hdr          # the owner's order, inactive left out
+    row = sheet_rows(wb, "PlayerGames", 2)[0]
+    assert row[7] == 2 and row[8] == 1                                          # values follow the names, not the file order
+    st = [c.value for c in wb["SeasonTotals"][1]]
+    assert st[6:10] == ["FF_Beta_total", "FF_Beta_avg", "FF_Alpha_total", "FF_Alpha_avg"] and st[-1] == "player_id"
+    assert [r[0] for r in sheet_rows(wb, "Dictionary", 2)][7:9] == ["FF_Beta", "FF_Alpha"]
+
+
+def test_dst_rows(tmp_path):
+    data = tiny_data(tmp_path, [["1", "REG", "DST_ARI", "ARI D/ST", "DST", "ARI"], ["2", "REG", "DST_ARI", "ARI D/ST", "DST", "ARI"]],
+                     [["3.5", "4"], ["-1", "0"]])
+    pw = data / "player_week" / "player_week_2024.csv"
+    h, r = read_csv(pw)
+    for x in r:
+        x[h.index("passing_yards")] = x[h.index("receptions")] = ""             # a team defense has no player stats
+    write(pw, h, r)
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    rows = sheet_rows(wb, "PlayerGames", 2)
+    ix = {n: i for i, n in enumerate(c.value for c in wb["PlayerGames"][1])}
+    assert [r[ix["player_id"]] for r in rows] == ["DST_ARI", "DST_ARI"] and rows[0][ix["position"]] == "DST"
+    assert all(r[ix["passing_yards"]] is None and r[ix["receptions"]] is None for r in rows)
+    assert [r[ix["FF_Alpha"]] for r in rows] == [-1, 3.5]
+    (tot,) = sheet_rows(wb, "SeasonTotals", 2)
+    assert (tot[2], tot[3], tot[4], tot[5], tot[6], tot[7], tot[-1]) == ("ARI D/ST", "DST", "ARI", 2, 2.5, 1.25, "DST_ARI")
+
+
+@pytest.mark.parametrize("decimals, fmt", [(0, "0"), (2, "0.00"), (3, "0.000"), (6, "0.000000")])
+def test_points_number_format_follows_round_decimals(tmp_path, decimals, fmt):
+    data = tiny_data(tmp_path, [one_player("A")], [["1.5", "2"]], decimals=decimals)
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    pg, st = wb["PlayerGames"], wb["SeasonTotals"]
+    hx = {c.value: c.column - 1 for c in pg[1]}
+    assert pg.cell(row=2, column=hx["FF_Alpha"] + 1).number_format == fmt
+    assert pg.cell(row=2, column=hx["fantasy_points"] + 1).number_format == fmt
+    assert pg.cell(row=2, column=hx["season"] + 1).number_format == "0"
+    assert pg.cell(row=2, column=hx["passing_yards"] + 1).number_format == "General"
+    assert st["G2"].number_format == fmt and st["H2"].number_format == fmt and st["F2"].number_format == "0"
+
+
+@pytest.mark.parametrize("values, total, avg", [
+    (["-2"] + ["0"] * 15, "-2", "-0.13"),                  # -2 / 16 = -0.125, half away from zero
+    (["-0.62", "0", "0", "0"], "-0.62", "-0.16"),          # -0.155
+    (["-0.08"] + ["0"] * 15, "-0.08", "-0.01"),            # -0.005
+])
+def test_negative_average_half_ties_over_many_games(tmp_path, values, total, avg):
+    players = [one_player("P", week=str(i + 1)) for i in range(len(values))]
+    data = tiny_data(tmp_path, players, [[v, "0"] for v in values])
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    (row,) = sheet_rows(openpyxl.load_workbook(out), "SeasonTotals", 2)
+    assert row[5] == len(values) and row[6] == pytest.approx(float(total)) and row[7] == pytest.approx(float(avg))
+
+
+def test_theme_is_not_used_anywhere(mini, tmp_path):
+    out = tmp_path / "t.xlsx"
+    assert export(mini.data, out) == 0
+    with zipfile.ZipFile(out) as z:
+        assert not [n for n in z.namelist() if "theme" in n]
+        for n in z.namelist():
+            if n.endswith(".xml") and n != "xl/worksheets/sheet2.xml":
+                assert b"theme" not in z.read(n).lower().replace(b"tablestyle", b""), n
+        assert b"theme=" not in z.read("xl/worksheets/sheet2.xml")
+
+
+# --- A1-02 / A1-03 / A1-07 / A1-08 / A1-12: column names ---------------------------------------
+
+def rename_scoring_headers(data: Path, mapping: dict) -> None:
+    h, r = read_csv(data / "config" / "scoring_weights.csv")
+    write(data / "config" / "scoring_weights.csv", [mapping.get(c, c) for c in h], r)
+
+
+@pytest.mark.parametrize("name", ["Not_x0041_es", "_x005F_x0041_", "a_x0041__x0042_b", "_x0041_", "x_x005F_y_x005F_"])
+def test_x_escape_syntax_is_protected_in_header_cells_and_table_columns(tmp_path, name):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]])
+    rename_scoring_headers(data, {"Notes": name})
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    assert raw_header_vs_table(out) == 7
+    with zipfile.ZipFile(out) as z:
+        decoded = re.sub(r"_x([0-9A-Fa-f]{4})_", lambda m: chr(int(m.group(1), 16)), z.read("xl/tables/table4.xml").decode())
+    assert f'name="{name}"' in decoded                       # what Excel decodes is exactly the text we meant
+    assert openpyxl.load_workbook(out)["Scoring"].tables["tblScoring"] is not None
+
+
+@pytest.mark.parametrize("a, b", [("A B", "A\nB"), ("A B", "A\tB"), ("A B", "A  B"), ("Alpha", "ALPHA"), ("x", " x"), ("a\r\nb", "A B")])
+def test_names_that_are_the_same_to_excel_are_refused(tmp_path, capsys, a, b):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]], leagues=(a, b))
+    out = tmp_path / "o" / "x.xlsx"
+    assert export(data, out) == 1
+    err = capsys.readouterr().err
+    assert "duplicate column name" in err and "Traceback" not in err
+    no_leftovers(out)
+
+
+def test_scoring_header_duplicates_after_normalisation_name_the_sheet(tmp_path, capsys):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]])
+    rename_scoring_headers(data, {"Category": "NOTES", "Metric": "Metric"})
+    assert export(data, tmp_path / "x.xlsx") == 1
+    err = capsys.readouterr().err
+    assert "Scoring" in err and "duplicate column name" in err and "xl/worksheets" not in err
+
+
+def test_long_header_is_refused_and_255_is_allowed(tmp_path, capsys):
+    ok = tiny_data(tmp_path / "ok", [one_player("A")], [["1", "2"]], leagues=("L" * 251, "B"))     # "FF_" + 251 = 254 ... plus _total below
+    assert export(ok, tmp_path / "ok.xlsx") == 1                       # FF_<251>_total is 260 characters
+    assert "255" in capsys.readouterr().err
+    fits = tiny_data(tmp_path / "fits", [one_player("A")], [["1", "2"]], leagues=("L" * 240, "B"))  # FF_ + 240 + _total = 249
+    assert export(fits, tmp_path / "fits.xlsx") == 0
+    assert raw_header_vs_table(tmp_path / "fits.xlsx") == 7
+    with zipfile.ZipFile(tmp_path / "fits.xlsx") as z:
+        widths = [float(w) for w in re.findall(r'width="([0-9.]+)"', z.read("xl/worksheets/sheet2.xml").decode())]
+        assert max(widths) <= 255
+    too = tiny_data(tmp_path / "too", [one_player("A")], [["1", "2"]], leagues=("L" * 300, "B"))
+    assert export(too, tmp_path / "too.xlsx") == 1
+    assert "255" in capsys.readouterr().err
+
+
+def test_empty_column_name_is_refused(tmp_path, capsys):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]])
+    rename_scoring_headers(data, {"Notes": " \t "})
+    assert export(data, tmp_path / "x.xlsx") == 1
+    assert "no name" in capsys.readouterr().err
+
+
+# --- A1-04 / R1-m6: generated_utc and file properties ------------------------------------------
+
+def set_status(data: Path, key: str, value: str) -> None:
+    h, r = read_csv(data / "status.csv")
+    write(data / "status.csv", h, [[k, value if k == key else v] for k, v in r])
+
+
+@pytest.mark.parametrize("value", ["yesterday", "2026&<", "2026-01-02T03:04:05Z\x01", "2026-13-45T99:99:99Z", "2026-01-02 03:04:05",
+                                   "2026-01-02T03:04:05", "2026-01-02T03:04:05+00:00", "0001-01-01T00:00:00Z", "2026-01-02T03:04:05Z\n"])
+def test_generated_utc_must_be_an_iso_utc_timestamp(tmp_path, capsys, value):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "2"]])
+    set_status(data, "generated_utc", value)
+    out = tmp_path / "o" / "x.xlsx"
+    assert export(data, out) == 1
+    err = capsys.readouterr().err
+    assert "generated_utc" in err and "\x01" not in err
+    no_leftovers(out)
+
+
+def test_file_properties_are_clean_and_readable(mini, tmp_path):
+    import xml.etree.ElementTree as ET
+    out = tmp_path / "p.xlsx"
+    assert export(mini.data, out) == 0
+    with zipfile.ZipFile(out) as z:
+        core = ET.fromstring(z.read("docProps/core.xml"))
+        app = z.read("docProps/app.xml").decode()
+    text = ET.tostring(core, encoding="unicode")
+    assert "NFL-Analysis pipeline" in text and "NFL-Analysis 3.001" in text
+    assert "NFL-Analysis pipeline" in app
+    props = openpyxl.load_workbook(out).properties
+    assert props.creator == "NFL-Analysis pipeline" and props.lastModifiedBy == "NFL-Analysis pipeline"
+    assert props.modified.year == 2026 or props.modified.year >= 2020
+
+
+# --- A1-05 / A1-09 / A1-13: numbers ------------------------------------------------------------
+
+@pytest.mark.parametrize("value", ["nan", "NaN", "inf", "-inf", "Infinity", "-Infinity", "1e400", "1e-400", "1e999999999999", "1e60", "5e-324", "1e301"])
+def test_unusable_league_numbers_name_file_line_and_column(tmp_path, capsys, value):
+    data = tiny_data(tmp_path, [one_player("A"), one_player("B", pid="00-2", week="2")], [["1", "1"], ["2", "2"]])
+    edit_scored(data, 2024, lambda h, r: (h, [r[0], [*r[1][:9], value, r[1][10]]]))
+    out = tmp_path / "o" / "x.xlsx"
+    assert export(data, out) == 1
+    err = capsys.readouterr().err
+    assert "scored_2024.csv line 3" in err and "FF_Alpha" in err and value[:40] in err
+    assert "InvalidOperation" not in err and "Traceback" not in err
+    no_leftovers(out)
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-Infinity", "1e400", "1e-400"])
+def test_unusable_metric_numbers_are_errors_not_text(tmp_path, capsys, value):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    pw = data / "player_week" / "player_week_2024.csv"
+    h, r = read_csv(pw)
+    r[0][h.index("receptions")] = value
+    write(pw, h, r)
+    assert export(data, tmp_path / "x.xlsx") == 1
+    err = capsys.readouterr().err
+    assert "player_week_2024.csv line 2" in err and "receptions" in err and "Traceback" not in err
+
+
+@pytest.mark.parametrize("value", ["+3", ".5", " 7", "12.5 ", "1_0", "n/a", "٣", "0x10", "1,5", "007"])
+def test_league_values_must_be_plain_numbers_in_both_sheets(tmp_path, capsys, value):
+    data = tiny_data(tmp_path, [one_player("A")], [[value, "1"]])
+    assert export(data, tmp_path / "x.xlsx") == 1               # one parser: no "text in PlayerGames, summed in SeasonTotals"
+    assert "FF_Alpha" in capsys.readouterr().err
+
+
+def test_number_problem_rules():
+    for ok in ("0", "-0", "1.5", "1e5", "1E-5", "1e300", "1e-300", "123456789012345678"):
+        assert export_xlsx.number_problem(ok) is None and export_xlsx.is_number(ok)
+    for bad in ("nan", "+Inf", "-infinity", "1e301", "1e-301", "1e-400"):
+        assert export_xlsx.number_problem(bad) and not export_xlsx.is_number(bad)
+    for text in ("abc", "007", "+1", ".5", ""):
+        assert export_xlsx.number_problem(text) is None and not export_xlsx.is_number(text)
+
+
+def test_league_value_with_many_digits_is_kept_exactly(tmp_path):
+    data = tiny_data(tmp_path, [one_player("A")], [["0.30000000000000004", "1e-9"]])
+    out = tmp_path / "o.xlsx"
+    assert export(data, out) == 0
+    row = sheet_rows(openpyxl.load_workbook(out), "PlayerGames", 2)[0]
+    assert row[7] == 0.30000000000000004 and row[8] == 1e-9
+
+
+# --- A1-06: blank lines --------------------------------------------------------------------------
+
+def test_blank_lines_are_ignored_in_every_csv(tmp_path):
+    data = two_season_data(tmp_path)
+    clean = tmp_path / "clean.xlsx"
+    assert export(data, clean) == 0
+    for f in [p for p in data.rglob("*.csv")]:
+        raw = f.read_bytes().decode("utf-8")
+        head, _, rest = raw.partition("\n")
+        f.write_bytes((head + "\n\n" + rest + "\n\n").encode("utf-8"))     # a blank line after the header and at the end
+    messy = tmp_path / "messy.xlsx"
+    assert export(data, messy) == 0
+    assert messy.read_bytes() == clean.read_bytes()
+
+
+# --- R1-m1 / R1-m2 / R1-m4 and the error paths ---------------------------------------------------
+
+@pytest.mark.parametrize("week", ["x", "1.5", "-1", "", "٣"])
+def test_non_numeric_week_is_an_error(tmp_path, capsys, week):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    pw = data / "player_week" / "player_week_2024.csv"
+    h, r = read_csv(pw)
+    r[0][1] = week
+    write(pw, h, r)
+    assert export(data, tmp_path / "x.xlsx") == 1
+    err = capsys.readouterr().err
+    assert "player_week_2024.csv line 2" in err and "week" in err and "whole number" in err
+
+
+def test_season_in_a_row_must_match_its_file(tmp_path, capsys):
+    data = two_season_data(tmp_path)
+    pw = data / "player_week" / "player_week_2023.csv"
+    h, r = read_csv(pw)
+    r[1][0] = "2031"
+    write(pw, h, r)
+    assert export(data, tmp_path / "x.xlsx") == 1
+    assert "player_week_2023.csv line 3" in capsys.readouterr().err
+
+
+def test_output_folder_that_cannot_be_made_is_a_clear_error(tmp_path, capsys):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    blocker = tmp_path / "file"
+    blocker.write_text("x")
+    assert export(data, blocker / "sub" / "x.xlsx") == 1
+    err = capsys.readouterr().err
+    assert "cannot create the folder" in err and "Traceback" not in err and "[Errno" not in err
+
+
+def test_os_error_while_writing_is_reported_with_the_path(tmp_path, capsys, monkeypatch):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    out = tmp_path / "o" / "x.xlsx"
+
+    def boom(*a, **k):
+        raise PermissionError(13, "Permission denied", str(out))
+    monkeypatch.setattr(export_xlsx.os, "replace", boom)
+    assert export(data, out) == 1
+    err = capsys.readouterr().err
+    assert "cannot write" in err and str(out) in err and "Permission denied" in err
+    no_leftovers(out)
+
+
+def test_unexpected_exception_is_one_line_and_leaves_nothing(tmp_path, capsys, monkeypatch):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    out = tmp_path / "o" / "x.xlsx"
+    monkeypatch.setattr(export_xlsx, "season_totals", lambda *a: 1 / 0)
+    assert export(data, out) == 1
+    err = capsys.readouterr().err
+    assert "unexpected ZeroDivisionError" in err and "Traceback" not in err and err.count("\n") == 1
+    no_leftovers(out)
+
+
+def test_unreadable_data_file_is_a_clear_error(tmp_path, capsys):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    (data / "config" / "bonus_rules.csv").unlink()
+    (data / "config" / "bonus_rules.csv").mkdir()           # a folder where a file should be
+    assert export(data, tmp_path / "x.xlsx") == 1
+    err = capsys.readouterr().err
+    assert "bonus_rules.csv" in err and "Traceback" not in err
+
+
+def test_empty_season_file_says_empty(tmp_path, capsys):
+    data = two_season_data(tmp_path)
+    (data / "player_week" / "player_week_2023.csv").write_bytes(b"")
+    assert export(data, tmp_path / "x.xlsx") == 1
+    assert "player_week_2023.csv is empty" in capsys.readouterr().err
+
+
+def test_missing_seasons_csv_is_refused(tmp_path, capsys):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    (data / "seasons.csv").unlink()
+    assert export(data, tmp_path / "x.xlsx") == 1
+    assert "seasons.csv" in capsys.readouterr().err
+
+
+def test_text_length_is_counted_in_utf16_units(tmp_path, capsys):
+    ok = tiny_data(tmp_path / "ok", [one_player("\U0001f600" * 16_383)], [["1", "1"]])        # 32,766 units
+    assert export(ok, tmp_path / "ok.xlsx") == 0
+    bad = tiny_data(tmp_path / "bad", [one_player("\U0001f600" * 20_000)], [["1", "1"]])      # 40,000 units, 20,000 code points
+    assert export(bad, tmp_path / "bad.xlsx") == 1
+    err = capsys.readouterr().err
+    assert "40,000" in err and "player_week_2024.csv line 2" in err
+
+
+def test_note_row_counts_against_the_row_limit(tmp_path, monkeypatch, capsys):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    monkeypatch.setattr(export_xlsx, "MAX_DATA_ROWS", 3)       # Leagues has 3 rows under a note row: one too many
+    assert export(data, tmp_path / "x.xlsx") == 1
+    assert "Leagues" in capsys.readouterr().err
+
+
+def test_no_temporary_file_is_left_after_success(tmp_path):
+    data = tiny_data(tmp_path, [one_player("A")], [["1", "1"]])
+    out = tmp_path / "o" / "x.xlsx"
+    assert export(data, out) == 0
+    assert [p.name for p in out.parent.iterdir()] == ["x.xlsx"]
+
+
+# --- determinism, defaults, package checks ------------------------------------------------------
+
+def test_same_bytes_when_file_timestamps_change(mini, tmp_path):
+    import os
+    a, b = tmp_path / "a.xlsx", tmp_path / "b.xlsx"
+    assert export(mini.data, a) == 0
+    for i, p in enumerate(sorted(mini.data.rglob("*"))):
+        os.utime(p, (1_000_000_000 + i * 7919, 1_100_000_000 + i * 104729))
+    assert export(mini.data, b) == 0
+    assert a.read_bytes() == b.read_bytes()
+
+
+def test_default_paths(mini, tmp_path, monkeypatch):
+    project = tmp_path / "NFL"
+    shutil.copytree(mini.data, project / "04-data")
+    monkeypatch.setattr(export_xlsx, "PROJECT", project)
+    assert export_xlsx.main([]) == 0
+    default = project / ".work" / "workbook" / "NFL-Analysis.xlsx"
+    assert default.is_file() and openpyxl.load_workbook(default).sheetnames[0] == "About"
+    other = tmp_path / "other.xlsx"
+    assert export_xlsx.main(["--out", str(other)]) == 0
+    assert other.read_bytes() == default.read_bytes()
+
+
+
+def test_package_headers_match_tables_in_every_sheet(mini, tmp_path):
+    out = tmp_path / "p.xlsx"
+    assert export(mini.data, out) == 0
+    assert raw_header_vs_table(out) == 7

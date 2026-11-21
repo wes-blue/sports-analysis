@@ -111,14 +111,25 @@ Publishing is all or nothing: the run first proves it can write every file it wi
 
 ## Excel workbook export
 
-`export` reads only the published files in `04-data` and writes one workbook with the standard library (no formulas, queries or connections). It never downloads anything and never changes `04-data`. It refuses a `status.csv` whose `data_contract_version` it does not understand.
+`export` reads only the published files in `04-data` and writes one workbook with the standard library (no formulas, queries or connections). It never downloads anything and never changes `04-data`. It refuses a `status.csv` whose `data_contract_version` is missing or is not the one it understands.
 
 ```bash
 python -m nflpipe export
 python -m nflpipe export --data-dir ../04-data --out ../.work/workbook/NFL-Analysis.xlsx
 ```
 
-Exit code `0` means the file was written; `1` means an error, with the cause on stderr and no partial file at `--out`. The same data gives byte-identical output. The sheets and rules are in `../CONTRACTS.md` section 13. The workflows upload the file as a release asset; it is not committed.
+Exit code `0` means the file was written; `1` means an error, with one line on stderr that names the cause (the file, line and column for a bad value) and no partial file at `--out`. The same data gives byte-identical output. The sheets and rules are in `../CONTRACTS.md` section 13. The workflows upload the file as a release asset; it is not committed.
+
+What the export checks before it writes (any failure is exit 1 and nothing is replaced):
+
+- **Scored values are matched by key and column name.** Each `scored_<season>.csv` row is found by `season, week, season_type, player_id` and each league by its `FF_<League>` column name, never by position. A scored file with a missing league or key column, or whose keys do not match its `player_week` file, is an error.
+- **Column names are legal Excel table names:** unique once case and white space are ignored, at most 255 characters, and written identically in the header cell and the table definition (Excel's `_xHHHH_` escape is protected in both).
+- **Numbers are finite and storable.** `nan`, `inf` and values outside about 1e-300 to 1e300 are errors, not text. League values must be plain numbers.
+- **`generated_utc` must be an ISO 8601 UTC time stamp** such as `2026-01-02T03:04:05Z`; it is the only value that reaches the file properties.
+- **Text** may be at most 32,767 UTF-16 code units; `week` must be a whole number and `season` must match the file name.
+- Blank lines in any CSV are ignored.
+
+`PlayerGames` is written newest first (season, then week, descending) with your leagues' `FF_` columns right after `opponent_team`; `SeasonTotals` is newest first, REG before POST, highest first league total first. Both freeze the header row and the columns through `player_display_name`. `Dictionary` has one row for every `PlayerGames` column. The design version is the module constant `WORKBOOK_VERSION`.
 
 ## Tests
 
