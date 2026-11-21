@@ -449,7 +449,7 @@ jobs:
         timeout-minutes: 20
         env:
           WORKBOOK_DIR: ../.work/workbook
-          WORKBOOK_MIN_BYTES: "1000000"   # the real file is about 38 MB; anything this small is a broken export
+          WORKBOOK_MIN_BYTES: "1000000"   # the real file is about 8 MB (3.001: about 38 MB); anything this small is a broken export
           ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
           EXPORT_LOG: ${{ runner.temp }}/nflpipe-export.log
         run: |

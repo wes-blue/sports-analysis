@@ -1,12 +1,13 @@
 # Memory: what a new session must know
 
-_Last updated: 2026-11-21, after the owner opened 3.001 in Excel (Q-024 answered, D-046)._
+_Last updated: 2026-11-21, when 3.002 (the smaller workbook) was built, reviewed and sent to the owner for an Excel test before the merge._
 
 Read this after `CLAUDE.md`. The decision log (`00-Governance/DECISIONS.md`), the NFL contract (`NFL/CONTRACTS.md`), the plan (`NFL/PLAN.md`) and `BLOCKERS.csv` hold the detail; this file says where things stand and what is not written anywhere else.
 
 ## Current status
 
-- **In progress: version 3.002, automation proven on GitHub** (roadmap in `NFL/PLAN.md`). It also carries, by D-045, what the 3.001 publish could not show: a second publish replacing the workbook at the same address, a manual run, and a forced build or upload failure that opens an alert. (The owner's first open in Excel was also carried; it passed on 2026-11-21, D-046.) Nothing needs doing until the first scheduled weekly run (Tue 2026-11-24 15:17 UTC) or the owner's go-ahead for the smaller file.
+- **In progress: version 3.002, the smaller workbook (D-047).** The owner said "go ahead" on 2026-11-21. The exporter leaves out the cell reference `r` on a data cell that follows the previous one (`NFL/CONTRACTS.md` §13.3): 8,432,121 bytes instead of 40,018,688, every value unchanged, design version 3.002. Built by X1, found correct by R1 (all 17.7 million cells against the sources and 3.001) and attacked by the adversarial reviewer (2 major: no primary evidence for Excel, and the merge would replace the working file before the owner tested; both handled). QA: `NFL/06-qa/qa-disposition-3.002.md`. **State:** a test copy (SHA-256 `eb33017c…`) was sent to the owner in chat; the owner opens it in Excel and answers `BLOCKERS.csv` Q-025 **before** the 3.002 pull request is merged. If Excel objects, do not merge; revert the compact flag (two call sites), the tests and the version. After the merge: watch the first run replace the asset (the first real delete-and-rename on GitHub), check that the link serves `eb33017c…` if the data has not changed, and record the release.
+- **Next: version 3.003, automation proven on GitHub** (renumbered from 3.002 by D-047). It carries, by D-045, a manual run and a forced build or upload failure that opens an alert; the second publish replacing the asset will also be shown by the 3.002 merge.
 - **Released 2026-11-21: version 3.001, the workbook built on GitHub (decisions D-041 to D-045).** The owner tried the experimental 2.001 workbook on 2026-11-20: it opened, but Refresh All was still running after five minutes, which was too long, and the owner asked for Python on GitHub to build the workbook (`BLOCKERS.csv` Q-020). So from 3.001 `python -m nflpipe export` writes `NFL-Analysis.xlsx` from `NFL/04-data` (values only, nothing to refresh; `NFL/CONTRACTS.md` section 13), and the weekly and monthly workflows upload it after a PUBLISH as the release asset of tag `nfl-workbook`, at `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`. It is not committed to git (D-042). Scoring is changed by editing `NFL/02-config/` on GitHub.
   - **How it was made.** Built by three Sonnet teams (exporter, workflows, documents); examined by a review committee (data: correct, 0 major; journey: ready after fixes) and an adversarial committee (file: no repair trigger on today's data, 4 critical findings on unusual inputs; workflows: no link for 3.5 days after the merge, and a failed upload would delete the live file); all critical and major findings fixed by two fix teams and confirmed by an independent re-test. 679 tests on Python 3.11 and 3.13; 17,669,498 cells verified three times independently with 0 mismatches. QA: `NFL/06-qa/qa-disposition-3.001.md`. Decision D-044 defers the size reductions.
   - **The Power Query route is retired (D-043):** `NFL/05-excel/archive-2.x/` holds the Power Query sources, generators and both 2.001 workbook copies (moved with `git mv`, scripts' folder paths adjusted, not run again) with a README saying so. `NFL/08-releases/NFL-Analysis-2.001.xlsx` is unchanged; the register marks 2.001 Superseded by 3.001. `BLOCKERS.csv` Q-023 asks whether to keep the route at all (default: retired).
@@ -22,11 +23,11 @@ Read this after `CLAUDE.md`. The decision log (`00-Governance/DECISIONS.md`), th
 
 ## Next steps
 
-1. **The smaller file (D-044, D-046) waits for the owner's go-ahead.** Excel accepted the current form, so the lossless reduction is no longer blocked: omitting cell references cuts the file from about 38 MB to about 7 MB with no value changed. It changes the file's XML, so it is a new workbook design version (3.002 or later, per `VERSIONING.md`) with the review and adversarial committees and one more Excel open. Zeros as empty cells stays out unless the owner asks (it loses information).
+1. **3.002: the owner's Excel test (Q-025), then the merge, then record the release** (see Current status).
 2. **If Excel ever reports a repair** on a later file, treat it as an exporter defect: get the message word for word and reproduce it before changing the file.
 3. **Watch the first replacement of the asset.** The next PUBLISH (or a `workbook_only` run) is the first to delete an existing asset and rename the new one. Check its run summary and the stable address afterwards (C-33, RAID-100, RAID-103).
-4. **3.002, automation proven:** a manual run of each workflow, the first scheduled weekly run (Tue 2026-11-24), the watchdog, the monthly run, a config edit made on GitHub that publishes and rebuilds the workbook, and an alert from a failed build or upload.
-5. **3.003, remaining ESPN rules:** when Q-016, Q-017 or Q-019 is answered.
+4. **3.003, automation proven (was 3.002, D-047):** a manual run of each workflow, the first scheduled weekly run (Tue 2026-11-24), the watchdog, the monthly run, a config edit made on GitHub that publishes and rebuilds the workbook, and an alert from a failed build or upload.
+5. **3.004, remaining ESPN rules (was 3.003):** when Q-016, Q-017 or Q-019 is answered.
 6. **Documents corrected for 3.001 by the orchestrator (2026-11-21):** the contract (§0 diagram, §9 marked retired, §12, §13.1 data-contract check), `CLAUDE.md` §5, the charter, the role cards, `_Sport-Template/` and `NFL/02-config/README.md`.
 
 The plan's roadmap (`NFL/PLAN.md`) has the acceptance criteria for each.
@@ -44,6 +45,7 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 | Q-021 | Confirm CC BY 4.0 for the derived data | CC BY 4.0, crediting nflverse |
 | Q-022 | Require approval before outside pull requests run workflows | GitHub's default |
 | Q-023 | Keep the Power Query route available at all? | Retired and archived (D-043) |
+| Q-025 | Open the 3.002 test copy in Excel before the merge: version, any repair message, time, Ctrl+End, ESPN spot check | Not merged until answered; 3.001 stays at the link |
 
 Answered since: Q-015 (merged 2026-11-20), Q-020 (the Power Query refresh was too slow; acted on in D-041 to D-043) and Q-024 (3.001 opens cleanly in Excel in about a minute; D-046).
 
@@ -85,6 +87,7 @@ Answered since: Q-015 (merged 2026-11-20), Q-020 (the Power Query refresh was to
 - **There is no Excel, so the generated workbook cannot be opened in Excel here, and GitHub Actions cannot be run from here.** The workbook is read back with openpyxl and opened in LibreOffice; the workflows are linted and unit-tested; each needs a first real run.
 - The M parser setup in `NFL/.work/` belonged to the retired Power Query route (its scripts are in `NFL/05-excel/archive-2.x/build/pq/`). `.work/` is not in git.
 - Downloads go through a proxy; Python reads nflverse files through it with the CA bundle named by `SSL_CERT_FILE`. `raw.githubusercontent.com` and `git ls-remote` on public repositories work.
+- `BLOCKERS.csv` ends each record with CRLF (Excel-friendly) while line breaks inside quoted fields are LF. Edit it as bytes or with the `csv` module and `newline=""`; `Path.read_text`/`write_text` silently turns every CRLF into LF (happened once on 2026-11-21, caught by `git diff --stat`).
 - Subagents' Write tool refuses some report-style files; they return the text and the orchestrator saves it.
 - The public GitHub API (`api.github.com`) and release downloads answer from the container without a token, so a run's status and the stable workbook address can be checked here (used for the 3.001 publish).
 
