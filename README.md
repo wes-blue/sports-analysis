@@ -10,6 +10,7 @@ The link never changes: every rebuild replaces the file behind it. Open it in Ex
 
 ## What is in the workbook
 
+- **About**: version, data-through date and where the data comes from. Start here.
 - **PlayerGames**: about 180,000 player-games, newest first, with each league's fantasy points next to the player's name.
 - **SeasonTotals**: one row per player per season, with totals and averages per league.
 - **Leagues, Scoring, Bonus**: the scoring rules the numbers were built with.

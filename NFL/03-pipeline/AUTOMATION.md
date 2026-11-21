@@ -77,7 +77,7 @@ What you will see:
 
 - Within a minute, the **Actions** tab shows an **nfl-pipeline-weekly** run named after your commit message (and an **nfl-pipeline-ci** run with the tests).
 - After a few minutes it turns green with **PUBLISH**, and a new commit by **github-actions[bot]** appears. A changed rule rebuilds every season, so all seasons get the new scores. A little later the run's summary says `workbook: published` and the link in section 0 gives the new workbook; the run is green only when the workbook is in place too. The **About** sheet's "Generated (UTC)" and run id tell you the file is the new one.
-- Download the workbook again (section 0). If you changed a league that has stored test values, the run's summary lists the checks `G-GOLDEN` or `G-ESPN` as **WARN** "not applicable: rules for <League> changed". That is expected and does not stop the publish.
+- Download the workbook again (section 0). If you changed a league that has stored test values, the run's summary lists the checks `G-GOLDEN` or `G-ESPN` (defined in [`NFL/CONTRACTS.md`](../CONTRACTS.md) section 6) as **WARN** "not applicable: rules for <League> changed". That is expected and does not stop the publish.
 
 If you make two quick changes, the second run waits for the first. A run that is still waiting can be replaced by a newer one; it then shows as **cancelled** (grey). That is normal: the newer run includes your earlier change.
 

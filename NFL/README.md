@@ -6,7 +6,7 @@ Scored NFL fantasy-football data and a finished Excel workbook built from it. A 
 
 Everything runs on GitHub. Nothing needs your computer to be on, and you need only Excel to use the result.
 
-**Status (2026-11-21).** The pipeline publishes on GitHub and the workbook, version 3.002, is built there and replaced at the download link after every publish. It opens in desktop Excel with no repair message. See [`05-excel/README.md`](05-excel/README.md) for the version history.
+**As of 2026-11-21:** the pipeline publishes on GitHub and the workbook, version 3.002, is built there and replaced at the download link after every publish. It opens in desktop Excel with no repair message. See [`05-excel/README.md`](05-excel/README.md) for the version history.
 
 ## Start here
 
@@ -40,7 +40,7 @@ nflpipe export     builds NFL-Analysis.xlsx (values only) from 04-data; the work
 
 ## Folders
 
-The numbering starts at 02 because the planning and review folders (01, 07 and 08) are kept privately by the maintainer.
+Folders are numbered in the order the data flows through the project.
 
 | Folder | Holds |
 |---|---|
