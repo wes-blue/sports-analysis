@@ -1,14 +1,20 @@
 # sports-analysis
 
-Fantasy-sports data that builds and checks itself on GitHub, and Excel workbooks that read it straight from the web.
+Fantasy-sports data that builds and checks itself on GitHub, and a finished Excel workbook built from it.
 
-For each sport, a pipeline downloads public statistics, scores them for one or more fantasy leagues, checks the result, and publishes plain CSV files in this repository. GitHub Actions runs the pipeline on a schedule. An Excel workbook reads the published files from their web address, so a reader needs only Excel: no Python, no git and no copy of the repository.
+For each sport, a pipeline downloads public statistics, scores them for one or more fantasy leagues, checks the result, publishes plain CSV files in this repository and builds an Excel workbook from them. GitHub Actions runs the pipeline on a schedule. A reader needs only Excel to use the workbook: no Python, no git, no copy of the repository, and nothing to refresh.
+
+## Download the NFL workbook
+
+**[Download NFL-Analysis.xlsx](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx)**, the finished workbook. Open it in Excel; its `About` sheet says which data it holds. The link never changes: every rebuild replaces the file behind it. [`NFL/05-excel/README.md`](NFL/05-excel/README.md) says what is in it.
+
+Status (2026-11-21): this workbook is design version 3.001, which is in preparation. Until the first upload has run on GitHub, the link answers "not found". [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the latest release.
 
 ## Sports
 
 | Sport | Folder | What it covers | Workbook | Status |
 |---|---|---|---|---|
-| NFL | [`NFL/`](NFL/README.md) | Weekly player stats for a rolling 10 seasons (regular season and playoffs), team defense and special teams (D/ST) rows, long-touchdown counts, and fantasy points for several scoring systems, including one ESPN league | `NFL-Analysis-2.xxx` | Moved here on 2026-11-20. Version 2.001 is in preparation; [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the latest release. |
+| NFL | [`NFL/`](NFL/README.md) | Weekly player stats for a rolling 10 seasons (regular season and playoffs), team defense and special teams (D/ST) rows, long-touchdown counts, and fantasy points for several scoring systems, including one ESPN league | `NFL-Analysis` (version 3.001 in preparation) | Moved here on 2026-11-20. Version 2.001 (Power Query) was released and is retired; [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the releases. |
 
 NFL is the only sport for now. The structure allows more.
 
@@ -22,7 +28,7 @@ Every sport has its own top-level folder with the same numbered subfolders:
 | `02-config/` | The CSV files a person edits: leagues, scoring weights, bonus bands, settings |
 | `03-pipeline/` | The code that downloads, scores, checks and publishes, with its tests |
 | `04-data/` | The published CSV files. Written only by the pipeline. |
-| `05-excel/` | The workbook and its Power Query |
+| `05-excel/` | Where to get the workbook, and the archive of the retired Power Query workbook |
 | `06-qa/` | QA reports, evidence and test fixtures |
 | `07-research/` | Design notes |
 | `08-releases/` | The release register |
@@ -31,17 +37,15 @@ Each sport also has a `README.md`, a `PLAN.md` and a `CONTRACTS.md` that defines
 
 ## Use the NFL workbook
 
-1. You need **Excel for Windows (Microsoft 365)**. The workbook uses the Data Model, which Excel for Mac and Excel on the web do not offer.
-2. Open [`NFL/05-excel/`](NFL/05-excel/README.md) on GitHub, click the workbook file, and use **Download raw file**. There are two:
-   - `NFL-Analysis-2.001.xlsx`: every table and setting is in place, and the 15 Power Query queries are inside it as text. You add them once in Excel by following its Start_Here sheet (about 30 minutes).
-   - `NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx`: the same queries already installed. It has not yet been opened in Excel, so it is labelled experimental and is not a release.
-3. Open the file, follow its Start_Here sheet, and press **Data › Refresh All**. The workbook reads the published data from the web address below.
+1. Download it with the link above and open it in Excel. There is no Enable Content step, no query to add and no refresh.
+2. To get newer data, download it again. It is rebuilt after every pipeline publish, in season on Tuesday, Wednesday and Thursday.
+3. To change the scoring, edit a file in [`NFL/02-config/`](NFL/02-config/README.md) on GitHub. Saving it reruns the pipeline, which rebuilds the workbook; download it again a few minutes later. [`NFL/03-pipeline/AUTOMATION.md`](NFL/03-pipeline/AUTOMATION.md) has the steps.
 
-[`NFL/05-excel/README.md`](NFL/05-excel/README.md) has the full steps and what the Checks sheet should show.
+The Power Query workbooks of version 2.001 are retired; see [`NFL/05-excel/archive-2.x/README.md`](NFL/05-excel/archive-2.x/README.md).
 
 ## Read the published NFL data
 
-Every file in `NFL/04-data/` can be read by anyone, from Excel, a browser, Python, R or any other tool, at:
+Every file in `NFL/04-data/` can be read by anyone, from a browser, Excel, Python, R or any other tool, at:
 
 ```
 https://raw.githubusercontent.com/wes-blue/sports-analysis/main/NFL/04-data/<path>
@@ -51,7 +55,7 @@ For example, `.../NFL/04-data/scored/scored_2025.csv` holds every player-game of
 
 ## It updates itself
 
-The NFL workflows in `.github/workflows/` run the pipeline during the season on Tuesday, Wednesday and Thursday, on the 1st of every month, and whenever a scoring file in `NFL/02-config/` is changed on `main`. A run publishes only when every blocking check passes; otherwise the last good data stays in place. As of 2026-11-20 the workflows are installed but have not yet run on GitHub.
+The NFL workflows in `.github/workflows/` run the pipeline and rebuild the workbook during the season on Tuesday, Wednesday and Thursday, on the 1st of every month, and whenever a scoring file in `NFL/02-config/` is changed on `main`. A run publishes only when every blocking check passes; otherwise the last good data stays in place. As of 2026-11-21 the pipeline has published once on GitHub; the workbook upload step is not yet running.
 
 When the data looks out of date:
 

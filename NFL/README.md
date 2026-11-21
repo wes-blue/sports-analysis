@@ -1,17 +1,19 @@
 # NFL
 
-Scored NFL fantasy-football data and an Excel workbook that reads it. A Python pipeline turns public [nflverse](https://github.com/nflverse/nflverse-data) data into scored CSV files, GitHub Actions runs it, and the workbook's Power Query reads the published files from the web and lets you set your own points per league.
+Scored NFL fantasy-football data and a finished Excel workbook built from it. A Python pipeline turns public [nflverse](https://github.com/nflverse/nflverse-data) data into scored CSV files and into an Excel workbook, and GitHub Actions runs it.
+
+**Download the workbook:** <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx>. Open it in Excel; there is nothing to refresh. The link never changes, and the file behind it is replaced after every publish.
 
 Everything runs on GitHub. Nothing needs your computer to be on, and you need only Excel to use the result.
 
-**Status (2026-11-20).** The project moved here from a private repository today. Version 2.001 is in preparation: [`08-releases/RELEASES.md`](08-releases/RELEASES.md) shows the latest release, and [`PLAN.md`](PLAN.md) the roadmap. The work is on a branch with a pull request into `main`. Until it is merged, the data's web address and the scheduled runs do not work yet ([`/BLOCKERS.csv`](../BLOCKERS.csv) Q-015).
+**Status (2026-11-21).** The project moved here from a private repository on 2026-11-20 and the pull request was merged; the pipeline has published on GitHub. Version 3.001 (the workbook built on GitHub) is in preparation: the exporter and the upload step are not yet running, so the download link answers "not found" until the first upload. [`08-releases/RELEASES.md`](08-releases/RELEASES.md) shows the releases, and [`PLAN.md`](PLAN.md) the roadmap.
 
 ## Start here
 
 | To | Read |
 |---|---|
-| Use the workbook | [`05-excel/README.md`](05-excel/README.md): which file to download, how to open it, what the Checks sheet should show |
-| Change the scoring | [`02-config/README.md`](02-config/README.md): edit a file on GitHub; saving it on `main` publishes new scores |
+| Use the workbook | [`05-excel/README.md`](05-excel/README.md): the download link and what is in the workbook |
+| Change the scoring | [`02-config/README.md`](02-config/README.md): edit a file on GitHub; saving it on `main` publishes new scores and rebuilds the workbook |
 | Understand the automation, or see why data is late | [`03-pipeline/AUTOMATION.md`](03-pipeline/AUTOMATION.md) |
 | Read the data from another tool | [`04-data/README.md`](04-data/README.md) |
 | See every file format and command | [`CONTRACTS.md`](CONTRACTS.md) |
@@ -32,8 +34,9 @@ GitHub Actions     /.github/workflows/nfl-pipeline-*.yml
 04-data/*.csv      committed by the workflow, public at
        |           https://raw.githubusercontent.com/wes-blue/sports-analysis/main/NFL/04-data/
        v
-05-excel/          NFL-Analysis-<version>.xlsx: Power Query reads 04-data from that address,
-                   re-scores with the workbook's own Scoring sheet and checks itself against the pipeline
+nflpipe export     builds NFL-Analysis.xlsx (values only) from 04-data; the workflow uploads it as a
+                   release asset at https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx
+                   (not committed to git; the 05-excel/ folder only says where it is)
 ```
 
 ## Folders
@@ -44,10 +47,12 @@ GitHub Actions     /.github/workflows/nfl-pipeline-*.yml
 | `02-config/` | The CSV files you edit to change the scoring |
 | `03-pipeline/` | The `nflpipe` Python package, its tests, and `AUTOMATION.md`, the guide to the workflows |
 | `04-data/` | What the pipeline publishes. Never edited by hand. |
-| `05-excel/` | The workbooks, their Power Query and the workbook generators |
+| `05-excel/` | Where to get the workbook, and `archive-2.x/`, the retired Power Query workbook |
 | `06-qa/` | QA reports, evidence from your ESPN league, and test fixtures |
 | `07-research/` | Design notes |
 | `08-releases/` | The release register, `RELEASES.md` |
+
+The workbook design is specified in [`CONTRACTS.md`](CONTRACTS.md) section 13.
 
 The workflow files themselves are at the repository root, in [`/.github/workflows/`](../.github/workflows/), because GitHub runs workflows only from there.
 

@@ -24,8 +24,8 @@ import openpyxl
 from lxml import etree
 
 HERE = Path(__file__).resolve().parent
-P = HERE.parents[1]                                   # NFL
-sys.path.insert(0, str(P / "05-excel" / "build"))
+P = HERE.parents[2]                                   # NFL
+sys.path.insert(0, str(P / "05-excel" / "archive-2.x" / "build"))
 import pii_scan  # noqa: E402
 
 
@@ -292,7 +292,7 @@ for name, t in tables.items():
 extern = [k for k in dn if k[0].startswith("ExternalData_")]
 ok(len(extern) == 4, "4 ExternalData names, one per query table")
 ok("tblGoldenRules" in tables and tables["tblGoldenRules"]["sheet"] == "Validation", "tblGoldenRules on Validation")
-manifest_names = re.findall(r'"name": "([^"]+)"', (P / "05-excel/powerquery/manifest.json").read_text())
+manifest_names = re.findall(r'"name": "([^"]+)"', (P / "05-excel/archive-2.x/powerquery/manifest.json").read_text())
 missing = [n for n in manifest_names if "Query - " + n not in cnames]
 ok(not missing, "a 'Query - <name>' connection for each of the 15 queries%s" % (missing or ""))
 ok(cnames["Query - Stats_Scored"].get("type") == "100" and b'connection="Query - Stats_Scored"' in odata["xl/workbook.xml"],

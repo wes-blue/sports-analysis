@@ -2,13 +2,25 @@
 
 This is the release register for the NFL workbook in `wes-blue/sports-analysis`. The versioning policy is in [`/00-Governance/VERSIONING.md`](../../00-Governance/VERSIONING.md): the first digit names the design generation (decision D-035), released files are immutable, fixes ship as the next version, and a version's status changes only here, never inside a released file.
 
-## Releases in this repository (2.x)
+## Releases in this repository
 
-The 2.x line is the workbook fed by the pipeline in this repository, reading the published data from the web.
+### 3.x: the workbook built on GitHub
+
+From 3.001 the pipeline builds the finished, values-only workbook after every data publish and uploads it as a GitHub Release asset, not as a file in git (decisions D-041, D-042; `../CONTRACTS.md` section 13; policy in [`/00-Governance/VERSIONING.md`](../../00-Governance/VERSIONING.md)). One row per released roadmap version is written here when it is released; it says which workbook design version the file shows. The file at the stable address is rebuilt with new data on every publish, so the SHA-256 below is that of the file as first published for the version.
+
+Stable download address: <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx>
+
+| Version | Date | Status | Scope | Gates | SHA-256 | Where |
+|---|---|---|---|---|---|---|
+| 3.001 | **PLACEHOLDER: the orchestrator fills this row at release** | **In progress. Not released.** | Workbook built on GitHub: `python -m nflpipe export`, values only, uploaded after every publish (`../CONTRACTS.md` section 13) | **TO BE FILLED** (G1 to G5) | **TO BE FILLED** | Release asset `NFL-Analysis.xlsx`, tag `nfl-workbook`. Data version at release (run id, data through): **TO BE FILLED** |
+
+### 2.x: Power Query workbook (retired)
+
+The 2.x line was the workbook fed by the pipeline in this repository, reading the published data from the web with Power Query. It is retired (decisions D-041, D-043).
 
 | Version | Date | Status | Scope | Gates | SHA-256 | File |
 |---|---|---|---|---|---|---|
-| 2.001 | 2026-11-20 | **Released** (generated; paste-ready) | Public repository, GitHub-only (see below) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ | `ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87` | [`NFL-Analysis-2.001.xlsx`](NFL-Analysis-2.001.xlsx) (the working copy, byte-identical, is [`../05-excel/NFL-Analysis-2.001.xlsx`](../05-excel/NFL-Analysis-2.001.xlsx)) |
+| 2.001 | 2026-11-20 | **Superseded by 3.001** (decision D-043; the Power Query route is retired; 3.001 itself is not yet released). Released as generated, paste-ready. | Public repository, GitHub-only (see below) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ | `ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87` | [`NFL-Analysis-2.001.xlsx`](NFL-Analysis-2.001.xlsx), immutable and unchanged. A copy of it is [`../05-excel/archive-2.x/NFL-Analysis-2.001.xlsx`](../05-excel/archive-2.x/NFL-Analysis-2.001.xlsx). |
 
 ## 2.001: public repository, GitHub-only (released 2026-11-20)
 
@@ -23,9 +35,9 @@ The 2.x line is the workbook fed by the pipeline in this repository, reading the
 
 | Part | Where | State |
 |---|---|---|
-| Workbook 2.001 | `NFL-Analysis-2.001.xlsx` here and in `../05-excel/` | Paste-ready: 18 sheets, the M text of all 15 queries, a Start_Here guide. The queries are added once in Excel. **Not yet run in Excel.** |
-| Experimental workbook | `../05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx` | The owner's own Excel-built workbook with the 15 queries installed and personal data removed. Version `2.001-experimental`; **not a release; never opened in Excel.** SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`. |
-| Power Query | `../05-excel/powerquery/` | 15 queries with a runbook. Parse and lint clean. |
+| Workbook 2.001 | `NFL-Analysis-2.001.xlsx` here (a copy is in `../05-excel/archive-2.x/`) | Paste-ready: 18 sheets, the M text of all 15 queries, a Start_Here guide. The queries are added once in Excel. **Not yet run in Excel.** |
+| Experimental workbook | `../05-excel/archive-2.x/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx` | The owner's own Excel-built workbook with the 15 queries installed and personal data removed. Version `2.001-experimental`; **not a release; never opened in Excel.** SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`. |
+| Power Query | `../05-excel/archive-2.x/powerquery/` | 15 queries with a runbook. Parse and lint clean. |
 | Published data | `../04-data/` | 174,945 player rows plus 5,288 D/ST rows, 2017–2026 through week 10. All 13 gates pass. |
 | Pipeline | `../03-pipeline/` (version 1.2.1) | 381 tests, passing on Python 3.11 and 3.13, here and on GitHub's runners. |
 | Workflows | `/.github/workflows/` | Weekly, monthly, watchdog and CI. Lint clean; their logic was executed locally. **Never run on GitHub.** |
@@ -41,6 +53,8 @@ The 2.x line is the workbook fed by the pipeline in this repository, reading the
 | G5 Data | Pass. `check` passes. An independent reviewer recomputed all 901,165 league scores with its own scorer (0 mismatches) and rebuilt the new points-allowed metric from play-by-play for all 5,288 team-games (0 mismatches). ESPN evidence: 25 of 25 values reproduced (23 exact, 2 within 1 point), and all 70 of ESPN's D/ST stat cells match. |
 
 **QA.** Independent review [`../06-qa/qa-report-2.001.md`](../06-qa/qa-report-2.001.md): safe to publish; 0 critical, 1 major and 12 minor findings. Dispositions: [`../06-qa/qa-disposition-2.001.md`](../06-qa/qa-disposition-2.001.md). The review included a search of every file and every part of both workbooks for personal data: none found.
+
+**After the release (2026-11-21).** The owner opened the experimental workbook: it opened without a problem, but Refresh All was still running after five minutes, which was too long (`/BLOCKERS.csv` Q-020). That led to decisions D-041 to D-043: the pipeline builds the workbook itself from 3.001, and the Power Query route is retired. The "Known limits" below are as written at release.
 
 **Known limits.**
 - Neither workbook has run in Excel. The first refresh by the owner is the first real test (roadmap 2.002; `/BLOCKERS.csv` Q-020).

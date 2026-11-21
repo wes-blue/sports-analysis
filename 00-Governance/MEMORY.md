@@ -1,29 +1,32 @@
 # Memory: what a new session must know
 
-_Last updated: 2026-11-20, after the merge and the first live pipeline run._
+_Last updated: 2026-11-21, after re-planning for version 3.001 (the workbook built on GitHub)._
 
 Read this after `CLAUDE.md`. The decision log (`00-Governance/DECISIONS.md`), the NFL contract (`NFL/CONTRACTS.md`), the plan (`NFL/PLAN.md`) and `BLOCKERS.csv` hold the detail; this file says where things stand and what is not written anywhere else.
 
 ## Current status
 
-- **Released 2026-11-20: NFL-Analysis 2.001**, the first release in this repository (D-035). `NFL/08-releases/NFL-Analysis-2.001.xlsx`, byte-identical working copy in `NFL/05-excel/`. SHA-256 `ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87`. Gates G1–G5 passed; QA report and dispositions in `NFL/06-qa/`.
+- **In progress: version 3.001, the workbook built on GitHub (decisions D-041 to D-043).** The owner tried the experimental 2.001 workbook on 2026-11-20: it opened, but Refresh All was still running after five minutes, which was too long, and the owner asked for Python on GitHub to build the workbook (`BLOCKERS.csv` Q-020). So from 3.001 `python -m nflpipe export` writes `NFL-Analysis.xlsx` from `NFL/04-data` (values only, nothing to refresh; `NFL/CONTRACTS.md` section 13), and the weekly and monthly workflows upload it after a PUBLISH as the release asset of tag `nfl-workbook`, at `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`. It is not committed to git (D-042). Scoring is changed by editing `NFL/02-config/` on GitHub.
+  - **State on 2026-11-21:** the contract, decisions, documents and plan are written (roadmap 3.001 is In progress; its acceptance criteria are in `NFL/PLAN.md`). The exporter and the workflow steps are being built by other members: **not yet built or verified by this record; nothing has run on GitHub or in Excel for 3.001.** The download link answers "not found" until the first upload.
+  - **The Power Query route is retired (D-043):** `NFL/05-excel/archive-2.x/` holds the Power Query sources, generators and both 2.001 workbook copies (moved with `git mv`, scripts' folder paths adjusted, not run again) with a README saying so. `NFL/08-releases/NFL-Analysis-2.001.xlsx` is unchanged; the register marks 2.001 Superseded by 3.001. `BLOCKERS.csv` Q-023 asks whether to keep the route at all (default: retired).
+  - **Release details for 3.001 (the orchestrator fills these at release; also the placeholder row in `NFL/08-releases/RELEASES.md`):** release date: _TO BE FILLED_; SHA-256 of the file as first published: _TO BE FILLED_; data version (run id, data through): _TO BE FILLED_; gates G1-G5 and QA report: _TO BE FILLED_; build time and file size on a GitHub runner: _TO BE FILLED_; opened in desktop Excel without a repair message (owner): _TO BE FILLED_.
+- **Released 2026-11-20: NFL-Analysis 2.001**, the first release in this repository (D-035). `NFL/08-releases/NFL-Analysis-2.001.xlsx`, a byte-identical copy in `NFL/05-excel/archive-2.x/`. SHA-256 `ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87`. Gates G1–G5 passed; QA report and dispositions in `NFL/06-qa/`.
   - It is **paste-ready**: the owner adds the 15 queries once in Excel, or uses the experimental workbook.
-  - **Experimental workbook:** `NFL/05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx` (version `2.001-experimental`, SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`): the owner's own Excel-built workbook with the 15 queries installed and personal data removed. Not a release. The owner also has a private copy whose Data Model was left untouched, as a second chance if this one fails to load.
+  - **Experimental workbook:** `NFL/05-excel/archive-2.x/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx` (version `2.001-experimental`, SHA-256 `5a254114540a7d5648b30e3bc8d959422eadf7bc169cbb74bd688b5cd0128d1b`): the owner's own Excel-built workbook with the 15 queries installed and personal data removed. Not a release. The owner also has a private copy whose Data Model was left untouched, as a second chance if this one fails to load.
 - **2026-11-20: the NFL project moved** from the owner's private repository to this public repository (D-033), in the multi-sport layout. No git history was copied. The 1.x archive, raw inputs and 1.006 QA records stay private (D-034).
 - **Pipeline 1.2.1**, data contract version 1. 381 tests pass on Python 3.11 and 3.13, here and on GitHub's runners. Published data: 174,945 player rows plus 5,288 D/ST rows, 2017–2026 through week 10; all 13 gates pass.
 - **ESPN points allowed (D-038)** now follow the owner's ESPN game log: all ten Arizona weeks of ESPN's points-allowed column reproduced, 9 of 10 weekly scores exact.
 - **Merged and live (2026-11-20 23:31Z).** The owner merged pull request #1 (a regular merge commit, `5fbad73`). The merge started `nfl-pipeline-weekly` (push trigger on `NFL/02-config/**`): PUBLISH in 17 seconds, all 13 gates PASS, data commit `ff90d3b` pushed to `main` by `github-actions[bot]` on the first attempt. It picked up week 11's Thursday game (HOU at IND; 66 player rows plus 2 D/ST rows), so `status.csv` reads `latest_week` 11 while week 11 is still being played. `nfl-pipeline-ci` passed on the merge. Proven on GitHub by this run: workflow token write access to `main`, the alert-issue step (`gh issue list --author app/github-actions` accepted, issues enabled), no loop (the bot's commit started no workflow). The data address serves the files (HTTP 200 for `status.csv`, `seasons.csv`, `player_week_2026.csv`, `scored_2026.csv`). Not yet seen: a scheduled run (first: Tue 2026-11-24 15:17 UTC), the watchdog (Fri 2026-11-27), the monthly run (2026-12-01), a red run and its alert issue.
-- **Power Query has not run in Excel** for the pipeline-fed design. Reading nflverse from a web address with `Web.Contents` did run in real Excel in 1.003 and 1.004.
+- **Power Query is retired.** In the owner's one trial of the pipeline-fed design (the experimental 2.001 workbook) it opened but its refresh was still running after five minutes (Q-020).
 
 ## Next steps
 
-1. **Done 2026-11-20 (owner merged; first run PUBLISH). Kept for reference:**
-   - The merge adds `NFL/02-config/**` to `main`, which by the contract (§8) starts the weekly workflow. Expect a first run; check the Actions tab and `NFL/04-data/status.csv`. UNVERIFIED until it happens.
-   - Confirm that the data address in the `NFL/CONTRACTS.md` header serves `NFL/04-data/status.csv`.
-   - The owner then tries the experimental workbook and reports under Q-020 (the owner asked: "tell me when complete and I will experiment").
-2. **2.002, the owner's Excel test:** when the owner reports back (Q-020) or uploads a saved workbook, extract its queries and compare them with `NFL/05-excel/powerquery/*.pq` (`NFL/05-excel/experimental/verify_mashup.js` shows how), read the Checks sheet, and record the result. If the experimental file fails, record the exact message and fall back to the paste-ready workbook.
-3. **2.003, automation proven:** a manual run of each workflow, the first scheduled weekly run, the watchdog, the monthly run, and a config edit made on GitHub that publishes.
-4. **2.004, remaining ESPN rules:** when Q-016 or Q-017 is answered.
+1. **Finish 3.001** (acceptance criteria in `NFL/PLAN.md`, roadmap 3.001): integrate the exporter and the workflow steps; run the exporter on the published data and read the file back; run quality gates G1-G5 and an independent QA pass (include a personal-data scan of the workbook, control C-34); push the branch and open a pull request; after the owner merges, run the weekly workflow by hand (`workflow_dispatch`) and confirm the stable link downloads a file whose `About` sheet matches `NFL/04-data/status.csv` (control C-33).
+2. **Ask the owner to open the downloaded workbook in desktop Excel** and report any repair message word for word (control C-32, NFR-15). Until then say "not yet opened in Excel" everywhere.
+3. **Release 3.001:** fill in the placeholder row in `NFL/08-releases/RELEASES.md` and the release details above, and update this file.
+4. **3.002, automation proven:** a manual run of each workflow, the first scheduled weekly run (Tue 2026-11-24), the watchdog, the monthly run, a config edit made on GitHub that publishes and rebuilds the workbook, and an alert from a failed build or upload.
+5. **3.003, remaining ESPN rules:** when Q-016, Q-017 or Q-019 is answered.
+6. **Documents corrected for 3.001 by the orchestrator (2026-11-21):** the contract (§0 diagram, §9 marked retired, §12, §13.1 data-contract check), `CLAUDE.md` §5, the charter, the role cards, `_Sport-Template/` and `NFL/02-config/README.md`.
 
 The plan's roadmap (`NFL/PLAN.md`) has the acceptance criteria for each.
 
@@ -33,19 +36,20 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 
 | ID | About | Default in force |
 |---|---|---|
-| Q-015 | Merge the pull request into `main` (squash and merge) | Not merged; Claude pushes to `main` only if the owner says so in chat |
 | Q-016 | Paste the Seattle kicker J. Myers' 2026 ESPN game log (blocked field goals; follow-up to Q-007) | A blocked field goal is not a miss |
 | Q-017 | Paste the 2026 ESPN game log of a long-touchdown or return-fumble player (follow-up to Q-008) | A 50+ yard TD earns both bonuses; a lost return fumble costs 2 points |
 | Q-018 | Confirm what stays private | The 1.x archive and raw inputs stay private (D-034) |
 | Q-019 | ESPN game logs for the Jets, Colts, Titans or Cowboys D/ST (special-teams TDs, blocked-kick returns, safeties, own-fumble TDs) | Assumptions in D-038 |
-| Q-020 | Report what happened when trying the experimental workbook | Untested; the paste-ready workbook is the fallback |
 | Q-021 | Confirm CC BY 4.0 for the derived data | CC BY 4.0, crediting nflverse |
 | Q-022 | Require approval before outside pull requests run workflows | GitHub's default |
+| Q-023 | Keep the Power Query route available at all? | Retired and archived (D-043) |
+
+Answered since: Q-015 (merged 2026-11-20) and Q-020 (the Power Query refresh was too slow; acted on in D-041 to D-043).
 
 ## Working with the owner
 
 - The owner appears in this repository only as the GitHub username `wes-blue`. Never write any other personal detail (`CLAUDE.md` §2).
-- Windows, Excel for Microsoft 365 (the Data Model is available).
+- Windows, Excel for Microsoft 365. The generated workbook does not use the Data Model.
 - Plays in one ESPN league that rosters a team D/ST and a kicker, with no individual defensive players (D-017). Its rules are the `ESPN_League` column in `NFL/02-config/`.
 - Prefers everything on GitHub; the laptop is not always on (Q-014). Nothing routine may depend on the owner's computer. Scoring changes are made by editing `NFL/02-config/` on GitHub.
 - Do not pause on blockers: take the stated default, keep working, and put each question or action in `BLOCKERS.csv` with a default used meanwhile. Write each question so it can be answered in one line, and say exactly where to click.
@@ -53,12 +57,12 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 
 ## Durable decisions (detail in `DECISIONS.md`)
 
-- **Split of work (D-024):** the pipeline downloads, derives long-TD counts and team D/ST rows, scores every league, runs the gates and publishes CSV files; the workbook's Power Query re-scores from its own Scoring sheet and checks itself against the pipeline (parity) and its rules (drift).
+- **Split of work (D-041, superseding D-024):** the pipeline downloads, derives long-TD counts and team D/ST rows, scores every league, runs the gates, publishes CSV files and builds the values-only workbook (`NFL/CONTRACTS.md` section 13); there is no second scoring engine and no Power Query. The workbook is a release asset, not in git (D-042).
 - **Standard library only** at pipeline run time (D-025). `pytest` is for tests.
 - **Long-TD from play-by-play for every season** (D-029); finished seasons are re-read when nflverse changes them.
 - **Gates (D-031, D-032):** a failed blocking gate holds the publish and leaves `04-data` untouched. The golden, ESPN and reconciliation gates skip a league whose rules changed (WARN, still publishes; owner confirmed, Q-013). A correction to a test player's stats upstream stops the run and alerts (owner confirmed, Q-012).
-- **Public repository (D-033, D-034), GitHub-only runtime (D-036), web data location (D-037).** The optional second data repository of the 1.x plan is gone.
-- **Versioning (D-035):** the major number names the design generation; 1.x private and closed, 2.x here. `00-Governance/VERSIONING.md`.
+- **Public repository (D-033, D-034), GitHub-only runtime (D-036).** The web data location of D-037 applied to the retired Power Query workbook; the CSV files are still public at their address. The optional second data repository of the 1.x plan is gone.
+- **Versioning (D-035, D-041):** the major number names the design generation; 1.x private and closed, 2.x (Power Query) here and retired, 3.x the workbook built on GitHub. The design version in the file changes only when the design changes; the data changes every publish. `00-Governance/VERSIONING.md`.
 - **ESPN points allowed (D-038):** subtract touchdowns scored by the opposing defense, keep special-teams touchdowns. Evidence: `NFL/06-qa/evidence/espn-game-log-ARI-DST-2026.txt`.
 - **1.005 withdrawn** and never reused (D-028, confirmed Q-005).
 
@@ -77,8 +81,8 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 ## Environment facts
 
 - The build container has Linux, Python 3.13 with openpyxl, pandas, lxml and PyYAML, LibreOffice (used to recalculate workbooks) and Node 22 with npm. `pytest` is installed into a virtual environment under `NFL/.work/` when needed.
-- **There is no Excel, so Power Query cannot run here, and GitHub Actions cannot be run from here.** Both are tested only by parsing, emulation and unit tests until they run for real.
-- Microsoft's M parser (`@microsoft/powerquery-parser` 5.0.0) was set up in `NFL/.work/legacy-1.x/t3/` (`node parse_m.js <dir>`). `.work/` is not in git, so a new container must set it up again.
+- **There is no Excel, so the generated workbook cannot be opened in Excel here, and GitHub Actions cannot be run from here.** The workbook is read back with openpyxl and opened in LibreOffice; the workflows are linted and unit-tested; each needs a first real run.
+- The M parser setup in `NFL/.work/` belonged to the retired Power Query route (its scripts are in `NFL/05-excel/archive-2.x/build/pq/`). `.work/` is not in git.
 - Downloads go through a proxy; Python reads nflverse files through it with the CA bundle named by `SSL_CERT_FILE`. `raw.githubusercontent.com` and `git ls-remote` on public repositories work.
 - Subagents' Write tool refuses some report-style files; they return the text and the orchestrator saves it.
 

@@ -1,3 +1,3 @@
 # 05-excel
 
-Put the workbook the owner opens here, with its Power Query (`powerquery/`) and the generator that builds it (`build/`). The workbook reads `../04-data/` from its public web address by default. `NFL/05-excel/` is the model.
+A README for the owner: where to download the sport's workbook (a GitHub Release asset that the pipeline rebuilds on every publish), what each sheet holds, and how to change scoring. The workbook is built by the pipeline's `export` command and is not stored in this folder. `NFL/05-excel/README.md` is the model.

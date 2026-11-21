@@ -1,6 +1,6 @@
 # Experimental: the workbook with the queries already installed
 
-**File:** `NFL/05-excel/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx`, one folder up from this page. Its version reads **`2.001-experimental`**: it is **not a release**. The release 2.001 is the paste-ready `NFL-Analysis-2.001.xlsx` in the same folder.
+**File:** `NFL/05-excel/archive-2.x/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx`, one folder up from this page. Its version reads **`2.001-experimental`**: it is **not a release**. The release 2.001 is the paste-ready `NFL-Analysis-2.001.xlsx` in the same folder.
 
 ## What this is
 
@@ -122,7 +122,7 @@ Not found: comments, people lists, revision logs, printer settings, custom prope
 - Open XML: 117 parts, valid CRCs, every XML part well formed, every part has a content type, every relationship resolves; table ids and names unique; each query table's fields match its columns, connection and `ExternalData` name.
 - Compared with the base: the changed parts are exactly the intended ones; every part has the base's compression method (and so does each part inside the Power Query package); the Data Model has the same size, header and file directory, every changed byte belongs to a neutral placeholder or to the checksum of one of the two edited inner files, all 790 checksums are valid, every path in its backup log still starts with the log's own root folder, and all 788 data files decompress to the sizes the log records.
 - Data: the tables equal `NFL/02-config/` and the fixtures, cell for cell.
-- Personal data: `NFL/05-excel/build/pii_scan.py --candid` over every part and every Data Model inner file (it also fails if a private-transcript reference or the third-party remark comes back), plus the independent check in `verify_mashup.js`.
+- Personal data: `NFL/05-excel/archive-2.x/build/pii_scan.py --candid` over every part and every Data Model inner file (it also fails if a private-transcript reference or the third-party remark comes back), plus the independent check in `verify_mashup.js`.
 - LibreOffice headless recalculation (ignores Power Query): 267 formulas, 0 errors.
 
 **Only Excel can confirm these, most likely to cause trouble first:**
@@ -133,7 +133,7 @@ Not found: comments, people lists, revision logs, printer settings, custom prope
 5. **Mixed line endings in `Section1.m`** (M accepts both; Excel may rewrite them as CRLF when it saves) and the dropped step-level metadata.
 
 **Rebuilding** (needs the owner's private base file; a session without it gets a clear message): from the repository root,
-`python3 NFL/05-excel/experimental/build_queries_installed.py --base <path to the owner's 1.005 workbook>`, then
-`python3 NFL/05-excel/experimental/verify_queries_installed.py --base <same path>` and
-`node NFL/05-excel/experimental/verify_mashup.js NFL/.work/rc/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx <same path>`.
+`python3 NFL/05-excel/archive-2.x/experimental/build_queries_installed.py --base <path to the owner's 1.005 workbook>`, then
+`python3 NFL/05-excel/archive-2.x/experimental/verify_queries_installed.py --base <same path>` and
+`node NFL/05-excel/archive-2.x/experimental/verify_mashup.js NFL/.work/rc/NFL-Analysis-2.001-queries-installed-EXPERIMENTAL.xlsx <same path>`.
 The output goes to `NFL/.work/rc/`; the orchestrator promotes the verified file into this folder.

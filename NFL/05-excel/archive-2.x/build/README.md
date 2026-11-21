@@ -2,14 +2,14 @@
 
 `build_workbook.py` generates the paste-ready workbook `NFL-Analysis-<version>.xlsx` from source files. The source files are the single source of truth; the workbook is a build output. Adapted from the 1.x generator (archived in the owner's private repository).
 
-`P` = the `NFL` folder of this repository. The `pq/` folder beside this file generates `05-excel/powerquery/*.pq` (`pq/build_pq.py`; `pq/lint.js` checks undefined names and firewall breaches; `pq/emulate.py` reproduces the queries' logic in Python on a local copy of the published data); this script only reads the generated `.pq` files. `pii_scan.py` is the personal-data scan run on every workbook before it is published.
+`P` = the `NFL` folder of this repository. The `pq/` folder beside this file generates `05-excel/archive-2.x/powerquery/*.pq` (`pq/build_pq.py`; `pq/lint.js` checks undefined names and firewall breaches; `pq/emulate.py` reproduces the queries' logic in Python on a local copy of the published data); this script only reads the generated `.pq` files. `pii_scan.py` is the personal-data scan run on every workbook before it is published.
 
 ## Rebuild
 
 From the repository root (any directory works; paths resolve from the script):
 
 ```
-python3 NFL/05-excel/build/build_workbook.py --version 2.001 --release-date 2026-11-20 --force
+python3 NFL/05-excel/archive-2.x/build/build_workbook.py --version 2.001 --release-date 2026-11-20 --force
 ```
 
 This writes the release candidate to `P/.work/rc/NFL-Analysis-2.001.xlsx`, recalculates a copy with LibreOffice, checks the inventory, runs the personal-data scan (the output is deleted if it finds anything) and the instruction check (the output is deleted if a sheet this script writes would tell the owner to clone, pull, sync, switch branch or run Python; copied plan and BLOCKERS text only gives a WARN line), and prints the SHA-256. Never build straight into `05-excel/` or `08-releases/`: the orchestrator promotes the verified candidate byte for byte (`00-Governance/VERSIONING.md`). `--force` only overwrites an earlier candidate in `.work/rc/`.
@@ -44,11 +44,11 @@ Needs Python 3 with `openpyxl` (built with 3.1.5) and, for the recalculation, Li
 | `P/06-qa/fixtures/golden_sample.csv` | `tblGolden` (Validation!A4) |
 | `P/06-qa/fixtures/fixture_contracts.csv` | `tblGoldenRules` (Validation, row 4, right of `tblGolden`): the rules the expected values were made with, read by `Pipeline_Status` |
 | `P/04-data/dictionary.csv` | `tblDictionary` (Data_Dictionary!A4), a snapshot |
-| `P/05-excel/powerquery/manifest.json` + `*.pq` | `tblMCode` (M_Code!A4, one line per row) and `tblQueries` (M_Code!E4), plus one defined name per query, `PQ_<nn>_<Query>`, covering its code cells |
+| `P/05-excel/archive-2.x/powerquery/manifest.json` + `*.pq` | `tblMCode` (M_Code!A4, one line per row) and `tblQueries` (M_Code!E4), plus one defined name per query, `PQ_<nn>_<Query>`, covering its code cells |
 | `BLOCKERS.csv` (repository root) | `tblOpenQuestions` (Open_Questions!A4): the rows whose Status is Open or Still open, a snapshot |
 | `version_history.csv` (this folder) | `tblVersionLog`, then a row for the version being built |
 
-Layout and names follow `P/05-excel/powerquery/WORKBOOK-REQUIREMENTS.md`. A missing input, a header that does not match its contract, a weight that is not a number, or a `manifest.json` anchor that disagrees with the requirements stops the build.
+Layout and names follow `P/05-excel/archive-2.x/powerquery/WORKBOOK-REQUIREMENTS.md`. A missing input, a header that does not match its contract, a weight that is not a number, or a `manifest.json` anchor that disagrees with the requirements stops the build.
 
 The SHA-256 changes whenever any input changes, including `04-data/dictionary.csv` and `BLOCKERS.csv`.
 

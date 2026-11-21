@@ -93,7 +93,7 @@ idre = {"Functional": r"FR-\d{2}", "Non-functional": r"NFR-\d{2}", "Constraint":
 for r in plan["requirements"]:
     if not re.fullmatch(idre[r["type"]], r["id"]):
         err(f"requirement id {r['id']} does not match type {r['type']}")
-for sec, pat in (("raid", r"RAID-\d{2}"), ("controls", r"C-\d{2}")):
+for sec, pat in (("raid", r"RAID-\d{2,3}"), ("controls", r"C-\d{2}")):
     for x in plan[sec]:
         if not re.fullmatch(pat, x["id"]):
             err(f"{sec} id format {x['id']}")
@@ -167,7 +167,7 @@ for r in plan["requirements"]:
 
 # Decision IDs cited anywhere must exist
 text = json.dumps(plan, ensure_ascii=False)
-cited_d = set(re.findall(r"D-\d{3}", text))
+cited_d = set(re.findall(r"\bD-\d{3}", text))
 for d in sorted(cited_d - decisions):
     err(f"cited decision {d} not in DECISIONS.md")
 
@@ -207,7 +207,7 @@ for x in questions:
 
 # Cross-references (RAID-nn, C-nn, FR-nn, NFR-nn, CON-nn) resolve
 ids = {x["id"] for s in ("requirements", "raid", "controls") for x in plan[s]}
-for ref in sorted(set(re.findall(r"\b(?:RAID|FR|NFR|CON)-\d{2}\b|\bC-\d{2}\b", text))):
+for ref in sorted(set(re.findall(r"\b(?:RAID|FR|NFR|CON)-\d{2,3}\b|\bC-\d{2}\b", text))):
     if ref not in ids:
         err(f"cross-reference {ref} does not exist")
 

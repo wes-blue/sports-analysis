@@ -1,6 +1,6 @@
 # Interface Contracts: NFL-Analysis Pipeline
 
-These are the file formats and command behaviours that the pipeline, the GitHub Actions workflows, the Power Query code and the workbook hand to each other.
+These are the file formats and command behaviours that the pipeline, the GitHub Actions workflows and the workbook hand to each other.
 
 This file lives in the repository `wes-blue/sports-analysis` (public). Each sport has its own top-level folder; this is the contract for `NFL/`. **Paths are relative to `NFL/`** unless they start with `/`, which means the repository root (for example `/.github/workflows/`, `/BLOCKERS.csv`, `/00-Governance/`).
 
@@ -24,12 +24,14 @@ nflverse releases (public)        02-config/*.csv (you edit)
                                     04-data/*.csv   (plain CSV files, committed)
                                             |
                                             v
-                                    05-excel workbook (Power Query)
-                                    reads 04-data, re-scores with the weights on its Scoring sheet,
-                                    and checks itself against the pipeline's own scores
+                                    python -m nflpipe export  (§13)
+                                            |
+                                            v
+                                    NFL-Analysis.xlsx  (values only; GitHub Release asset)
+                                    the owner downloads it and opens it: nothing to refresh
 ```
 
-GitHub Actions (`/.github/workflows/nfl-pipeline-*.yml`) runs the same command on a schedule, and whenever `02-config` changes on `main`, and commits `04-data`. Excel reads `04-data` from the web address above, so the owner's PC does not need Python, git or a copy of the repository.
+GitHub Actions (`/.github/workflows/nfl-pipeline-*.yml`) runs the same command on a schedule, and whenever `02-config` changes on `main`, commits `04-data`, and then builds and publishes the workbook (§13.5). The owner's PC needs only Excel: no Python, git, copy of the repository or Power Query. Anyone can also read the CSV files in `04-data` from the web address above.
 
 ## 1. Config files: `02-config/` (inputs; the single source of scoring rules)
 
@@ -206,7 +208,9 @@ Every workflow sets the working directory to `NFL/03-pipeline`. The pipeline nee
 
 **Security.** The repository is public. Workflows run only on `schedule`, `push`, `pull_request` and `workflow_dispatch` (never `pull_request_target`), give each job only the permissions it needs, do not leave the token on disk after checkout, pin third-party actions by commit SHA, pass inputs through `env:`, and use no secrets. The alert steps count only issues opened by the workflow's own bot, because anyone can open an issue in a public repository.
 
-## 9. Power Query: `05-excel/powerquery/`
+## 9. Power Query (retired, 2.x): `05-excel/archive-2.x/powerquery/`
+
+**Retired by D-043.** This section describes the 2.x workbook, kept for the record. Its files moved to `05-excel/archive-2.x/` and are not maintained. The current workbook is §13.
 
 `manifest.json` lists the queries in dependency order (same shape as 1.x):
 
@@ -244,7 +248,7 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 
 ## 12. Releases: `08-releases/`
 
-`RELEASES.md` is the release register. Released workbooks are `NFL-Analysis-<version>.xlsx`; the working copy the owner opens is the byte-identical file in `05-excel/`. Versions 1.001 to 1.006 were released in the owner's private repository and are listed for the record only.
+`RELEASES.md` is the release register. From 3.001 the workbook is a GitHub Release asset rebuilt on every publish (§13.5), and the register records each design version with the run that first published it. The 2.001 workbook (`NFL-Analysis-2.001.xlsx`) stays here unchanged for the record; its working copies moved to `05-excel/archive-2.x/`. Versions 1.001 to 1.006 were released in the owner's private repository and are listed for the record only.
 
 ## 13. The generated workbook (design generation 3.x)
 
@@ -255,6 +259,7 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 `python -m nflpipe export [--data-dir DIR] [--out FILE]`, run from `03-pipeline/`. Defaults: `--data-dir ../04-data`, `--out ../.work/workbook/NFL-Analysis.xlsx`.
 
 - Reads **only** the published files in `--data-dir` (§5). It never downloads anything and never changes `04-data`.
+- Refuses (exit 1) when `status.csv` `data_contract_version` is missing or is not the version the exporter understands (today `1`), naming both values.
 - Exit codes: `0` written; `1` error (message names the cause; no partial file is left at `--out`).
 - **Standard library only** (D-025): the file is written with `zipfile` and XML text. Test code may use `openpyxl` to read it back.
 - **Deterministic:** the same `04-data` gives byte-identical output. Time stamps inside the file come from `status.csv` `generated_utc`, never from the clock; zip entries use a fixed date and a fixed order.

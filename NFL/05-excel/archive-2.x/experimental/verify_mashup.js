@@ -10,7 +10,7 @@
 // Needs: NFL/.work/e2/cw/node_modules (npm i @microsoft/connected-workbooks) and
 //        NFL/.work/legacy-1.x/t3/node_modules (@microsoft/powerquery-parser).
 const fs = require("fs"), path = require("path");
-const P = path.resolve(__dirname, "../..");
+const P = path.resolve(__dirname, "../../..");
 const CW = path.join(P, ".work/e2/cw/node_modules");
 const JSZip = require(path.join(CW, "jszip"));
 const { DOMParser } = require(path.join(CW, "@xmldom/xmldom"));
@@ -46,7 +46,7 @@ async function readMashup(file) {
 
 (async () => {
   const [file, baseFile] = process.argv.slice(2);
-  const mf = JSON.parse(fs.readFileSync(path.join(P, "05-excel/powerquery/manifest.json"), "utf8")).queries;
+  const mf = JSON.parse(fs.readFileSync(path.join(P, "05-excel/archive-2.x/powerquery/manifest.json"), "utf8")).queries;
   const mash = await readMashup(file);
   console.log(`DataMashup in ${mash.part}; package parts: ${Object.keys(mash.parts).join(", ")}`);
   const s1 = mash.parts["Formulas/Section1.m"];
@@ -55,7 +55,7 @@ async function readMashup(file) {
   // 1. each query byte-identical, and nothing else in the section
   let expected = Buffer.from("section Section1;\r\n");
   for (const q of mf) {
-    const pq = fs.readFileSync(path.join(P, "05-excel/powerquery", q.file));
+    const pq = fs.readFileSync(path.join(P, "05-excel/archive-2.x/powerquery", q.file));
     const member = Buffer.concat([Buffer.from(`shared ${q.name} = `), pq, Buffer.from(";")]);
     const at = s1.indexOf(member);
     ok(at >= 0 && s1.indexOf(member, at + 1) < 0, `${q.name}: '${q.file}' (${pq.length} bytes) appears byte-identical exactly once`);
@@ -78,7 +78,7 @@ async function readMashup(file) {
     ok(members.every(m => m.shared), "every member is 'shared'");
   }
   for (const q of mf) {
-    const one = await PQP.TaskUtils.tryLexParse(PQP.DefaultSettings, fs.readFileSync(path.join(P, "05-excel/powerquery", q.file), "utf8"));
+    const one = await PQP.TaskUtils.tryLexParse(PQP.DefaultSettings, fs.readFileSync(path.join(P, "05-excel/archive-2.x/powerquery", q.file), "utf8"));
     if (one.resultKind !== "Ok") ok(false, `${q.file} parses alone`);
   }
   ok(true, "each .pq parses on its own");
