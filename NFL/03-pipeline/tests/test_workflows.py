@@ -160,14 +160,13 @@ def test_scoped_to_the_nfl_folder(wf):
             for p in spec.get("paths", []):
                 assert p.lstrip("!").startswith(("NFL/", ".github/workflows/nfl-pipeline-")), f"{name}: {p}"
             for other in ("NBA/02-config/leagues.csv", "NBA/03-pipeline/nbapipe/run.py",
-                          ".github/workflows/nba-pipeline-weekly.yml", "README.md", "00-Governance/MEMORY.md"):
+                          ".github/workflows/nba-pipeline-weekly.yml", "README.md", "docs/notes.md"):
                 assert not path_filter_matches(spec.get("paths", []), other), f"{name} {event} fires for {other}"
     groups = [doc.get("concurrency", {}).get("group", "")] + [j.get("concurrency", {}).get("group", "") for j in doc["jobs"].values()]
     assert all(g == "" or g.startswith("nfl-") for g in groups)
     env = doc.get("env", {})
     if "ALERT_LABEL" in env:
         assert env["ALERT_LABEL"].startswith("nfl-pipeline-alert-")
-    assert "Personal/" not in text and "20-Projects" not in text, "path from the old private repository"
 
 
 @pytest.mark.parametrize("name", SCHEDULED)

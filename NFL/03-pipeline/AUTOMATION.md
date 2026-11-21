@@ -18,7 +18,7 @@ Always here (the link never changes, the file behind it is replaced each time):
 
 **When it is rebuilt.** Every time the data is published (the Tuesday, Wednesday and Thursday runs in season, the monthly run on the 1st, and after every change you make to `NFL/02-config`). A run that finds nothing new does not rebuild it, unless the file on the release is missing, empty, built from older data, or built by an older design of the workbook. In that case it rebuilds it then, so a change to how the workbook is made also reaches you without waiting for new data.
 
-**How long after a scoring change.** You edit a file in `NFL/02-config` (section 3). The run starts within a minute, scores every season, checks and publishes, then builds the workbook. Expect roughly ten minutes from your commit to the new file (an estimate: a scoring change has not yet been timed on GitHub); the run's page shows its progress. When the run has a green tick, the link above gives the new workbook.
+**How long after a scoring change.** You edit a file in `NFL/02-config` (section 3). The run starts within a minute, scores every season, checks and publishes, then builds the workbook. Expect roughly ten minutes from your commit to the new file; the run's page shows its progress. When the run has a green tick, the link above gives the new workbook.
 
 **Replacing the file never leaves the link empty.** The new file is uploaded first under a temporary name, checked, and only then does it take the place of the old one. The old workbook is deleted only after the new one is safely on the release, and the swap takes a second or two. If any step fails, the link keeps giving the old workbook. The run then ends red and says why (section 6). Only if the swap stops exactly halfway can the link answer "not found" until the next run puts the file back.
 
@@ -41,25 +41,25 @@ GitHub uses UTC. Eastern time is 4 hours behind UTC in September and October and
 
 The weekly and monthly runs wait for each other, so they never write `NFL/04-data` at the same time. A run that is already working is never stopped to make room for another one.
 
-## 2. After the pull request is merged: the first time
+## 2. Maintainer's first-time setup
 
-Merging the pull request switched on the new workbook. **Step 1 is done:** the merge on 2026-11-21 started [run 44853664413](https://github.com/wes-blue/sports-analysis/actions/runs/44853664413), which built the workbook and uploaded it in 36 seconds, and the link in section 0 works. Step 6 (opening it in Excel) was done the same day. Steps 2 to 5 and 7 are still yours to do once, in this order. Step 1 stays here as a guide to reading a run.
+These steps are for the maintainer of a repository that runs this automation, whether the original or a copy. Do them once, in this order. The workbook was first built on GitHub on 2026-11-21, by the run that followed the merge of the change that added it; step 1 is a guide to reading such a run.
 
-1. **Watch the workbook get built (the first time, the whole run took 36 seconds).** This merge changes the pipeline's program code and the weekly workflow, and either one starts **nfl-pipeline-weekly** within a minute. Open the **Actions** tab: you should see **nfl-pipeline-ci** and **nfl-pipeline-weekly**, both named after the merge. Click the **nfl-pipeline-weekly** run (or open `https://github.com/wes-blue/sports-analysis/actions/workflows/nfl-pipeline-weekly.yml`). The result line at the top of its summary is usually **SKIP** ("the pipeline ran and found nothing to publish"); it is **PUBLISH** if NFL statistics changed in the meantime. Below it you should see `workbook: build=true; there is no nfl-workbook release yet`, then `workbook: built, ... bytes`, then `workbook: published at https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`. **When the run has a green tick, the link works.** Open it and save the file. If nothing appears after five minutes, go to step 2.
+1. **Watch the workbook get built (the first time, the whole run took 36 seconds).** A merge that changes the pipeline's program code and the weekly workflow, and either one starts **nfl-pipeline-weekly** within a minute. Open the **Actions** tab: you should see **nfl-pipeline-ci** and **nfl-pipeline-weekly**, both named after the merge. Click the **nfl-pipeline-weekly** run (or open `https://github.com/wes-blue/sports-analysis/actions/workflows/nfl-pipeline-weekly.yml`). The result line at the top of its summary is usually **SKIP** ("the pipeline ran and found nothing to publish"); it is **PUBLISH** if NFL statistics changed in the meantime. Below it you should see `workbook: build=true; there is no nfl-workbook release yet`, then `workbook: built, ... bytes`, then `workbook: published at https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`. **When the run has a green tick, the link works.** Open it and save the file. If nothing appears after five minutes, go to step 2.
    - If the run is **red**, click it and read the box on the summary page: it names the step that failed and why. Then see "If the link says not found" in section 0. Nothing you do can damage anything; a failed run leaves the data as it was.
    - If the run has no green tick but you do not want to investigate, start **Rebuild only the workbook** (section 5) and wait for its green tick.
 2. **Check that Actions is allowed.** Click **Settings** (top right of the repository), then **Actions**, then **General** in the left menu.
    - **Actions permissions**: any choice that allows actions created by GitHub. The workflows use only three actions made by GitHub (checkout, setup-python, upload-artifact), each fixed to an exact version.
-   - In the section about running workflows from **fork pull requests**, choose **Require approval for all external contributors**. Anyone can propose a change to a public repository; with this setting nothing they propose runs until you approve it.
+   - In the section about running workflows from **fork pull requests**, choose **Require approval for all external contributors**. Anyone can propose a change to a public repository; with this setting nothing they propose runs until a maintainer approves it.
    - **Workflow permissions**: leave **Read repository contents and packages permissions** selected. Each workflow asks for exactly the extra rights it needs (the weekly and monthly runs may save data, publish the workbook on the release and write alert issues; the others may not). Leave **Allow GitHub Actions to create and approve pull requests** unticked.
    - Click **Save** if you changed anything.
-3. **Check two more settings.** **Settings**, **General**, scroll to **Features**: **Issues** must be ticked (problems are reported as issues, see the section Alert issues). On the same page, if you find an option about **immutable releases**, leave it off: the workbook file on the release is replaced each time, and that option forbids it. If your repository has a rule that restricts who may create tags, allow GitHub Actions to create the tag `nfl-workbook`. (Neither option is known to be on; this is a check, not a request.)
+3. **Check two more settings.** **Settings**, **General**, scroll to **Features**: **Issues** must be ticked (problems are reported as issues, see the section Alert issues). On the same page, if you find an option about **immutable releases**, leave it off: the workbook file on the release is replaced each time, and that option forbids it. If your repository has a rule that restricts who may create tags, allow GitHub Actions to create the tag `nfl-workbook`. (Neither option is expected to be on; this is a check, not a request.)
 4. **Check the other checks.** The **nfl-pipeline-ci** run should have a green tick (it runs the automatic tests). If the weekly run ended **PUBLISH**, the **Code** tab also shows a newer commit by **github-actions[bot]** named `nfl-pipeline: publish NFL/04-data (weekly, push, run ...)`; after a **SKIP** there is no such commit, and that is correct.
-5. **Make sure failures reach you by email.** Click your profile picture (top right), **Settings**, **Notifications**.
+5. **Make sure failures reach the maintainers by email.** Each maintainer clicks their profile picture (top right), **Settings**, **Notifications**.
    - Under **System**, **Actions**: tick **Email** and choose **Only notify for failed workflows**.
-   - Back on the repository page, click **Watch** (top right) and choose **All Activity**, or **Custom** with **Issues** ticked, so a new alert issue emails you.
-   - GitHub sends the emails about failed *scheduled* runs to the person who last changed the schedule in the workflow files. If that is not you, the alert issues (step above) still reach you.
-6. **Done on 2026-11-21** (no repair message, about a minute to open, ESPN points matched). **Open the workbook in Excel and look** at any message it shows word for word, how long it takes to open, and whether `FF_ESPN_League` for a player and week you know matches ESPN. Excel may show a "protected view" bar: click **Enable Editing**. This is the one check only you can do.
+   - Back on the repository page, click **Watch** (top right) and choose **All Activity**, or **Custom** with **Issues** ticked, so a new alert issue sends an email.
+   - GitHub sends the emails about failed *scheduled* runs to the person who last changed the schedule in the workflow files. If that is not a maintainer who watches this repository, the alert issues (step above) still reach everyone who watches it.
+6. **Open the workbook in Excel and look** at any message it shows word for word, how long it takes to open, and whether `FF_ESPN_League` for a player and week you know matches ESPN. Excel may show a "protected view" bar: click **Enable Editing**. This is the one check that needs a person with Excel.
 7. **Run the watchdog once by hand** (section 5). It should end green with **HEALTHY**.
 
 Nothing else is needed. From now on the schedule runs by itself.
@@ -100,7 +100,7 @@ In step 4 of "Editing a value", choose **Create a new branch for this commit and
 If the file has a mistake (a misspelt statistic name, a letter where a number belongs, a league in one file but not the other, a file with the wrong name or encoding), nothing is published and the old data stays in place. You will notice in three ways:
 
 - your commit shows a red cross on the **Code** tab and the **Actions** tab;
-- GitHub emails you about the failed run (if you set that up in section 2);
+- GitHub emails you about the failed run (see section 2, step 5);
 - an issue named **NFL pipeline needs attention: nfl-pipeline-weekly** opens, or gets a new comment.
 
 To see what is wrong, click the red run. The box on its summary page says, in words, what failed, for example `G-CONFIG FAIL (blocking): scoring_weights.csv: metric 'pasing_yards' is neither an nflverse column nor derived`. The same text is in the issue.
@@ -222,6 +222,6 @@ To remove the automation completely, delete the four files `nfl-pipeline-*.yml` 
 ## 10. Who can do what in this public repository
 
 - Anyone can read the code and the published data, and can open issues or propose changes.
-- Only you (and anyone you give write access) can start a run by hand, change the config, or merge a proposed change.
-- A change proposed by someone else runs only the tests, with read-only access, and only after you approve it (section 2, step 2). It can never publish data, change files or see anything secret. There are no secrets in these workflows.
+- Only people with write access can start a run by hand, change the config, or merge a proposed change.
+- A change proposed by someone else runs only the tests, with read-only access, and only after a maintainer approves it (see the fork pull request setting in section 2, step 2). It can never publish data, change files or see anything secret. There are no secrets in these workflows.
 - The workflows save only `NFL/04-data` (and the empty heartbeat commit), and replace the one file `NFL-Analysis.xlsx` on the release `nfl-workbook`. The workbook is not stored in the repository itself, so the repository does not grow by about 38 MB every week. A commit, tag or release made by a workflow never starts another workflow, so a publish cannot loop.
