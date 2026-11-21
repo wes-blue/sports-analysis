@@ -13,11 +13,11 @@ These four CSV files are the pipeline's only source of scoring rules. Their colu
 
 ## Saving a change on `main` publishes it
 
-A change to any file in this folder that reaches the `main` branch starts the weekly workflow straight away. It re-scores every season with the new rules and, if every blocking gate passes, commits the new data to [`../04-data/`](../04-data/README.md). The workbook picks it up at its next Refresh All. Nothing needs your computer.
+A change to any file in this folder that reaches the `main` branch starts the weekly workflow straight away. It re-scores every season with the new rules and, if every blocking gate passes, commits the new data to [`../04-data/`](../04-data/README.md). The same run then rebuilds the workbook and replaces it at the download link. Nothing needs your computer.
 
 Because of that, change these files deliberately. A mistake that the gates catch publishes nothing; a mistake they cannot catch (for example a wrong but valid weight) is published until you correct it. Every change is kept in the file's history on GitHub, so it can always be undone.
 
-As of 2026-11-20 this has not yet run on GitHub: it starts working once the pull request is merged into `main` ([`/BLOCKERS.csv`](../../BLOCKERS.csv) Q-015).
+This has run on GitHub since the merge on 2026-11-20 (the merge itself started the first publish).
 
 ## How to edit a file on GitHub
 
@@ -37,7 +37,7 @@ As of 2026-11-20 this has not yet run on GitHub: it starts working once the pull
 
 - **A mistake the pipeline can detect** (for example a misspelt statistic name or a league without a weight column) makes gate `G-CONFIG` fail. Nothing is published, the last good data stays in place, the workflow run is red, and an issue labelled `nfl-pipeline-alert-*` explains what went wrong. Fix the file the same way and the next run publishes.
 - **A league whose rules you changed** no longer matches the test values stored for it (the golden sample and your ESPN lineup values were worked out with the old rules). The gates `G-GOLDEN` and `G-ESPN` then report `WARN` "not applicable" for that league and the run still publishes. Leagues you did not change keep their tests. This is the behaviour you chose ([`/BLOCKERS.csv`](../../BLOCKERS.csv) Q-013).
-- **In the workbook:** a few minutes after the run publishes, the workflow rebuilds `NFL-Analysis.xlsx` with the new scores and replaces the file at the stable download link (see [`../05-excel/README.md`](../05-excel/README.md)). Download it again to see the change; the workbook's `Leagues`, `Scoring` and `Bonus` sheets show the rules it was built with.
+- **In the workbook:** right after the run publishes, the same workflow rebuilds `NFL-Analysis.xlsx` with the new scores and replaces the file at the stable download link (see [`../05-excel/README.md`](../05-excel/README.md)). Download it again to see the change; the workbook's `Leagues`, `Scoring` and `Bonus` sheets show the rules it was built with.
 
 ## Running the pipeline by hand
 

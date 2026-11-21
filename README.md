@@ -8,7 +8,9 @@ For each sport, a pipeline downloads public statistics, scores them for one or m
 
 **[Download NFL-Analysis.xlsx](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx)**, the finished workbook. Open it in Excel; its `About` sheet says which data it holds. The link never changes: every rebuild replaces the file behind it. [`NFL/05-excel/README.md`](NFL/05-excel/README.md) says what is in it.
 
-Status (2026-11-21): this workbook is design version 3.001, which is in preparation. Until the first upload has run on GitHub, the link answers "not found". [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the latest release.
+The file is about 38 MB, so allow a little time for the download and for Excel to open it (not yet measured in Excel). Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work.
+
+If the link answers "not found": the workbook is being replaced or has not been built yet. Wait two minutes and try again. If it still answers "not found", open the repository's **Actions** tab, choose **nfl-pipeline-weekly**, click **Run workflow**, tick **workbook_only** and run it; the link works when that run is green. [`NFL/03-pipeline/AUTOMATION.md`](NFL/03-pipeline/AUTOMATION.md) explains the runs. [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) lists the releases.
 
 ## Sports
 
@@ -37,9 +39,9 @@ Each sport also has a `README.md`, a `PLAN.md` and a `CONTRACTS.md` that defines
 
 ## Use the NFL workbook
 
-1. Download it with the link above and open it in Excel. There is no Enable Content step, no query to add and no refresh.
+1. Download it with the link above and open it in Excel; click **Enable Editing** if Excel shows the Protected View bar. There is no query to add and nothing to refresh.
 2. To get newer data, download it again. It is rebuilt after every pipeline publish, in season on Tuesday, Wednesday and Thursday.
-3. To change the scoring, edit a file in [`NFL/02-config/`](NFL/02-config/README.md) on GitHub. Saving it reruns the pipeline, which rebuilds the workbook; download it again a few minutes later. [`NFL/03-pipeline/AUTOMATION.md`](NFL/03-pipeline/AUTOMATION.md) has the steps.
+3. To change the scoring, edit a file in [`NFL/02-config/`](NFL/02-config/README.md) on GitHub. Saving it reruns the pipeline, which rebuilds the workbook; download it again once the run on the Actions tab is green (usually within about ten minutes). [`NFL/03-pipeline/AUTOMATION.md`](NFL/03-pipeline/AUTOMATION.md) has the steps.
 
 The Power Query workbooks of version 2.001 are retired; see [`NFL/05-excel/archive-2.x/README.md`](NFL/05-excel/archive-2.x/README.md).
 

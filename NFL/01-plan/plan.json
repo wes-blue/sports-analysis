@@ -139,7 +139,7 @@
       "source": "BLOCKERS.csv Q-020; D-041"
     },
     {
-      "finding": "A workbook of about 20 MB rebuilt every week would add roughly a gigabyte a season to the repository's history if it were committed, so it is published as a GitHub Release asset replaced in place, at a stable public address (the 20 MB is the contract's estimate, UNVERIFIED until the first build).",
+      "finding": "A workbook of about 38 MB (measured 2026-11-21) rebuilt every week would add roughly a gigabyte a season to the repository's history if it were committed, so it is published as a GitHub Release asset replaced in place, at a stable public address (the 20 MB is the contract's estimate, UNVERIFIED until the first build).",
       "source": "D-042; CONTRACTS.md §13.5"
     }
   ],
@@ -909,7 +909,7 @@
       "priority": "Should",
       "source": "Orchestrator review; D-041; CONTRACTS.md §13.1, §13.5",
       "target_version": "3.001",
-      "acceptance_criteria": "Build time and file size are measured on the first GitHub run and recorded in RELEASES.md; the owner agrees a target for 3.005 (the contract estimates about 20 MB, UNVERIFIED until built); the owner reports that opening the workbook needs no wait.",
+      "acceptance_criteria": "Build time and file size are measured on the first GitHub run and recorded in RELEASES.md; the owner agrees a target for 3.005 (measured about 38 MB on 2026-11-21 for 2017-2026; the contract first estimated about 20 MB; UNVERIFIED until built); the owner reports that opening the workbook needs no wait.",
       "status": "Planned"
     },
     {
@@ -1284,7 +1284,7 @@
     },
     {
       "id": "CON-15",
-      "requirement": "The generated workbook is not committed to git: a file of about 20 MB rebuilt every week would add roughly a gigabyte a season to the repository's history. It is a release asset (D-042).",
+      "requirement": "The generated workbook is not committed to git: a file of about 38 MB rebuilt every week would add roughly a gigabyte a season to the repository's history. It is a release asset (D-042).",
       "type": "Constraint",
       "priority": "Must",
       "source": "D-042; CONTRACTS.md §13.5",
@@ -2408,7 +2408,7 @@
       "id": "RAID-101",
       "type": "Risk",
       "title": "File size and release asset limits",
-      "detail": "The contract estimates about 20 MB for the full ten-season window (CONTRACTS.md section 13.5, UNVERIFIED until built). A larger file takes longer to download and to open, and each replacement uploads the whole file again. GitHub limits the size of a release asset; the limit has not been checked here.",
+      "detail": "The measured size is about 38 MB for the full ten-season window (2026-11-21; the contract first estimated about 20 MB) (CONTRACTS.md section 13.5; measured by the exporter on the real data). A larger file takes longer to download and to open, and each replacement uploads the whole file again. GitHub limits the size of a release asset; the limit has not been checked here.",
       "rating": "Low",
       "response": "Measure the size on the first runs and record it in RELEASES.md (NFR-06); the window is configurable if the size becomes a problem; the workbook is not committed to git, so the repository does not grow (CON-15).",
       "owner": "Orchestrator",
@@ -2447,6 +2447,17 @@
       "owner": "Orchestrator",
       "target_version": "3.001",
       "status": "Accepted"
+    },
+    {
+      "id": "RAID-105",
+      "type": "Question",
+      "title": "Q-024: Does the generated 3.001 workbook open cleanly in Excel, how long does it take, and are the ESPN points as expected?",
+      "detail": "BLOCKERS.csv Q-024. The workbook is checked against the ECMA-376 schema and opens in LibreOffice, but Excel itself has not opened it. The owner is asked for any repair message, the time to open, and a spot check of FF_ESPN_League.",
+      "rating": "Medium",
+      "response": "Untested in Excel meanwhile. The size reductions in D-044 wait for this answer.",
+      "owner": "User",
+      "target_version": "3.001",
+      "status": "Open"
     }
   ],
   "controls": [

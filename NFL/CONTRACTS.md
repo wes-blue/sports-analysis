@@ -236,7 +236,7 @@ Workbook tables the queries read: `tblConfig` (`Setting`, `Value`), `tblLeagues`
 - `tblConfig` also holds `ReconcileTolerance` (default 0.005, the pipeline's value).
 - `Check_Parity` treats two scores as equal when they differ by no more than 0.000001. With the current rules no score sits on a rounding boundary, so the workbook and the pipeline agree exactly.
 - A season the window asks for that the pipeline has not published shows as `NOT PUBLISHED`; it is not an error.
-- The `.pq` files are generated: edit `05-excel/build/pq/templates/` or `snippets/`, then run `python3 05-excel/build/pq/build_pq.py`. `lint.js` in that folder checks for undefined names and firewall breaches.
+- The `.pq` files are generated: edit `05-excel/archive-2.x/build/pq/templates/` or `snippets/`, then run `python3 05-excel/archive-2.x/build/pq/build_pq.py`. `lint.js` in that folder checks for undefined names and firewall breaches.
 
 ## 10. Plan content: `01-plan/plan.json`
 

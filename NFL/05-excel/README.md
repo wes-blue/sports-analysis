@@ -8,9 +8,11 @@ The NFL workbook is built for you on GitHub. You download it and open it; there 
 
 `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
 
-The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files** (decision D-042: it is about 20 MB and is rebuilt every week). It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
+The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files** (decision D-042: it is about 38 MB and is rebuilt every week). It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
 
-**Status (2026-11-21).** The exporter that writes the workbook and the workflow steps that upload it are being built for version 3.001. Until the first upload has run on GitHub, the link above answers "not found". The workbook has not yet been opened in Excel. [`/00-Governance/MEMORY.md`](../../00-Governance/MEMORY.md) and [`../08-releases/RELEASES.md`](../08-releases/RELEASES.md) say when that has happened.
+**Opening it.** The file is about 38 MB and holds about 17 million cells, so Excel takes a little while to open it (not yet measured; please tell us how long it takes in `/BLOCKERS.csv` Q-024). Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work. The newest games are at the top of `PlayerGames`, with your league columns (`FF_<League>`) right after the player's name.
+
+**If the link answers "not found".** The workbook is being replaced or has not been built yet. Wait two minutes and try again. If it still answers "not found", open the repository's **Actions** tab, choose **nfl-pipeline-weekly**, click **Run workflow**, tick **workbook_only** and run it; the link works when that run is green. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) has the details.
 
 ## What is in the workbook
 
@@ -33,7 +35,7 @@ After every successful data publish by the pipeline: in season on Tuesday, Wedne
 
 ## Changing scoring
 
-Edit the file in `NFL/02-config/` on GitHub. Saving it there reruns the pipeline, which rescores the data and replaces the workbook a few minutes later. Then download it again. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) explains how, what to do when a run fails and how to start a run by hand; [`../02-config/README.md`](../02-config/README.md) explains the files. Changes made inside the downloaded workbook affect only that copy and are lost at the next download.
+Edit the file in `NFL/02-config/` on GitHub. Saving it there reruns the pipeline, which rescores the data and replaces the workbook when the run on the Actions tab is green (usually within about ten minutes). Then download it again. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) explains how, what to do when a run fails and how to start a run by hand; [`../02-config/README.md`](../02-config/README.md) explains the files. Changes made inside the downloaded workbook affect only that copy and are lost at the next download.
 
 ## What else is in this folder
 
