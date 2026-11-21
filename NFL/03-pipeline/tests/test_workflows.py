@@ -1909,7 +1909,7 @@ def test_workbook_outcome_alert_is_green_and_leaves_an_open_issue(tmp_path, name
 @pytest.mark.parametrize("failed,words", [
     ({"WBCHECK_OUTCOME": "failure"}, "the workbook check failed"),
     ({"WBBUILD_OUTCOME": "failure"}, "the workbook could not be built"),
-    ({"WBPUBLISH_OUTCOME": "failure"}, "the workbook could not be uploaded"),
+    ({"WBPUBLISH_OUTCOME": "failure"}, "the workbook could not be published"),
     ({"COMMIT_OUTCOME": "failure"}, "the data could not be committed to main"),
     ({}, "a step after the pipeline failed")])
 def test_alert_heading_says_what_failed_not_ended_skip(tmp_path, name, failed, words):
@@ -1950,6 +1950,7 @@ def test_guide_first_time_steps_describe_this_merge_and_the_failure_behaviour():
     assert "**If the link says not found.**" in text and "Rebuild only the workbook" in text.split("**If the link says not found.**")[1][:900]
     assert "20 MB" not in text and "38 MB" in text
     assert "uploaded first under a temporary name" in text and "never leaves the link empty" in text
+    assert "deleted only after the new one is safely on the release" in text and "the link keeps giving the old workbook" in text
     assert "Re-run failed jobs" in text and "workbook-RUN-ATTEMPT" in text
     assert "NOTHING was rebuilt" in text, "workbook_only from a branch is red, and the guide says so"
     assert "right-hand side" not in text, "R2-17: the sidebar claim is unverified"

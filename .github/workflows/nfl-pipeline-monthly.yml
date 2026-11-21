@@ -629,7 +629,7 @@ jobs:
               [[ "${HEARTBEAT_OUTCOME:-}" == "failure" ]] && what="the heartbeat commit could not be saved"
               [[ "${WBCHECK_OUTCOME:-}" == "failure" ]] && what="the workbook check failed"
               [[ "${WBBUILD_OUTCOME:-}" == "failure" ]] && what="the workbook could not be built"
-              [[ "${WBPUBLISH_OUTCOME:-}" == "failure" ]] && what="the workbook could not be uploaded"
+              [[ "${WBPUBLISH_OUTCOME:-}" == "failure" ]] && what="the workbook could not be published"
               what="${what} (pipeline result ${OUTCOME})"
             fi
             body="**${WORKFLOW_NAME}** failed: **${what}**. Job status: ${JOB_STATUS}. Started by: ${EVENT:-unknown}, commit ${SHA:0:7}. Run: ${RUN_URL}"

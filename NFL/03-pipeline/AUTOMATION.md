@@ -157,7 +157,7 @@ Each run writes a one-line result at the top of its summary page.
 
 ### When the workbook fails but the data was published
 
-The data is saved first and the workbook comes after. If the workbook step fails, the run turns **red** at the step **Decide whether to build the workbook**, **Build the workbook** or **Publish the workbook (release nfl-workbook)**, the box on the summary page says which step and why, and the issue **NFL pipeline needs attention: nfl-pipeline-weekly** (or **-monthly**) opens or gets a comment that says what failed (for example "the workbook could not be uploaded"). The new data stays published.
+The data is saved first and the workbook comes after. If the workbook step fails, the run turns **red** at the step **Decide whether to build the workbook**, **Build the workbook** or **Publish the workbook (release nfl-workbook)**, the box on the summary page says which step and why, and the issue **NFL pipeline needs attention: nfl-pipeline-weekly** (or **-monthly**) opens or gets a comment that says what failed (for example "the workbook could not be published"). The new data stays published.
 
 What the link gives afterwards depends on where it stopped:
 
@@ -182,7 +182,7 @@ Each scheduled workflow has one alert issue of its own:
 | `nfl-pipeline-alert-monthly` | a monthly run ends HOLD or ERROR, or its workbook could not be built or uploaded, or its heartbeat could not be saved | a later monthly run ends **PUBLISH** |
 | `nfl-pipeline-alert-watchdog` | the watchdog ends STALE or ERROR | a later watchdog run ends **HEALTHY** |
 
-The issue is titled **NFL pipeline needs attention: nfl-pipeline-...**. The first failure opens it; every further failure of the same workflow adds a comment that says what failed (the pipeline's result, or for example "the workbook could not be uploaded") and links to the run, so you never get a pile of duplicates. It closes by itself, with a comment, only when a run of the *same* workflow proves the problem is gone. A SKIP, a heartbeat, a workbook-only rebuild or a trial run never closes it, because they prove nothing. So after a workbook failure, once the workbook is fine again, close the issue yourself unless a PUBLISH comes first. For example, while the data source is late, the weekly runs skip and the watchdog's issue stays open until the week is published and a watchdog run is healthy.
+The issue is titled **NFL pipeline needs attention: nfl-pipeline-...**. The first failure opens it; every further failure of the same workflow adds a comment that says what failed (the pipeline's result, or for example "the workbook could not be published") and links to the run, so you never get a pile of duplicates. It closes by itself, with a comment, only when a run of the *same* workflow proves the problem is gone. A SKIP, a heartbeat, a workbook-only rebuild or a trial run never closes it, because they prove nothing. So after a workbook failure, once the workbook is fine again, close the issue yourself unless a PUBLISH comes first. For example, while the data source is late, the weekly runs skip and the watchdog's issue stays open until the week is published and a watchdog run is healthy.
 
 To clear an issue: fix the cause (section 3 for config mistakes), then let the next scheduled run close it, or start that workflow by hand (section 5). For the monthly issue, a hand-started monthly run that ends PUBLISH closes it. You can also close an issue yourself; the next failure opens a new one.
 
