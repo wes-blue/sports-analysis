@@ -11,7 +11,7 @@ Always here (the link never changes, the file behind it is replaced each time):
 **https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx**
 
 - It opens as a download in your browser. Save it, open it in Excel. It has no queries, formulas or connections, so there is nothing to refresh, and Excel may show a "protected view" bar the first time: click **Enable Editing**.
-- The file is about 38 MB, so the download takes a moment and Excel may need a minute to open it.
+- The file is about 8 MB (version 3.002; 3.001 was about 38 MB), and Excel may need up to a minute to open it.
 - The same file is on the repository's **Releases** page (the **Code** tab, then **Releases**, or `https://github.com/wes-blue/sports-analysis/releases`): the entry **NFL workbook (always the latest)**. Its text says which data the file holds: the season and week it runs through, when it was generated, the run that made it and how many checks passed. It is marked as a pre-release only so that it does not look like a software version; it is not one. (It may not appear in the sidebar of the repository's front page; the Releases page always lists it.)
 - The **About** sheet inside the workbook says the same and tells you where to find this link again.
 - **If the link says "not found"**, read "If the link says not found" below. It is one click to fix.
@@ -43,7 +43,7 @@ The weekly and monthly runs wait for each other, so they never write `NFL/04-dat
 
 ## 2. After the pull request is merged: the first time
 
-Merging the pull request switched on the new workbook. **Step 1 is done:** the merge on 2026-11-21 started [run 44853664413](https://github.com/wes-blue/sports-analysis/actions/runs/44853664413), which built the workbook and uploaded it in 36 seconds, and the link in section 0 works. Steps 2 to 7 are still yours to do once, in this order. Step 1 stays here as a guide to reading a run.
+Merging the pull request switched on the new workbook. **Step 1 is done:** the merge on 2026-11-21 started [run 44853664413](https://github.com/wes-blue/sports-analysis/actions/runs/44853664413), which built the workbook and uploaded it in 36 seconds, and the link in section 0 works. Step 6 (opening it in Excel) was done the same day. Steps 2 to 5 and 7 are still yours to do once, in this order. Step 1 stays here as a guide to reading a run.
 
 1. **Watch the workbook get built (the first time, the whole run took 36 seconds).** This merge changes the pipeline's program code and the weekly workflow, and either one starts **nfl-pipeline-weekly** within a minute. Open the **Actions** tab: you should see **nfl-pipeline-ci** and **nfl-pipeline-weekly**, both named after the merge. Click the **nfl-pipeline-weekly** run (or open `https://github.com/wes-blue/sports-analysis/actions/workflows/nfl-pipeline-weekly.yml`). The result line at the top of its summary is usually **SKIP** ("the pipeline ran and found nothing to publish"); it is **PUBLISH** if NFL statistics changed in the meantime. Below it you should see `workbook: build=true; there is no nfl-workbook release yet`, then `workbook: built, ... bytes`, then `workbook: published at https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`. **When the run has a green tick, the link works.** Open it and save the file. If nothing appears after five minutes, go to step 2.
    - If the run is **red**, click it and read the box on the summary page: it names the step that failed and why. Then see "If the link says not found" in section 0. Nothing you do can damage anything; a failed run leaves the data as it was.
@@ -59,7 +59,7 @@ Merging the pull request switched on the new workbook. **Step 1 is done:** the m
    - Under **System**, **Actions**: tick **Email** and choose **Only notify for failed workflows**.
    - Back on the repository page, click **Watch** (top right) and choose **All Activity**, or **Custom** with **Issues** ticked, so a new alert issue emails you.
    - GitHub sends the emails about failed *scheduled* runs to the person who last changed the schedule in the workflow files. If that is not you, the alert issues (step above) still reach you.
-6. **Open the workbook in Excel and tell Claude what you see** (any message word for word, how long it took to open, whether `FF_ESPN_League` for a player and week you know matches ESPN). Excel may show a "protected view" bar: click **Enable Editing**. This is the one check only you can do.
+6. **Done on 2026-11-21** (no repair message, about a minute to open, ESPN points matched; `/BLOCKERS.csv` Q-024). **Open the workbook in Excel and tell Claude what you see** (any message word for word, how long it took to open, whether `FF_ESPN_League` for a player and week you know matches ESPN). Excel may show a "protected view" bar: click **Enable Editing**. This is the one check only you can do.
 7. **Run the watchdog once by hand** (section 5). It should end green with **HEALTHY**.
 
 Nothing else is needed. From now on the schedule runs by itself.

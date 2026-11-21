@@ -189,7 +189,7 @@ def test_mini_about_and_properties(mini, tmp_path):
     wb = openpyxl.load_workbook(out)
     about = {r[0]: r[1] for r in sheet_rows(wb, "About", 5) if r[0]}
     status = {r[0]: r[1] for r in csv.reader(open(mini.data / "status.csv", encoding="utf-8"))}
-    assert about["Workbook version"] == "3.001"
+    assert about["Workbook version"] == "3.002"
     assert status["latest_season"] in about["Data through"] and f"week {status['latest_week']}" in about["Data through"]
     assert about["Generated (UTC)"] == status["generated_utc"]
     assert about["Data run id"] == status["run_id"]
@@ -200,7 +200,7 @@ def test_mini_about_and_properties(mini, tmp_path):
     for name in wb.sheetnames:
         assert about[f"Sheet {name}"]
     props = wb.properties
-    assert props.title == "NFL-Analysis 3.001"
+    assert props.title == "NFL-Analysis 3.002"
     assert props.creator == "NFL-Analysis pipeline"
     assert props.created.strftime("%Y-%m-%dT%H:%M:%SZ") == status["generated_utc"]
 
@@ -967,7 +967,7 @@ def test_file_properties_are_clean_and_readable(mini, tmp_path):
         core = ET.fromstring(z.read("docProps/core.xml"))
         app = z.read("docProps/app.xml").decode()
     text = ET.tostring(core, encoding="unicode")
-    assert "NFL-Analysis pipeline" in text and "NFL-Analysis 3.001" in text
+    assert "NFL-Analysis pipeline" in text and "NFL-Analysis 3.002" in text
     assert "NFL-Analysis pipeline" in app
     props = openpyxl.load_workbook(out).properties
     assert props.creator == "NFL-Analysis pipeline" and props.lastModifiedBy == "NFL-Analysis pipeline"
@@ -1170,3 +1170,250 @@ def test_package_headers_match_tables_in_every_sheet(mini, tmp_path):
     out = tmp_path / "p.xlsx"
     assert export(mini.data, out) == 0
     assert raw_header_vs_table(out) == 7
+
+
+# --------------------------------------------------------------------------------------------
+# cell references (CONTRACTS.md 13.3, design version 3.002, D-047)
+
+def a1_index(ref: str) -> int:
+    """'AB12' -> 28 (1-based column number)."""
+    n = 0
+    for ch in re.match(r"[A-Z]+", ref).group(0):
+        n = n * 26 + ord(ch) - 64
+    return n
+
+
+def std_grid(path: Path, part: str) -> list[list]:
+    """An independent standard-library reader: a cell without ``r`` goes in the column after the previous cell,
+    columns restart at every ``<row>``. Returns one list per row, with None for empty cells and the row's
+    ``r`` number checked to climb."""
+    import xml.etree.ElementTree as ET
+    with zipfile.ZipFile(path) as z:
+        sst = ["".join(t.text or "" for t in si.iter(NSM + "t")) for si in ET.fromstring(z.read("xl/sharedStrings.xml"))]
+        root = ET.fromstring(z.read(f"xl/worksheets/{part}.xml"))
+    grid, last_row = [], 0
+    for row in root.iter(NSM + "row"):
+        rn = int(row.get("r"))
+        assert rn > last_row
+        last_row = rn
+        cells: dict[int, object] = {}
+        col = 0
+        for c in row:
+            col = a1_index(c.get("r")) if c.get("r") else col + 1
+            assert col not in cells                                   # never two cells in one column
+            v = c.find(NSM + "v")
+            if v is None:
+                cells[col] = None
+            elif c.get("t") == "s":
+                cells[col] = sst[int(v.text)]
+            else:
+                cells[col] = int(v.text) if re.fullmatch(r"-?\d+", v.text) else float(v.text)
+        width = max(cells, default=0)
+        while len(grid) < rn - 1:
+            grid.append([])
+        grid.append([cells.get(i + 1) for i in range(width)])
+    return grid
+
+
+def sheet_xml(path: Path, part: str) -> str:
+    with zipfile.ZipFile(path) as z:
+        return z.read(f"xl/worksheets/{part}.xml").decode()
+
+
+def raw_rows(xml: str) -> dict[int, list[tuple[str | None, str]]]:
+    """{row number: [(r or None, cell text), ...]} straight from the text, no XML parser involved."""
+    out = {}
+    for m in re.finditer(r'<row r="(\d+)"[^>]*>(.*?)</row>', xml, re.S):
+        out[int(m.group(1))] = [(re.match(r'<c(?: r="([A-Z]+\d+)")?', c).group(1), c)
+                                for c in re.findall(r"<c[ >].*?</c>", m.group(2))]
+    return out
+
+
+def padded(grid: list[list], width: int) -> list[list]:
+    """Pad every row with None to ``width`` and drop empty rows at the end."""
+    out = [(list(r) + [None] * width)[:width] for r in grid]
+    while out and not any(v is not None for v in out[-1]):
+        out.pop()
+    return out
+
+
+def emit(cols: int, rows: list[list[str]], first: int = 2) -> list[str]:
+    sst = export_xlsx.SharedStrings()
+    em = export_xlsx.Emitter(sst, [export_xlsx.Col(f"c{i}") for i in range(cols)], compact=True)
+    return [em.row(first + i, r) for i, r in enumerate(rows)]
+
+
+def test_data_cells_follow_the_cell_reference_rule_at_xml_level():
+    cols = 30                                                     # past column Z, so letters are two long
+    full = [f"v{i}" for i in range(cols)]
+    cases = {
+        "all": full,
+        "one blank": full[:5] + [""] + full[6:],
+        "three blanks": full[:5] + ["", "", ""] + full[8:],
+        "leading blanks": ["", ""] + full[2:],
+        "first blank only": [""] + full[1:],
+        "last column": [""] * 29 + ["x"],
+        "trailing blanks": full[:3] + [""] * 27,
+        "single cell": ["x"] + [""] * 29,
+        "single cell middle": [""] * 14 + ["x"] + [""] * 15,
+        "all blank": [""] * 30,
+        "alternate": [("v" if i % 2 == 0 else "") for i in range(cols)],
+    }
+    emitted = dict(zip(cases, emit(cols, list(cases.values()))))
+    for name, vals in cases.items():
+        xml = emitted[name]
+        cells = re.findall(r"<c[ >].*?</c>", xml)
+        written = [i for i, v in enumerate(vals) if v != ""]
+        assert len(cells) == len(written), name
+        prev = None
+        for c, i in zip(cells, written):
+            has_r = c.startswith("<c r=")
+            if prev is not None and i == prev + 1:
+                assert not has_r, (name, i)                       # directly after the previous written cell
+            else:
+                assert has_r, (name, i)                           # first cell, or first after a blank
+            if has_r:
+                assert c.startswith(f'<c r="{export_xlsx.col_letter(i + 1)}{2 + list(cases).index(name)}"'), (name, c)
+            prev = i
+        assert xml.startswith(f'<row r="{2 + list(cases).index(name)}">') and xml.endswith("</row>")
+    assert emitted["all blank"] == '<row r="11"></row>'
+    assert emitted["single cell"].count("<c") == 1 and emitted["single cell"].count(" r=") == 2   # row + cell
+    assert emitted["all"].count(" r=") == 2                       # the row and the first cell only
+    assert emitted["last column"].count(" r=") == 2 and 'r="AD7"' in emitted["last column"]
+    assert emitted["leading blanks"].count(" r=") == 2 and 'r="C' in emitted["leading blanks"]
+    assert emitted["three blanks"].count(" r=") == 3              # row, first cell, cell after the gap
+
+
+def test_header_row_and_numbers_keep_their_text_after_dropping_r():
+    sst = export_xlsx.SharedStrings()
+    em = export_xlsx.Emitter(sst, [export_xlsx.Col("a"), export_xlsx.Col("b", text=True), export_xlsx.Col("c")], compact=True)
+    row = em.row(5, ["1", "007", "2.5"])
+    assert row == '<row r="5"><c r="A5"><v>1</v></c><c t="s"><v>0</v></c><c><v>2.5</v></c></row>'
+    assert em.header(1).count('r="') == 4                         # the row and all three cells
+    plain = export_xlsx.Emitter(export_xlsx.SharedStrings(), [export_xlsx.Col("a"), export_xlsx.Col("b")])
+    assert plain.row(5, ["1", "2"]).count('r="') == 3             # small sheets: every cell keeps r
+    assert sst.count == 1 + 3                                     # one text data cell plus three header cells
+
+
+@pytest.fixture
+def gappy(tmp_path):
+    """Five players with blanks in many places: a blank in the middle, two blanks, a blank at the end."""
+    players = [one_player("P1", "00-1", "1"), one_player("P2", "00-2", "1"), one_player("P3", "00-3", "1"),
+               one_player("P4", "00-4", "1"), one_player("P5", "00-5", "1")]
+    data = tiny_data(tmp_path, players, [["1", "2"], ["3", "4"], ["5", "6"], ["7", "8"], ["9", "10"]])
+    pw = data / "player_week" / "player_week_2024.csv"
+    header, rows = read_csv(pw)
+    blank = lambda r, *names: [r.__setitem__(header.index(n), "") for n in names]
+    blank(rows[1], "opponent_team")                               # one blank in the middle
+    blank(rows[2], "team", "opponent_team")                       # two blanks in a row
+    blank(rows[3], "passing_yards", "receptions")                 # blanks through the last column
+    blank(rows[4], "position", "position_group", "opponent_team", "receptions")  # several gaps and a last blank
+    write(pw, header, rows)
+    return data
+
+
+def test_gappy_workbook_xml_and_readback(gappy, tmp_path):
+    out = tmp_path / "g.xlsx"
+    assert export(gappy, out) == 0
+    xml = sheet_xml(out, "sheet2")
+    rows = raw_rows(xml)
+    header, expected = expected_player_games(gappy)
+    assert set(rows) == set(range(1, len(expected) + 2))
+    assert all(r is not None for r, _ in rows[1])                 # header: every cell keeps r
+    for i, vals in enumerate(expected):
+        rn = i + 2
+        written = [k for k, v in enumerate(vals) if v is not None]
+        cells = rows[rn]
+        assert len(cells) == len(written)
+        prev = None
+        for (ref, text), k in zip(cells, written):
+            if prev is not None and k == prev + 1:
+                assert ref is None, (rn, k)
+            else:
+                assert ref == f"{export_xlsx.col_letter(k + 1)}{rn}", (rn, k, ref)
+            prev = k
+    # at least one of each case really occurred
+    assert any(r is None for rs in list(rows.values())[1:] for r, _ in rs)
+    # read-back with openpyxl: every value in the right cell
+    ws = openpyxl.load_workbook(out)["PlayerGames"]
+    width = len(header)
+    got = padded([list(r) for r in ws.iter_rows(min_row=2, values_only=True)], width)
+    assert got == expected
+    ro = openpyxl.load_workbook(out, read_only=True)["PlayerGames"]
+    assert padded([list(r) for r in ro.iter_rows(min_row=2, values_only=True)], width) == expected
+    # and the independent reader agrees
+    grid = std_grid(out, "sheet2")
+    assert grid[0] == header
+    assert padded(grid[1:], width) == expected
+    assert padded(grid[1:], width) == got
+
+
+def test_gappy_season_totals_and_small_sheets_readback(gappy, tmp_path):
+    out = tmp_path / "g.xlsx"
+    assert export(gappy, out) == 0
+    wb = openpyxl.load_workbook(out)
+    for part, name in (("sheet3", "SeasonTotals"), ("sheet1", "About"), ("sheet4", "Leagues"), ("sheet5", "Scoring"),
+                       ("sheet6", "Bonus"), ("sheet7", "Checks"), ("sheet8", "Dictionary")):
+        assert wb[name].title == name
+        grid = std_grid(out, part)
+        mat = [list(r) for r in wb[name].iter_rows(values_only=True)]
+        width = max(len(r) for r in mat)
+        assert padded(grid, width) == padded(mat, width), name
+    # small sheets: r on every cell and every row
+    for part in ("sheet1", "sheet4", "sheet5", "sheet6", "sheet7", "sheet8"):
+        xml = sheet_xml(out, part)
+        assert len(re.findall(r"<c[ >]", xml)) == len(re.findall(r"<c r=", xml)), part
+    # SeasonTotals: header keeps r everywhere; the data rows follow the rule
+    rows = raw_rows(sheet_xml(out, "sheet3"))
+    std_totals = std_grid(out, "sheet3")
+    assert all(r is not None for r, _ in rows[1])
+    for rn, cells in rows.items():
+        if rn > 1:
+            cols = [i for i, v in enumerate(std_totals[rn - 1]) if v is not None]
+            gaps = [k for prev, k in zip(cols, cols[1:]) if k != prev + 1]
+            assert cells[0][0] == f"A{rn}"
+            assert sum(r is not None for r, _ in cells) == 1 + len(gaps)    # first cell and each cell after a gap
+
+
+def test_season_totals_with_a_blank_keeps_r_after_it(tmp_path):
+    data = tiny_data(tmp_path, [one_player("P1")], [["1", "2"]])
+    pw = data / "player_week" / "player_week_2024.csv"
+    header, rows = read_csv(pw)
+    rows[0][header.index("team")] = ""
+    write(pw, header, rows)
+    sc = data / "scored" / "scored_2024.csv"
+    sh, srows = read_csv(sc)
+    srows[0][sh.index("team")] = ""
+    write(sc, sh, srows)
+    out = tmp_path / "t.xlsx"
+    assert export(data, out) == 0
+    cells = raw_rows(sheet_xml(out, "sheet3"))[2]
+    refs = [r for r, _ in cells]
+    assert refs[0] == "A2" and refs[1] is None and refs[2] is None and refs[3] is None and refs[4] == "F2"   # team (E) blank
+    assert refs[5:] == [None] * (len(refs) - 5)
+    wb = openpyxl.load_workbook(out)
+    row = [c.value for c in wb["SeasonTotals"][2]]
+    assert row[4] is None and row[3] == "QB" and row[5] == 1
+    assert std_grid(out, "sheet3")[1][:6] == row[:6]
+
+
+def test_two_exports_give_the_same_sha256(gappy, tmp_path):
+    import hashlib
+    a, b = tmp_path / "a.xlsx", tmp_path / "b.xlsx"
+    assert export(gappy, a) == 0 and export(gappy, b) == 0
+    assert hashlib.sha256(a.read_bytes()).hexdigest() == hashlib.sha256(b.read_bytes()).hexdigest()
+
+
+def test_version_is_3002_everywhere(mini, tmp_path):
+    import xml.etree.ElementTree as ET
+    assert export_xlsx.WORKBOOK_VERSION == "3.002"
+    out = tmp_path / "v.xlsx"
+    assert export(mini.data, out) == 0
+    wb = openpyxl.load_workbook(out)
+    about = {r[0]: r[1] for r in sheet_rows(wb, "About") if r[0]}
+    assert about["Workbook version"] == "3.002"
+    assert wb["About"]["A1"].value == "NFL-Analysis 3.002"
+    assert wb.properties.title == "NFL-Analysis 3.002"
+    with zipfile.ZipFile(out) as z:
+        assert "NFL-Analysis 3.002" in z.read("docProps/core.xml").decode()
+        assert "3.001" not in z.read("docProps/core.xml").decode()
