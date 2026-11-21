@@ -293,7 +293,7 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 
 ### 13.5 Publication (decision D-042)
 
-- The workbook is **not committed to git**: a ~20 MB file rebuilt every week would grow the repository by about a gigabyte a season.
+- The workbook is **not committed to git**: a file of about 38 MB (measured 2026-11-21 for 2017–2026; it grows with the window) rebuilt every week would grow the repository by more than a gigabyte a season.
 - It is a **GitHub Release asset**: release tag `nfl-workbook`, asset name `NFL-Analysis.xlsx`, replaced on every publish. Stable download address:
   `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
 - The weekly and monthly workflows build and upload it after a PUBLISH. A SKIP rebuilds it only when the release or its asset is missing, or when the release notes' freshness key (`nfl-workbook-key: <run_id>|<pipeline_version>`, a hidden marker) is older than `status.csv`, so a failed earlier upload repairs itself. Dry runs, runs on other branches and the monthly heartbeat-only fire never build it.
