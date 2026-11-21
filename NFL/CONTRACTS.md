@@ -262,7 +262,7 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 - Refuses (exit 1) when `status.csv` `data_contract_version` is missing or is not the version the exporter understands (today `1`), naming both values.
 - Exit codes: `0` written; `1` error (message names the cause; no partial file is left at `--out`).
 - **Standard library only** (D-025): the file is written with `zipfile` and XML text. Test code may use `openpyxl` to read it back.
-- **Deterministic:** the same `04-data` gives byte-identical output. Time stamps inside the file come from `status.csv` `generated_utc`, never from the clock; zip entries use a fixed date and a fixed order.
+- **Deterministic:** the same `04-data` gives byte-identical output with the same Python build (verified across Python 3.11 and 3.13 here; a different zlib library could in principle compress differently, which changes the bytes but never a value). Time stamps inside the file come from `status.csv` `generated_utc`, never from the clock; zip entries use a fixed date and a fixed order.
 - Runs in well under 5 minutes on a GitHub runner for the full window.
 
 ### 13.2 Sheets, in this order

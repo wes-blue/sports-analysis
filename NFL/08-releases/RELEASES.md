@@ -12,7 +12,7 @@ Stable download address: <https://github.com/wes-blue/sports-analysis/releases/d
 
 | Version | Date | Status | Scope | Gates | SHA-256 | Where |
 |---|---|---|---|---|---|---|
-| 3.001 | **PLACEHOLDER: the orchestrator fills this row at release** | **In progress. Not released.** | Workbook built on GitHub: `python -m nflpipe export`, values only, uploaded after every publish (`../CONTRACTS.md` section 13) | **TO BE FILLED** (G1 to G5) | **TO BE FILLED** | Release asset `NFL-Analysis.xlsx`, tag `nfl-workbook`. Data version at release (run id, data through): **TO BE FILLED** |
+| 3.001 | 2026-11-21 (approved); published by the first workflow run after the merge | **Approved for release.** Not yet published: the workflow publishes it within minutes of the merge. | Workbook built on GitHub: `python -m nflpipe export`, values only, newest games first with the league columns next to the player, uploaded after every publish (`../CONTRACTS.md` section 13) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ (QA: [`../06-qa/qa-disposition-3.001.md`](../06-qa/qa-disposition-3.001.md)) | Each rebuild has its own; the release notes name the data run it holds. A build from the data of 2026-11-20 (run `20261120T233201Z-gh44837469898`) is `66d6e26abc6d64c0…`, about 38 MB. | Release asset `NFL-Analysis.xlsx`, tag `nfl-workbook`: <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx> |
 
 ### 2.x: Power Query workbook (retired)
 

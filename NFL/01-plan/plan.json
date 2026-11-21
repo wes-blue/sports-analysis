@@ -2386,7 +2386,7 @@
       "id": "RAID-99",
       "type": "Risk",
       "title": "A generated workbook may not open cleanly in Excel",
-      "detail": "The exporter writes the file with zipfile and XML text (D-025), without Excel or a library that Excel has accepted. The build container has no Excel, so it can read the file back with openpyxl and open it in LibreOffice, but only desktop Excel can show a repair message, a style or table problem, or a slow open of a 20 MB file.",
+      "detail": "The exporter writes the file with zipfile and XML text (D-025), without Excel or a library that Excel has accepted. The build container has no Excel, so it can read the file back with openpyxl and open it in LibreOffice, but only desktop Excel can show a repair message, a style or table problem, or a slow open of a file of about 38 MB.",
       "rating": "High",
       "response": "Tests read every sheet and table back; the XML is checked against the file format's rules; the first real test is the owner opening the file (NFR-15, control C-32); every document says 'not yet opened in Excel' until then. If Excel offers a repair, the owner reports the message word for word (BLOCKERS.csv).",
       "owner": "B1 Pipeline Engineer",

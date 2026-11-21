@@ -13,7 +13,7 @@ These four CSV files are the pipeline's only source of scoring rules. Their colu
 
 ## Saving a change on `main` publishes it
 
-A change to any file in this folder that reaches the `main` branch starts the weekly workflow straight away. It re-scores every season with the new rules and, if every blocking gate passes, commits the new data to [`../04-data/`](../04-data/README.md). The same run then rebuilds the workbook and replaces it at the download link. Nothing needs your computer.
+A change to any CSV file in this folder that reaches the `main` branch starts the weekly workflow straight away (a change to this README does not). It re-scores every season with the new rules and, if every blocking gate passes, commits the new data to [`../04-data/`](../04-data/README.md). The same run then rebuilds the workbook and replaces it at the download link. Nothing needs your computer.
 
 Because of that, change these files deliberately. A mistake that the gates catch publishes nothing; a mistake they cannot catch (for example a wrong but valid weight) is published until you correct it. Every change is kept in the file's history on GitHub, so it can always be undone.
 
