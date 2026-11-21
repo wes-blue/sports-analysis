@@ -6,7 +6,7 @@ Scored NFL fantasy-football data and a finished Excel workbook built from it. A 
 
 Everything runs on GitHub. Nothing needs your computer to be on, and you need only Excel to use the result.
 
-**Status (2026-11-21).** The project moved here from a private repository on 2026-11-20, and the pipeline has published on GitHub since then. Version 3.001, the workbook built on GitHub, was released on 2026-11-21: the run started by its merge built the workbook and uploaded it to the download link, which works. It has not yet been opened in Excel (`/BLOCKERS.csv` Q-024). [`08-releases/RELEASES.md`](08-releases/RELEASES.md) shows the releases, and [`PLAN.md`](PLAN.md) the roadmap.
+**Status (2026-11-21).** The project moved here from a private repository on 2026-11-20, and the pipeline has published on GitHub since then. Version 3.001, the workbook built on GitHub, was released on 2026-11-21: the run started by its merge built the workbook and uploaded it to the download link, which works. It opens in desktop Excel with no repair message, in about a minute (`/BLOCKERS.csv` Q-024). Version 3.002 (the same workbook in a file about five times smaller, D-047) is in test: it replaces 3.001 at the link only after it has opened cleanly in Excel (`/BLOCKERS.csv` Q-025). [`08-releases/RELEASES.md`](08-releases/RELEASES.md) shows the releases, and [`PLAN.md`](PLAN.md) the roadmap.
 
 ## Start here
 

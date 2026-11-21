@@ -985,7 +985,7 @@ def test_run_artifacts_cannot_fail_the_run_or_collide_on_a_rerun(name):
         assert step["continue-on-error"] is True, step_name
         assert step["with"]["name"].endswith("-${{ github.run_id }}-${{ github.run_attempt }}"), step_name
     assert step_named(doc, KEEP_WB)["with"]["name"] == "workbook-${{ github.run_id }}-${{ github.run_attempt }}"
-    assert step_named(doc, KEEP_WB)["with"]["compression-level"] == 0, "38 MB of zip data does not compress; store it"
+    assert step_named(doc, KEEP_WB)["with"]["compression-level"] == 0, "the workbook is zip data already (about 8 MB); it does not compress, so store it"
 
 
 @pytest.mark.parametrize("name", PUBLISHING)
@@ -1948,7 +1948,7 @@ def test_guide_first_time_steps_describe_this_merge_and_the_failure_behaviour():
     assert "there is no nfl-workbook release yet" in sec2 and "When the run has a green tick, the link works" in sec2
     assert "counts as a config change, so two runs" not in text and "a newer commit by **github-actions[bot]** named" not in sec2.split("4. ")[0]
     assert "**If the link says not found.**" in text and "Rebuild only the workbook" in text.split("**If the link says not found.**")[1][:900]
-    assert "20 MB" not in text and "38 MB" in text
+    assert "20 MB" not in text and "about 8 MB" in text, "the guide states the size of the 3.002 file"
     assert "uploaded first under a temporary name" in text and "never leaves the link empty" in text
     assert "deleted only after the new one is safely on the release" in text and "the link keeps giving the old workbook" in text
     assert "Re-run failed jobs" in text and "workbook-RUN-ATTEMPT" in text

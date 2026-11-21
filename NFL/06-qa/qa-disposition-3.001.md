@@ -54,7 +54,7 @@ Text only: the config README wording (N-2), the plan's size wording (N-4), the c
 
 ## Not verifiable here
 
-1. Excel: whether it opens without a repair prompt, and how long it takes (Q-024).
+1. Excel: whether it opens without a repair prompt, and how long it takes (Q-024). (Since answered by the owner: no repair message, about a minute; D-046.)
 2. GitHub: the asset rename through the API, the CDN's answer, and the first real publish after the merge. (Since checked on GitHub, apart from replacing an existing asset: see the next section.)
 
 ## Verified on GitHub after the merge (2026-11-21)
@@ -72,4 +72,6 @@ Checked by the orchestrator after the owner merged the pull request (commit `8d9
 | File properties | Author and last modified by "NFL-Analysis pipeline"; no personal data |
 | Run artifact (A2-03) | `workbook-44853664413-1`, kept 7 days |
 
-Still not seen: the file opened in Excel (Q-024), replacing an existing asset (the next publish deletes the old file and renames the new one), and a red workbook step with its alert. They move to roadmap 3.002 (D-045).
+Since then the owner opened the file in desktop Excel: no repair message, about a minute to open, and the ESPN points for a known player and week matched (Q-024, D-046).
+
+Still not seen: replacing an existing asset (the next publish deletes the old file and renames the new one), and a red workbook step with its alert. They move to roadmap 3.002 (D-045).
