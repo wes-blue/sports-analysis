@@ -1,8 +1,24 @@
 # NFL automation: how GitHub runs the pipeline for you
 
-GitHub runs everything. Your laptop does not need to be on, and you never need to install anything or open a command window. GitHub fetches the NFL statistics, scores them with the rules in `NFL/02-config`, checks the result, and saves the scored files in `NFL/04-data`. The workbook reads those files from the web.
+GitHub runs everything. Your laptop does not need to be on, and you never need to install anything or open a command window. GitHub fetches the NFL statistics, scores them with the rules in `NFL/02-config`, checks the result, saves the scored files in `NFL/04-data`, and then builds the finished Excel workbook for you to download. The workbook holds values only: there is nothing to refresh in Excel.
 
 Everything below is done on the GitHub website, in the repository `wes-blue/sports-analysis`.
+
+## 0. Where is the latest workbook?
+
+Always here (the link never changes, the file behind it is replaced each time):
+
+**https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx**
+
+- It opens as a download in your browser. Save it, open it in Excel. It has no queries, formulas or connections, so there is nothing to refresh, and Excel may show a "protected view" bar the first time: click **Enable Editing**.
+- The same file is on the repository page: on the right-hand side under **Releases**, the entry **NFL workbook (always the latest)**. Its text says which data the file holds: the season and week it runs through, when it was generated, the run that made it and how many checks passed. It is marked as a pre-release only so that it does not look like a software version; it is not one.
+- The **About** sheet inside the workbook says the same and tells you where to find this link again.
+
+**When it is rebuilt.** Every time the data is published (the Tuesday, Wednesday and Thursday runs in season, the monthly run on the 1st, and after every change you make to `NFL/02-config`). A run that finds nothing new does not rebuild it, unless the file on the release is missing or older than the published data, in which case it rebuilds it then.
+
+**How long after a scoring change.** You edit a file in `NFL/02-config` (section 3). The run starts within a minute, scores every season, checks and publishes, then builds the workbook. Expect about ten minutes from your commit to the new file; the run's page shows its progress. When the run has a green tick, the link above gives the new workbook. During the few seconds while the old file is being replaced, the link can briefly answer "not found": wait a moment and try again.
+
+**Rebuilding it by hand, without a new data run.** Section 5, "Rebuild only the workbook".
 
 ## 1. What runs when
 
@@ -27,7 +43,7 @@ Merging the pull request switches the automation on. Do these checks once, in th
 2. **Check that Actions is allowed.** Click **Settings** (top right of the repository), then **Actions**, then **General** in the left menu.
    - **Actions permissions**: any choice that allows actions created by GitHub. The workflows use only three actions made by GitHub (checkout, setup-python, upload-artifact), each fixed to an exact version.
    - In the section about running workflows from **fork pull requests**, choose **Require approval for all external contributors**. Anyone can propose a change to a public repository; with this setting nothing they propose runs until you approve it.
-   - **Workflow permissions**: leave **Read repository contents and packages permissions** selected. Each workflow asks for exactly the extra rights it needs (the weekly and monthly runs may save data and write alert issues; the others may not). Leave **Allow GitHub Actions to create and approve pull requests** unticked.
+   - **Workflow permissions**: leave **Read repository contents and packages permissions** selected. Each workflow asks for exactly the extra rights it needs (the weekly and monthly runs may save data, publish the workbook on the release and write alert issues; the others may not). Leave **Allow GitHub Actions to create and approve pull requests** unticked.
    - Click **Save** if you changed anything.
 3. **Check that Issues are on.** **Settings**, **General**, scroll to **Features**: **Issues** must be ticked. Problems are reported as issues (see the section Alert issues).
 4. **Check the first weekly run.** On the **Actions** tab click the **nfl-pipeline-weekly** run. A green tick and the heading **NFL pipeline weekly: PUBLISH** on its summary page mean it worked. On the **Code** tab, the line above the file list now shows a newer commit by **github-actions[bot]** named `nfl-pipeline: publish NFL/04-data (weekly, push, run ...)`. If the run is red, read the box on its summary page and see section 6.
@@ -36,7 +52,7 @@ Merging the pull request switches the automation on. Do these checks once, in th
    - Under **System**, **Actions**: tick **Email** and choose **Only notify for failed workflows**.
    - Back on the repository page, click **Watch** (top right) and choose **All Activity**, or **Custom** with **Issues** ticked, so a new alert issue emails you.
    - GitHub sends the emails about failed *scheduled* runs to the person who last changed the schedule in the workflow files. If that is not you, the alert issues (step above) still reach you.
-7. **Refresh the workbook.** In Excel, **Data**, **Refresh All**. The data now comes from the files the run just published.
+7. **Get the workbook.** The merge does not start a workbook build by itself unless it also starts a data publish, and the very first workbook does not exist yet. Start it once by hand: section 5, "Rebuild only the workbook". When that run is green, open the link in section 0.
 8. **Run the watchdog once by hand** (section 5). It should end green with **HEALTHY**.
 
 Nothing else is needed. From now on the schedule runs by itself.
@@ -53,8 +69,8 @@ Nothing else is needed. From now on the schedule runs by itself.
 What you will see:
 
 - Within a minute, the **Actions** tab shows an **nfl-pipeline-weekly** run named after your commit message (and an **nfl-pipeline-ci** run with the tests).
-- After a few minutes it turns green with **PUBLISH**, and a new commit by **github-actions[bot]** appears. A changed rule rebuilds every season, so all seasons get the new scores.
-- Refresh the workbook. If you changed a league that has stored test values, the run's summary lists the checks `G-GOLDEN` or `G-ESPN` as **WARN** "not applicable: rules for <League> changed". That is expected and does not stop the publish.
+- After a few minutes it turns green with **PUBLISH**, and a new commit by **github-actions[bot]** appears. A changed rule rebuilds every season, so all seasons get the new scores. A little later the run's summary says `workbook: published` and the link in section 0 gives the new workbook; the run is green only when the workbook is in place too.
+- Download the workbook again (section 0). If you changed a league that has stored test values, the run's summary lists the checks `G-GOLDEN` or `G-ESPN` as **WARN** "not applicable: rules for <League> changed". That is expected and does not stop the publish.
 
 If you make two quick changes, the second run waits for the first. A run that is still waiting can be replaced by a newer one; it then shows as **cancelled** (grey). That is normal: the newer run includes your earlier change.
 
@@ -86,7 +102,7 @@ To get back to green, correct the file the same way you changed it (edit or uplo
 
 ## 4. Seeing what was published
 
-- `NFL/04-data/status.csv` shows when the data was last published and up to which week.
+- `NFL/04-data/status.csv` shows when the data was last published and up to which week. The release text of the workbook (section 0) shows the same for the workbook.
 - `NFL/04-data/run_log.csv` lists every publish.
 - Each run's summary page lists the checks that warned or failed. The full check report is attached to the run as **gate-report-...** under **Artifacts** at the bottom of the summary page, kept for 30 days. In a public repository anyone signed in to GitHub can download it; it holds nothing that is not already in `NFL/04-data`.
 
@@ -98,9 +114,20 @@ To get back to green, correct the file the same way you changed it (edit or uplo
    - **seasons**: leave `current`. `all`, a year such as `2025`, or a range such as `2017-2026` also work and skip the "is there anything new" question.
    - **dry_run**: tick it to do all the work and checks without publishing anything.
    - **force**: tick it to rebuild and publish even when nothing seems new.
+   - **workbook_only**: see "Rebuild only the workbook" below.
 4. Click the green **Run workflow** button. The run appears in the list after a few seconds.
 
 A run started from any branch other than `main` is always a trial run: it checks everything and publishes nothing.
+
+### Rebuild only the workbook
+
+Use this when the workbook is missing or looks wrong, and the data itself is fine.
+
+1. **Actions** tab, click **nfl-pipeline-weekly** in the list on the left.
+2. Click **Run workflow**, leave **Use workflow from** on `main`, tick **workbook_only**, and click the green **Run workflow** button. (**nfl-pipeline-monthly** has the same box; either one works.)
+3. Wait for the green tick (a few minutes). The summary page says `workbook: published ...`, and the link in section 0 gives the new file.
+
+This does not fetch new statistics and does not change `NFL/04-data`: it builds the workbook from the data already on `main`. The other boxes in the form are ignored when **workbook_only** is ticked. The result line is **WORKBOOK**.
 
 ## 6. Reading the results
 
@@ -108,13 +135,20 @@ Each run writes a one-line result at the top of its summary page.
 
 | Result | Colour | Meaning | What to do |
 |---|---|---|---|
-| PUBLISH | green | New data passed every check and was saved. | Nothing. Refresh the workbook. |
+| PUBLISH | green | New data passed every check, was saved, and the workbook on the release was replaced. | Nothing. Download the workbook again (section 0) when you want the new data. |
 | PUBLISH (dry run ...) | green | A trial run passed every check. Nothing was saved. | Nothing. |
-| SKIP | green | Nothing new. The note says why, for example "upstream not updated since last publish" or "off-season". | Nothing. |
+| WORKBOOK | green | You asked for a workbook rebuild only (section 5). The workbook was rebuilt from the data on `main`. | Nothing. |
+| SKIP | green | Nothing new. The note says why, for example "upstream not updated since last publish" or "off-season". The workbook is only looked at: it is rebuilt just if it is missing or older than the published data. | Nothing. |
 | HEARTBEAT | green | The monthly workflow's mid-month check (section 7). | Nothing. |
 | HOLD | red | A check failed, so nothing was published; the old data stays in place. | Read the box on the summary page. If it names `NFL/02-config`, fix the file (section 3). Otherwise pass the text on to whoever maintains the pipeline. |
 | ERROR | red | The pipeline could not finish, for example because the data source could not be reached or a config file could not be read. Nothing was published. | Read the box on the summary page. A network problem usually clears at the next scheduled attempt. |
 | STALE (watchdog) | red | A week finished more than 72 hours ago and is still not published. | Look at that week's weekly runs. The data source may simply be late. Otherwise start the weekly run by hand. |
+
+### When the workbook fails but the data was published
+
+The data is saved first and the workbook comes after. If building or uploading the workbook fails, the run turns **red** at the step **Build the workbook** or **Publish the workbook (release nfl-workbook)**, the box on the summary page says which step and why, and the issue **NFL pipeline needs attention: nfl-pipeline-weekly** (or **-monthly**) opens or gets a comment. The new data stays published; only the download link still gives the previous workbook (or, the very first time, nothing).
+
+What to do: start **Rebuild only the workbook** (section 5). If it ends green, the problem was temporary; close the issue yourself (a rebuild by hand does not close it, because it proves nothing about the data). If it fails the same way twice, pass the text from the summary page on to whoever maintains the pipeline. If the build worked but the upload failed, the run page also holds the finished file under **Artifacts** as **workbook-...** for 7 days, so you can still download it there. You do not need to do anything for the next scheduled run: it notices that the release does not hold the published data and builds the workbook again.
 
 ## Alert issues
 
@@ -122,11 +156,11 @@ Each scheduled workflow has one alert issue of its own:
 
 | Label | Opened when | Closed when |
 |---|---|---|
-| `nfl-pipeline-alert-weekly` | a weekly run ends HOLD or ERROR (for example after a wrong config change) | a later weekly run ends **PUBLISH** |
-| `nfl-pipeline-alert-monthly` | a monthly run ends HOLD or ERROR, or its heartbeat could not be saved | a later monthly run ends **PUBLISH** |
+| `nfl-pipeline-alert-weekly` | a weekly run ends HOLD or ERROR (for example after a wrong config change), or its workbook could not be built or uploaded | a later weekly run ends **PUBLISH** |
+| `nfl-pipeline-alert-monthly` | a monthly run ends HOLD or ERROR, or its workbook could not be built or uploaded, or its heartbeat could not be saved | a later monthly run ends **PUBLISH** |
 | `nfl-pipeline-alert-watchdog` | the watchdog ends STALE or ERROR | a later watchdog run ends **HEALTHY** |
 
-The issue is titled **NFL pipeline needs attention: nfl-pipeline-...**. The first failure opens it; every further failure of the same workflow adds a comment with what went wrong and a link to the run, so you never get a pile of duplicates. It closes by itself, with a comment, only when a run of the *same* workflow proves the problem is gone. A SKIP, a heartbeat or a trial run never closes it, because they prove nothing. For example, while the data source is late, the weekly runs skip and the watchdog's issue stays open until the week is published and a watchdog run is healthy.
+The issue is titled **NFL pipeline needs attention: nfl-pipeline-...**. The first failure opens it; every further failure of the same workflow adds a comment with what went wrong and a link to the run, so you never get a pile of duplicates. It closes by itself, with a comment, only when a run of the *same* workflow proves the problem is gone. A SKIP, a heartbeat, a workbook-only rebuild or a trial run never closes it, because they prove nothing. For example, while the data source is late, the weekly runs skip and the watchdog's issue stays open until the week is published and a watchdog run is healthy.
 
 To clear an issue: fix the cause (section 3 for config mistakes), then let the next scheduled run close it, or start that workflow by hand (section 5). For the monthly issue, a hand-started monthly run that ends PUBLISH closes it. You can also close an issue yourself; the next failure opens a new one.
 
@@ -148,6 +182,7 @@ In late August or early September the new season's data appears and the weekly r
 |---|---|---|
 | GitHub switched the schedules off after 60 days without activity (should not happen thanks to the heartbeat; it could if several runs in a row were dropped by GitHub) | No new runs on the **Actions** tab; a yellow banner on the workflow's page saying it was disabled. | Click the workflow, then **Enable workflow**. Do it for each NFL workflow. Then start **nfl-pipeline-monthly** by hand. |
 | Actions or Issues were switched off in **Settings** | No runs at all, or red runs that say "could not list issues". | Section 2, steps 2 and 3. |
+| The workbook file is missing from the release, or the release was deleted | The link in section 0 answers "not found". | Nothing: the next weekly or monthly run notices and builds it again. Or start **Rebuild only the workbook** (section 5) to get it now. Do not delete the release on purpose; if you do, the same applies. |
 | A rule on the `main` branch requires pull requests or reviews | Weekly and monthly runs turn red at the step **Commit 04-data** or **Heartbeat** with "push rejected" or "protected branch". | Allow GitHub Actions to bypass the rule, or ask for the workflows to be changed to open pull requests. |
 | GitHub dropped or delayed a scheduled run (GitHub warns this can happen at busy times) | A day without a run. | Nothing: there are three weekly attempts, two Friday watchdogs, and the watchdog turns red if a whole week is missed. |
 | The data source is late or changed its files | Weekly SKIPs while games have finished; then a red watchdog with a STALE issue; or a red HOLD or ERROR naming a check. | Wait a day for lateness. A HOLD or ERROR that repeats needs the pipeline to be updated. |
@@ -167,4 +202,4 @@ To remove the automation completely, delete the four files `nfl-pipeline-*.yml` 
 - Anyone can read the code and the published data, and can open issues or propose changes.
 - Only you (and anyone you give write access) can start a run by hand, change the config, or merge a proposed change.
 - A change proposed by someone else runs only the tests, with read-only access, and only after you approve it (section 2, step 2). It can never publish data, change files or see anything secret. There are no secrets in these workflows.
-- The workflows save only `NFL/04-data` (and the empty heartbeat commit). A commit made by a workflow never starts another workflow, so a publish cannot loop.
+- The workflows save only `NFL/04-data` (and the empty heartbeat commit), and replace the one file `NFL-Analysis.xlsx` on the release `nfl-workbook`. The workbook is not stored in the repository itself, so the repository does not grow by about 20 MB every week. A commit, tag or release made by a workflow never starts another workflow, so a publish cannot loop.

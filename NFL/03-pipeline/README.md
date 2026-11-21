@@ -1,6 +1,6 @@
 # 03-pipeline: the `nflpipe` Python pipeline
 
-`nflpipe` turns public NFL statistics into scored fantasy-football tables. It downloads the weekly player and team statistics, schedules and play-by-play that [nflverse](https://github.com/nflverse/nflverse-data) publishes, derives long-touchdown counts and one team defense / special teams (D/ST) row per team-game, scores every league defined in [`../02-config/`](../02-config/), checks the result with 13 gates, and publishes plain CSV files to [`../04-data/`](../04-data/). The Excel workbook in `../05-excel/` reads those files from the web. Every file format is defined in [`../CONTRACTS.md`](../CONTRACTS.md).
+`nflpipe` turns public NFL statistics into scored fantasy-football tables. It downloads the weekly player and team statistics, schedules and play-by-play that [nflverse](https://github.com/nflverse/nflverse-data) publishes, derives long-touchdown counts and one team defense / special teams (D/ST) row per team-game, scores every league defined in [`../02-config/`](../02-config/), checks the result with 13 gates, and publishes plain CSV files to [`../04-data/`](../04-data/). The `export` command then turns those files into one finished, values-only Excel workbook (nothing to refresh), described in [`../CONTRACTS.md`](../CONTRACTS.md) section 13. Every file format is defined in [`../CONTRACTS.md`](../CONTRACTS.md).
 
 **Where it runs.** On GitHub. Scheduled GitHub Actions workflows run the pipeline during the season, after every change to `NFL/02-config/` on `main`, and once a month, and commit what it publishes. Nobody needs Python on their own computer to use the data or to change the scoring rules. How the workflows work, and what to do when one turns red, is in [`AUTOMATION.md`](AUTOMATION.md). This page is for developers: what the code does, how to run it and how to test it.
 
@@ -25,7 +25,7 @@ NFL/
 
 | Module | Job |
 |---|---|
-| `__main__.py` | Command dispatcher (`run`, `check`, `resolve`, `watchdog`, `version`) |
+| `__main__.py` | Command dispatcher (`run`, `check`, `resolve`, `watchdog`, `export`, `version`) |
 | `config.py` | Reads and checks `02-config`; resolves the season window |
 | `http.py` | Downloads with retries, proxy and certificate support, and the cache |
 | `ingest.py` | Reads the nflverse CSV files (only the columns needed) |
@@ -37,6 +37,7 @@ NFL/
 | `check.py` | The read-only `check` command |
 | `resolve.py`, `freshness.py` | The `resolve` command: is there new work for a scheduled run? |
 | `watchdog.py` | The `watchdog` command: has a publish landed recently enough? |
+| `export_xlsx.py` | The `export` command: writes the values-only Excel workbook from `04-data` |
 
 The version is `pipeline_version` in `nflpipe/__init__.py` (now **1.2.1**). Following `/00-Governance/VERSIONING.md`, a change to scoring arithmetic or to a derived-metric rule raises the middle number and a breaking change the first. Every publish records it in `status.csv` and `run_log.csv`; a new version makes the next run rebuild every season.
 
@@ -77,6 +78,7 @@ Python 3.11 or later; nothing to install for the pipeline itself (decision D-025
 | `python -m nflpipe check` | Read-only check of what is published (manifest hashes and the structural gates) |
 | `python -m nflpipe resolve` | Print whether a scheduled run has work (`action=run` or `skip`) |
 | `python -m nflpipe watchdog --max-age-hours N` | Fail when the last publish is older than N hours in season |
+| `python -m nflpipe export` | Build the values-only Excel workbook from `04-data` (see below) |
 | `python -m nflpipe version` | Print `pipeline_version` |
 
 On Windows use `py` in place of `python`.
@@ -107,10 +109,21 @@ A run on your own computer publishes into your clone's `04-data`. On `main` the 
 
 Publishing is all or nothing: the run first proves it can write every file it will replace, writes the index files last, and puts back the old files from `../.work/publish-backup/` if anything fails part-way.
 
+## Excel workbook export
+
+`export` reads only the published files in `04-data` and writes one workbook with the standard library (no formulas, queries or connections). It never downloads anything and never changes `04-data`. It refuses a `status.csv` whose `data_contract_version` it does not understand.
+
+```bash
+python -m nflpipe export
+python -m nflpipe export --data-dir ../04-data --out ../.work/workbook/NFL-Analysis.xlsx
+```
+
+Exit code `0` means the file was written; `1` means an error, with the cause on stderr and no partial file at `--out`. The same data gives byte-identical output. The sheets and rules are in `../CONTRACTS.md` section 13. The workflows upload the file as a release asset; it is not committed.
+
 ## Tests
 
 ```bash
-python -m pip install -r requirements-dev.txt     # pytest and its exact dependencies; tests only
+python -m pip install -r requirements-dev.txt     # pytest, openpyxl and their exact dependencies; tests only
 python -m pytest
 ```
 
