@@ -8,7 +8,7 @@ For each sport, a pipeline downloads public statistics, scores them for one or m
 
 **[Download NFL-Analysis.xlsx](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx)**, the finished workbook. Open it in Excel; its `About` sheet says which data it holds. The link never changes: every rebuild replaces the file behind it. [`NFL/05-excel/README.md`](NFL/05-excel/README.md) says what is in it.
 
-The file is about 38 MB, so allow a little time for the download and for Excel to open it (about a minute to open in Excel). Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work.
+The file is about 8 MB (from version 3.002; it was about 38 MB in 3.001), and Excel needs a little while to open it (3.001 took about a minute). Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work.
 
 If the link answers "not found": the workbook is being replaced or has not been built yet. Wait two minutes and try again. If it still answers "not found", open the repository's **Actions** tab, choose **nfl-pipeline-weekly**, click **Run workflow**, tick **workbook_only** and run it; the link works when that run is green. [`NFL/03-pipeline/AUTOMATION.md`](NFL/03-pipeline/AUTOMATION.md) explains the runs. [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) lists the releases.
 

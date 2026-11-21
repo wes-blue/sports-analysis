@@ -38,7 +38,7 @@ from decimal import ROUND_HALF_UP, Context, Decimal, InvalidOperation, localcont
 from operator import itemgetter
 from pathlib import Path
 
-WORKBOOK_VERSION = "3.001"
+WORKBOOK_VERSION = "3.002"
 DATA_CONTRACT_VERSION = "1"          # the data contract (CONTRACTS.md section 5) this exporter understands
 AUTHOR = "NFL-Analysis pipeline"
 MAX_DATA_ROWS = 1_048_575
@@ -246,8 +246,9 @@ class Col:
 class Emitter:
     """Turns rows of CSV text into ``<row>`` XML, caching the cell text of repeated values."""
 
-    def __init__(self, sst: SharedStrings, cols: list[Col]):
-        self.sst, self.cols = sst, cols
+    def __init__(self, sst: SharedStrings, cols: list[Col], compact: bool = False):
+        # compact: leave out ``r`` on a data cell that directly follows the previous written cell (D-047)
+        self.sst, self.cols, self.compact = sst, cols, compact
         self.prefix = ['<c r="' + col_letter(i + 1) for i in range(len(cols))]
         self.caches: list[dict[str, str]] = [{} for _ in cols]
 
@@ -274,6 +275,7 @@ class Emitter:
         rs = str(rn)
         parts = [f'<row r="{rs}">']
         sst = self.sst
+        prev = -2                       # index of the previous written cell; -2 = none yet in this row
         for k, v in enumerate(vals):
             if v == "":
                 continue
@@ -285,10 +287,14 @@ class Emitter:
                 frag = cache[v] = self._make(k, v)
             if frag[1] == "t":
                 sst.count += 1
-            parts.append(self.prefix[k])
-            parts.append(rs)
-            parts.append('"')
+            if self.compact and k == prev + 1:
+                parts.append("<c")      # directly after the previous written cell: no r (D-047)
+            else:
+                parts.append(self.prefix[k])
+                parts.append(rs)
+                parts.append('"')
             parts.append(frag)
+            prev = k
         parts.append("</row>")
         return "".join(parts)
 
@@ -799,10 +805,10 @@ def write_about(pkg: Package, sst: SharedStrings, data: Data, part: str) -> list
 
 
 def write_table_sheet(pkg: Package, sst: SharedStrings, part: str, sheet: str, cols: list[Col], rows, *, note: str | None,
-                      freeze_cols: int = 0) -> int:
+                      freeze_cols: int = 0, compact: bool = False) -> int:
     """Write a sheet that is one table (optionally under a note row). Returns the data row count.
     The column names were checked by ``check_columns`` before the file was started."""
-    em = Emitter(sst, cols)
+    em = Emitter(sst, cols, compact)
     out = SheetOut(pkg, part)
     first = 1
     out.put(sheet_head(cols, freeze_cols, 2 if note else 1, selected=False))
@@ -845,7 +851,7 @@ def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, layout
     i_week, i_name, i_pos, i_team = (layout.header0.index(n) for n in ("week", "player_display_name", "position", "team"))
     out = SheetOut(pkg, part)
     out.put(sheet_head(cols, FREEZE_PLAYER_GAMES, 1, selected=False))
-    em = Emitter(sst, cols)
+    em = Emitter(sst, cols, compact=True)
     out.put(em.header(1))
     ctx = Context(prec=60)
     rn = 1
@@ -1024,7 +1030,7 @@ def build(data_dir: Path, out_path: Path) -> dict:
         pkg.add("xl/worksheets/_rels/sheet2.xml.rels", table_rels(1))
 
         st_rows = season_totals(data, totals)
-        write_table_sheet(pkg, sst, part(3), "SeasonTotals", st_cols, st_rows, note=None, freeze_cols=FREEZE_SEASON_TOTALS)
+        write_table_sheet(pkg, sst, part(3), "SeasonTotals", st_cols, st_rows, note=None, freeze_cols=FREEZE_SEASON_TOTALS, compact=True)
         tables.append((3, "tblSeasonTotals", table_xml(2, "tblSeasonTotals", st_cols, *pkg.last_table)))   # type: ignore[attr-defined]
         pkg.add("xl/worksheets/_rels/sheet3.xml.rels", table_rels(2))
         n_totals = len(st_rows)

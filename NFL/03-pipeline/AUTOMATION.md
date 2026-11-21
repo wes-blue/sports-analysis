@@ -11,7 +11,7 @@ Always here (the link never changes, the file behind it is replaced each time):
 **https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx**
 
 - It opens as a download in your browser. Save it, open it in Excel. It has no queries, formulas or connections, so there is nothing to refresh, and Excel may show a "protected view" bar the first time: click **Enable Editing**.
-- The file is about 38 MB, so the download takes a moment and Excel may need a minute to open it.
+- The file is about 8 MB (version 3.002; 3.001 was about 38 MB), and Excel may need up to a minute to open it.
 - The same file is on the repository's **Releases** page (the **Code** tab, then **Releases**, or `https://github.com/wes-blue/sports-analysis/releases`): the entry **NFL workbook (always the latest)**. Its text says which data the file holds: the season and week it runs through, when it was generated, the run that made it and how many checks passed. It is marked as a pre-release only so that it does not look like a software version; it is not one. (It may not appear in the sidebar of the repository's front page; the Releases page always lists it.)
 - The **About** sheet inside the workbook says the same and tells you where to find this link again.
 - **If the link says "not found"**, read "If the link says not found" below. It is one click to fix.

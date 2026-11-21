@@ -8,9 +8,9 @@ The NFL workbook is built for you on GitHub. You download it and open it; there 
 
 `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
 
-The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files** (decision D-042: it is about 38 MB and is rebuilt every week). It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
+The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files** (decision D-042: it is about 8 MB and is rebuilt every week). It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
 
-**Opening it.** The file is about 38 MB and holds about 17 million cells, so Excel takes a little while to open it (about a minute in the owner's Excel, with no repair message; `/BLOCKERS.csv` Q-024). Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work. The newest games are at the top of `PlayerGames`, with your league columns (`FF_<League>`) right after the player's name.
+**Opening it.** The file is about 8 MB but holds about 17 million cells, so Excel takes a little while to open it. Version 3.001 (about 38 MB, the same cells) took about a minute in the owner's Excel, with no repair message (`/BLOCKERS.csv` Q-024); version 3.002 is smaller to download and has less for Excel to read (D-047), and its first open is `/BLOCKERS.csv` Q-025. Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work. The newest games are at the top of `PlayerGames`, with your league columns (`FF_<League>`) right after the player's name.
 
 **If the link answers "not found".** The workbook is being replaced or has not been built yet. Wait two minutes and try again. If it still answers "not found", open the repository's **Actions** tab, choose **nfl-pipeline-weekly**, click **Run workflow**, tick **workbook_only** and run it; the link works when that run is green. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) has the details.
 

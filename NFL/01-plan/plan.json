@@ -7,7 +7,7 @@
     "So GitHub now does all the running: the scheduled refreshes, a rebuild whenever you save a change to a scoring file on GitHub, the published files and the alerts (D-036). Your laptop is needed only to download and open the workbook.",
     "You asked Claude to name the workbook for future clarity. The first digit now names the design generation: 1.x was computed inside Excel (plus the transitional 1.006), 2.x is the pipeline-fed workbook in this repository. The first workbook here is NFL-Analysis-2.001 (D-035).",
     "Your Arizona D/ST game log settled how ESPN counts points allowed: touchdowns scored by the opposing defense are left out, special-teams return touchdowns are not (D-038). Version 2.001 applies it.",
-    "On 2026-11-20 you merged the pull request, and the pipeline ran on GitHub. You then tried the experimental Power Query workbook: it opened without a problem, but Refresh All was still running after five minutes, which was too long, and you asked for Python on GitHub to build the Excel workbook instead (BLOCKERS.csv Q-020; D-041). From version 3.001 the pipeline builds a finished, values-only workbook after every publish and uploads it at a stable download link; you download it and open it, and there is nothing to refresh (D-041, D-042). The Power Query route is retired (D-043). Still needing you: whether to keep that route at all (Q-023), two ESPN game logs, and confirming what stays private. Each is a row in BLOCKERS.csv, and work continues on a stated default until you answer (D-030, D-039). Version 3.001 was released on 2026-11-21: the first publish on GitHub is at the stable download link; you opened it in Excel with no repair message, it took about a minute, and your ESPN points check matched (Q-024, D-045, D-046)."
+    "On 2026-11-20 you merged the pull request, and the pipeline ran on GitHub. You then tried the experimental Power Query workbook: it opened without a problem, but Refresh All was still running after five minutes, which was too long, and you asked for Python on GitHub to build the Excel workbook instead (BLOCKERS.csv Q-020; D-041). From version 3.001 the pipeline builds a finished, values-only workbook after every publish and uploads it at a stable download link; you download it and open it, and there is nothing to refresh (D-041, D-042). The Power Query route is retired (D-043). Still needing you: whether to keep that route at all (Q-023), two ESPN game logs, and confirming what stays private. Each is a row in BLOCKERS.csv, and work continues on a stated default until you answer (D-030, D-039). Version 3.001 was released on 2026-11-21: the first publish on GitHub is at the stable download link; you opened it in Excel with no repair message, it took about a minute, and your ESPN points check matched (Q-024, D-045, D-046). Next, version 3.002 makes the workbook file much smaller (about 8 MB instead of 38) without changing any value; you open it once in Excel before it counts as released (D-047; Q-025)."
   ],
   "key_findings": [
     {
@@ -231,7 +231,7 @@
     {
       "step": 15,
       "component": "Analysis",
-      "description": "The owner sorts, filters and pivots the tables; further analysis sheets are planned for roadmap 3.004.",
+      "description": "The owner sorts, filters and pivots the tables; further analysis sheets are planned for roadmap 3.005.",
       "where": "PivotTable"
     }
   ],
@@ -329,7 +329,7 @@
     {
       "version": "1.008",
       "increment": "Scheduled runs live (renumbered)",
-      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.003, which was later renumbered 3.002 (D-041).",
+      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.003, which was later renumbered 3.002 (D-041) and then 3.003 (D-047).",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn and renumbered).",
       "depends_on": "D-035",
@@ -338,7 +338,7 @@
     {
       "version": "1.009",
       "increment": "ESPN rules settled (renumbered)",
-      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.004, which was later renumbered 3.003 (D-041) (its points-allowed part moved to 2.001).",
+      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.004, which was later renumbered 3.003 (D-041) and then 3.004 (D-047) (its points-allowed part moved to 2.001).",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn and renumbered).",
       "depends_on": "D-035",
@@ -356,7 +356,7 @@
     {
       "version": "1.011",
       "increment": "Analysis layer (renumbered)",
-      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.005, which was later renumbered 3.004 (D-041).",
+      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.005, which was later renumbered 3.004 (D-041) and then 3.005 (D-047).",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn and renumbered).",
       "depends_on": "D-035",
@@ -365,7 +365,7 @@
     {
       "version": "1.012",
       "increment": "Hardening & handover (renumbered)",
-      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.006, which was later renumbered 3.005 (D-041).",
+      "scope": "Planned in the 1.x roadmap and never started. The 1.x line closed with 1.006 (D-035); this increment continued as 2.006, which was later renumbered 3.005 (D-041) and then 3.006 (D-047).",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn and renumbered).",
       "depends_on": "D-035",
@@ -392,7 +392,7 @@
     {
       "version": "2.003",
       "increment": "Automation proven on GitHub (renumbered)",
-      "scope": "Planned in the 2.x roadmap and never started under this number. The 2.x line is closed (D-041, D-043); this increment continues as 3.002, without the workbook's freshness panel (the generated workbook's About sheet carries that information).",
+      "scope": "Planned in the 2.x roadmap and never started under this number. The 2.x line is closed (D-041, D-043); this increment continued as 3.002, renumbered 3.003 by D-047, without the workbook's freshness panel (the generated workbook's About sheet carries that information).",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn).",
       "depends_on": "D-041; D-043",
@@ -401,7 +401,7 @@
     {
       "version": "2.004",
       "increment": "Remaining ESPN rules (renumbered)",
-      "scope": "Planned in the 2.x roadmap and never started under this number. This increment continues as 3.003 (D-041).",
+      "scope": "Planned in the 2.x roadmap and never started under this number. This increment continued as 3.003 (D-041), renumbered 3.004 by D-047.",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn).",
       "depends_on": "D-041; D-043",
@@ -410,7 +410,7 @@
     {
       "version": "2.005",
       "increment": "Analysis layer (renumbered)",
-      "scope": "Planned in the 2.x roadmap and never started under this number. The Data Model and PivotTables it relied on are gone with Power Query; this increment continues as 3.004 (D-041).",
+      "scope": "Planned in the 2.x roadmap and never started under this number. The Data Model and PivotTables it relied on are gone with Power Query; this increment continued as 3.004 (D-041), renumbered 3.005 by D-047.",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn).",
       "depends_on": "D-041; D-043",
@@ -419,7 +419,7 @@
     {
       "version": "2.006",
       "increment": "Hardening & handover (renumbered)",
-      "scope": "Planned in the 2.x roadmap and never started under this number. This increment continues as 3.005, with a build-time and file-size target instead of a refresh-time target (D-041).",
+      "scope": "Planned in the 2.x roadmap and never started under this number. This increment continued as 3.005, renumbered 3.006 by D-047, with a build-time and file-size target instead of a refresh-time target (D-041).",
       "deliverables": "None.",
       "acceptance_criteria": "Not applicable (withdrawn).",
       "depends_on": "D-041; D-043",
@@ -430,44 +430,53 @@
       "increment": "Workbook built on GitHub",
       "scope": "(1) The exporter, 'python -m nflpipe export': reads only the published files in NFL/04-data and writes NFL-Analysis.xlsx with the standard library, deterministically (CONTRACTS.md section 13.1). (2) The workbook: values only, no Power Query, formulas, connections or macros; sheets About, PlayerGames, SeasonTotals, Leagues, Scoring, Bonus, Checks and Dictionary, with the cell rules of section 13.3 (section 13.2). (3) Versions: workbook design version 3.001 on the About sheet and in the file properties; the data version (run id, data through) on About (section 13.4). (4) Publication: the weekly and monthly workflows build the file and upload it as the release asset NFL-Analysis.xlsx of tag nfl-workbook after a PUBLISH and when the asset is missing, and manual dispatch can rebuild it; it is not committed to git (section 13.5, D-042). (5) Documents describe this route: the root README, NFL/README.md and NFL/05-excel/README.md lead with the stable download link; the Power Query route is archived in NFL/05-excel/archive-2.x and the released 2.001 files stay unchanged in NFL/08-releases (D-043). (6) The plan, the release register, VERSIONING.md (generation 3.x) and MEMORY.md are updated.",
       "deliverables": "The exporter and its tests in NFL/03-pipeline; the workflow steps that build and upload the workbook and open an alert when they fail; NFL/05-excel/README.md and NFL/05-excel/archive-2.x/README.md; the updated README.md, NFL/README.md, VERSIONING.md, plan, RELEASES.md and MEMORY.md; an independent QA report with dispositions; the release asset at https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx.",
-      "acceptance_criteria": "(a) Exporter tests pass, reading the file back with openpyxl: the sheets are in the order of CONTRACTS.md section 13.2 with the table names given there; PlayerGames has exactly as many rows as the player_week files together, in published order; for every row sampled, each FF_<League> value equals the matching scored_<season>.csv value; SeasonTotals games, totals and averages equal an independent recomputation (half away from zero at RoundDecimals); Leagues, Scoring, Bonus, Checks and Dictionary equal their source CSVs. (b) Cell rules (section 13.3): numbers are number cells, blanks are empty cells, identity columns are text, and a name beginning with =, +, - or @ stays text; an input beyond Excel's limits exits 1 and leaves no file at --out. (c) Two exports of the same 04-data have the same SHA-256, and no time stamp comes from the clock. (d) About shows 3.001, the data-through season and week and the run id from status.csv; the file properties give Title 'NFL-Analysis 3.001' and author 'NFL-Analysis pipeline'; a personal-data scan of every part of the file finds nothing. (e) A full-window build takes under 5 minutes on a GitHub runner, and the file size is recorded. (f) On GitHub, after the merge: a manual run of the weekly workflow ends green, the file at the stable address downloads, its About sheet matches NFL/04-data/status.csv, the release notes name the data through, run id and gates, and a second PUBLISH replaces the asset at the same address; a forced build or upload failure turns the run red, opens the workflow's alert issue and leaves the data commit in place. (g) The file opens in desktop Excel with no repair message, no Enable Content prompt and nothing to refresh, and the owner confirms it; until then every document says it has not yet been opened in Excel. (h) README.md, NFL/README.md and NFL/05-excel/README.md lead with the stable link and contain no refresh, privacy-prompt or add-the-queries instructions; every repository path named in them exists. (i) python3 NFL/01-plan/validate_plan.py passes; the version reads 3.001 in the exporter, the About sheet, the file properties and NFL/08-releases/RELEASES.md. (j) Quality gates G1-G5 pass. Released 2026-11-21 (D-045), on its first green publish. Met: (a) to (e), (h), (i) and (j) before the merge (QA disposition: 679 tests on Python 3.11 and 3.13, 17,669,498 PlayerGames cells and 24,250 SeasonTotals rows with 0 mismatches, ECMA-376 validation, gates G1 to G5); and on GitHub the merge of the pull request at about 02:02 UTC (merge commit 8d91b3f) started nfl-pipeline-weekly run 44853664413 (event push), which ended green in 36 seconds with the result SKIP (the data was already current), built the workbook in 12 seconds and published it in 9 seconds, creating the pre-release nfl-workbook. The asset NFL-Analysis.xlsx is 40,018,688 bytes with SHA-256 66d6e26abc6d64c040ac8a413a2e1c89bb3d3bba955f4ded197d77d936fba2f2, the same as the local builds on Python 3.11 and 3.13 (the runner used 3.12.16). The stable address answered a ranged request with 206 and the file downloaded from it has the same SHA-256; its About sheet matches NFL/04-data/status.csv (version 3.001, run id, generated_utc, data through 2026 week 11 REG, gates 13 passed, 0 warned, 0 failed); its file properties give author 'NFL-Analysis pipeline' and no personal data was found; the release notes name the data through, the data run id and gates, and the run URL. Moved to 3.002 by D-045 because not yet observed: from (f) a manual (workflow_dispatch) run, a second publish replacing the asset at the same address, and a forced build or upload failure turning the run red and opening the alert; and (g), the owner's confirmation that the file opens in desktop Excel (BLOCKERS.csv Q-024), which stays open. Until then every document says the file has not yet been opened in Excel.",
+      "acceptance_criteria": "(a) Exporter tests pass, reading the file back with openpyxl: the sheets are in the order of CONTRACTS.md section 13.2 with the table names given there; PlayerGames has exactly as many rows as the player_week files together, in published order; for every row sampled, each FF_<League> value equals the matching scored_<season>.csv value; SeasonTotals games, totals and averages equal an independent recomputation (half away from zero at RoundDecimals); Leagues, Scoring, Bonus, Checks and Dictionary equal their source CSVs. (b) Cell rules (section 13.3): numbers are number cells, blanks are empty cells, identity columns are text, and a name beginning with =, +, - or @ stays text; an input beyond Excel's limits exits 1 and leaves no file at --out. (c) Two exports of the same 04-data have the same SHA-256, and no time stamp comes from the clock. (d) About shows 3.001, the data-through season and week and the run id from status.csv; the file properties give Title 'NFL-Analysis 3.001' and author 'NFL-Analysis pipeline'; a personal-data scan of every part of the file finds nothing. (e) A full-window build takes under 5 minutes on a GitHub runner, and the file size is recorded. (f) On GitHub, after the merge: a manual run of the weekly workflow ends green, the file at the stable address downloads, its About sheet matches NFL/04-data/status.csv, the release notes name the data through, run id and gates, and a second PUBLISH replaces the asset at the same address; a forced build or upload failure turns the run red, opens the workflow's alert issue and leaves the data commit in place. (g) The file opens in desktop Excel with no repair message, no Enable Content prompt and nothing to refresh, and the owner confirms it; until then every document says it has not yet been opened in Excel. (h) README.md, NFL/README.md and NFL/05-excel/README.md lead with the stable link and contain no refresh, privacy-prompt or add-the-queries instructions; every repository path named in them exists. (i) python3 NFL/01-plan/validate_plan.py passes; the version reads 3.001 in the exporter, the About sheet, the file properties and NFL/08-releases/RELEASES.md. (j) Quality gates G1-G5 pass. Released 2026-11-21 (D-045), on its first green publish. Met: (a) to (e), (h), (i) and (j) before the merge (QA disposition: 679 tests on Python 3.11 and 3.13, 17,669,498 PlayerGames cells and 24,250 SeasonTotals rows with 0 mismatches, ECMA-376 validation, gates G1 to G5); and on GitHub the merge of the pull request at about 02:02 UTC (merge commit 8d91b3f) started nfl-pipeline-weekly run 44853664413 (event push), which ended green in 36 seconds with the result SKIP (the data was already current), built the workbook in 12 seconds and published it in 9 seconds, creating the pre-release nfl-workbook. The asset NFL-Analysis.xlsx is 40,018,688 bytes with SHA-256 66d6e26abc6d64c040ac8a413a2e1c89bb3d3bba955f4ded197d77d936fba2f2, the same as the local builds on Python 3.11 and 3.13 (the runner used 3.12.16). The stable address answered a ranged request with 206 and the file downloaded from it has the same SHA-256; its About sheet matches NFL/04-data/status.csv (version 3.001, run id, generated_utc, data through 2026 week 11 REG, gates 13 passed, 0 warned, 0 failed); its file properties give author 'NFL-Analysis pipeline' and no personal data was found; the release notes name the data through, the data run id and gates, and the run URL. Moved to 3.002 by D-045 (renumbered 3.003 by D-047) because not yet observed: from (f) a manual (workflow_dispatch) run, a second publish replacing the asset at the same address, and a forced build or upload failure turning the run red and opening the alert; and (g), the owner's confirmation that the file opens in desktop Excel (BLOCKERS.csv Q-024), which stays open. Until then every document says the file has not yet been opened in Excel.",
       "depends_on": "2.001; D-041 to D-043; CONTRACTS.md section 13; BLOCKERS.csv Q-015 (merged 2026-11-20) and Q-020 (answered); BLOCKERS.csv Q-023 (default in force: retired)",
       "status": "Released"
     },
     {
       "version": "3.002",
-      "increment": "Automation proven on GitHub",
-      "scope": "Workbook design unchanged. After the merge: a manual run of each workflow; a scoring change saved on GitHub that publishes and rebuilds the workbook; the first scheduled weekly run, the Friday watchdog and the monthly run with its heartbeat; an alert opened and closed, including one raised by a failed workbook build or upload. What the first runs showed is added to NFL/03-pipeline/AUTOMATION.md.",
-      "deliverables": "At least one PUBLISH commit made by the weekly workflow from its schedule and one from a config change, each followed by a replaced workbook asset; what the first runs showed, added to NFL/03-pipeline/AUTOMATION.md.",
-      "acceptance_criteria": "A manual run of the weekly workflow ends green with PUBLISH or SKIP. A change saved in NFL/02-config on main starts the weekly workflow, which publishes and replaces the workbook asset within that run and starts no second workflow. Within one in-season week, run_log.csv has a row whose trigger names the schedule and whose latest_week equals the latest finished week, and the workbook at the stable address shows the same data through on its About sheet. A SKIP makes no commit; the workbook asset is rebuilt after a SKIP only when it is missing. An invalid metric name committed to NFL/02-config ends in HOLD, changes no file in NFL/04-data, leaves the workbook asset as it was and opens exactly one rolling issue; reverting it publishes and closes the issue. The watchdog is green after a publish and red when the last publish is older than its limit. The CI workflow runs the tests on a push and on a pull request. (carried from 3.001 by D-045) The owner confirms the workbook opens in desktop Excel with no repair message, no Enable Content prompt and nothing to refresh (BLOCKERS.csv Q-024; NFR-15, C-32). Met 2026-11-21 (D-046). (carried from 3.001 by D-045) A second publish replaces the asset at the same address (FR-49, C-33). (carried from 3.001 by D-045) A forced workbook build or upload failure turns the run red and opens the alert issue, leaving the data commit in place (FR-50, RAID-100).",
-      "depends_on": "3.001 (released 2026-11-21); D-045; BLOCKERS.csv Q-015 (merged); repository settings that let the workflow commit (proved by the first run, RAID-52).; D-046",
+      "increment": "Smaller workbook",
+      "scope": "One design change: in the data rows of PlayerGames and SeasonTotals, a cell that directly follows the previous written cell is written without its r attribute (NFL/CONTRACTS.md section 13.3, last bullet, and section 13.4). Workbook design version 3.002, shown on About and in the file properties. Lossless: no value, sheet, column, style, header row or table changes; about 8 MB instead of 38 (adversarial committee estimate, D-047). Zeros as empty cells stays out (D-046). The automation checks that were in 3.002 under D-045 are now 3.003.",
+      "deliverables": "The exporter change and its tests in NFL/03-pipeline; QA reports in NFL/06-qa (a review report and an adversarial report for 3.002, the re-test and the dispositions); the updated NFL/CONTRACTS.md, README pages and records (RELEASES.md, MEMORY.md, DECISIONS.md, VERSIONING.md); the rebuilt release asset at the stable address https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx.",
+      "acceptance_criteria": "(a) Every cell value equals the 3.001 file built from the same data, apart from the version text (FR-52, C-36). (b) The rule holds on the real file, and openpyxl plus an independent reader place every value in the same cell. (c) Two builds give the same SHA-256. (d) The file is under 10 MB for the ten-season window, measured and recorded (NFR-06, RAID-101). (e) The XML still validates against the schema, and LibreOffice opens it. (f) After the merge, the first run rebuilds the workbook because the freshness key changes, and replaces the existing asset at the stable address (delete and rename: the first real replacement; FR-49, C-33); the downloaded file shows 3.002 on About. (g) The owner opens the 3.002 file in desktop Excel with no repair message and reports the time to open (BLOCKERS.csv Q-025; RAID-106, RAID-107). (h) Quality gates G1-G5 (00-Governance/CHARTER.md). (i) python3 NFL/01-plan/validate_plan.py passes.",
+      "depends_on": "3.001 (released 2026-11-21); D-044; D-046; D-047",
       "status": "In progress"
     },
     {
       "version": "3.003",
-      "increment": "Remaining ESPN rules",
-      "scope": "Workbook design unchanged. Apply your ESPN game logs: blocked field goal (Q-016, follow-up to Q-007), long-TD stacking and return fumbles (Q-017, follow-up to Q-008), and the special-teams cases of Q-019. Add the values to the ESPN fixture, extend the golden sample with D/ST, kicker and long-TD rows (RAID-33, RAID-72), and decide whether an invalid Applies_To code should hold the publish (RAID-32). The next run rebuilds the workbook with the new rules.",
-      "deliverables": "Updated NFL/02-config weights or bands if ESPN differs from the defaults; extended NFL/06-qa/fixtures; the pipeline_version raised if scoring arithmetic changed.",
-      "acceptance_criteria": "G-ESPN passes with the new ESPN values (players exact, D/ST within 1 point). The golden sample contains at least one D/ST, one kicker and one long-TD row and passes in the pipeline. After the next run, the workbook's Scoring and Bonus sheets show the new rules and its ESPN_League points equal the published scored files.",
-      "depends_on": "2.001; BLOCKERS.csv Q-016, Q-017, Q-019 (can be taken as soon as any answer arrives)",
+      "increment": "Automation proven on GitHub (renumbered by D-047; was 3.002)",
+      "scope": "(Renumbered by D-047; D-045 moved this work to 3.002, and 3.002 is now the smaller workbook.) Workbook design unchanged from 3.002. After the merge: a manual run of each workflow; a scoring change saved on GitHub that publishes and rebuilds the workbook; the first scheduled weekly run, the Friday watchdog and the monthly run with its heartbeat; an alert opened and closed, including one raised by a failed workbook build or upload. What the first runs showed is added to NFL/03-pipeline/AUTOMATION.md.",
+      "deliverables": "At least one PUBLISH commit made by the weekly workflow from its schedule and one from a config change, each followed by a replaced workbook asset; what the first runs showed, added to NFL/03-pipeline/AUTOMATION.md.",
+      "acceptance_criteria": "A manual run of the weekly workflow ends green with PUBLISH or SKIP. A change saved in NFL/02-config on main starts the weekly workflow, which publishes and replaces the workbook asset within that run and starts no second workflow. Within one in-season week, run_log.csv has a row whose trigger names the schedule and whose latest_week equals the latest finished week, and the workbook at the stable address shows the same data through on its About sheet. A SKIP makes no commit; the workbook asset is rebuilt after a SKIP only when it is missing. An invalid metric name committed to NFL/02-config ends in HOLD, changes no file in NFL/04-data, leaves the workbook asset as it was and opens exactly one rolling issue; reverting it publishes and closes the issue. The watchdog is green after a publish and red when the last publish is older than its limit. The CI workflow runs the tests on a push and on a pull request. (carried from 3.001 by D-045) The owner confirms the workbook opens in desktop Excel with no repair message, no Enable Content prompt and nothing to refresh (BLOCKERS.csv Q-024; NFR-15, C-32). Met 2026-11-21 (D-046). (carried from 3.001 by D-045) A second publish replaces the asset at the same address (FR-49, C-33). (carried from 3.001 by D-045) A forced workbook build or upload failure turns the run red and opens the alert issue, leaving the data commit in place (FR-50, RAID-100).",
+      "depends_on": "3.001 (released 2026-11-21); D-045; BLOCKERS.csv Q-015 (merged); repository settings that let the workflow commit (proved by the first run, RAID-52).; D-046; 3.002 (D-047)",
       "status": "Planned"
     },
     {
       "version": "3.004",
-      "increment": "Analysis layer",
-      "scope": "Carried from the 1.x roadmap (planned there as 1.006, then 1.011, then 2.005). Workbook design change: analysis sheets generated by the exporter on top of PlayerGames and SeasonTotals, such as a weekly points grid and positional ranks per season and league, still values only. Whether to generate them or to leave PivotTables to the owner is to be agreed with the owner before work starts (ASSUMPTION).",
-      "deliverables": "Design version 3.004 of the workbook with the analysis sheets, an updated contract section 13.2 and tests.",
-      "acceptance_criteria": "A player-season total on the analysis sheets equals the sum of that player's weekly FF_<League> values in PlayerGames; positional ranks equal an independent ranking; each analysis table has a header row and a filter; D/ST rows can be filtered by position DST.",
-      "depends_on": "3.001 (does not wait on 3.002 or 3.003)",
+      "increment": "Remaining ESPN rules (renumbered by D-047; was 3.003)",
+      "scope": "Workbook design unchanged. Apply your ESPN game logs: blocked field goal (Q-016, follow-up to Q-007), long-TD stacking and return fumbles (Q-017, follow-up to Q-008), and the special-teams cases of Q-019. Add the values to the ESPN fixture, extend the golden sample with D/ST, kicker and long-TD rows (RAID-33, RAID-72), and decide whether an invalid Applies_To code should hold the publish (RAID-32). The next run rebuilds the workbook with the new rules.",
+      "deliverables": "Updated NFL/02-config weights or bands if ESPN differs from the defaults; extended NFL/06-qa/fixtures; the pipeline_version raised if scoring arithmetic changed.",
+      "acceptance_criteria": "G-ESPN passes with the new ESPN values (players exact, D/ST within 1 point). The golden sample contains at least one D/ST, one kicker and one long-TD row and passes in the pipeline. After the next run, the workbook's Scoring and Bonus sheets show the new rules and its ESPN_League points equal the published scored files.",
+      "depends_on": "2.001; 3.002 (D-047); BLOCKERS.csv Q-016, Q-017, Q-019 (can be taken as soon as any answer arrives)",
       "status": "Planned"
     },
     {
       "version": "3.005",
-      "increment": "Hardening & handover",
-      "scope": "Carried from the 1.x roadmap (planned there as 1.012, then 2.006). A build-time and file-size target agreed with you and met, platform preset leagues (DraftKings, FanDuel) in NFL/02-config, and a user guide (add a league, change a weight on GitHub, read the workbook, read an alert, answer a blocker).",
+      "increment": "Analysis layer (renumbered by D-047; was 3.004)",
+      "scope": "Carried from the 1.x roadmap (planned there as 1.006, then 1.011, then 2.005). Workbook design change: analysis sheets generated by the exporter on top of PlayerGames and SeasonTotals, such as a weekly points grid and positional ranks per season and league, still values only. Whether to generate them or to leave PivotTables to the owner is to be agreed with the owner before work starts (ASSUMPTION).",
+      "deliverables": "Design version 3.005 of the workbook with the analysis sheets, an updated contract section 13.2 and tests.",
+      "acceptance_criteria": "A player-season total on the analysis sheets equals the sum of that player's weekly FF_<League> values in PlayerGames; positional ranks equal an independent ranking; each analysis table has a header row and a filter; D/ST rows can be filtered by position DST.",
+      "depends_on": "3.001; 3.002 (the cell-writing form it builds on); does not wait on 3.003 or 3.004",
+      "status": "Planned"
+    },
+    {
+      "version": "3.006",
+      "increment": "Hardening & handover (renumbered by D-047; was 3.005)",
+      "scope": "Carried from the 1.x roadmap (planned there as 1.012, then 2.006). A build-time and file-size target agreed with you and met, platform preset leagues (DraftKings, FanDuel) in NFL/02-config, and a user guide (add a league, change a weight on GitHub, read the workbook, read an alert, answer a blocker). The lossless size reduction was done earlier, in 3.002 (D-047), so this target starts from about 8 MB.",
       "deliverables": "The user guide and the preset leagues; the agreed targets recorded.",
       "acceptance_criteria": "The workbook build meets the agreed time and file-size target on a GitHub runner; a new user can add a league by following the guide alone, on GitHub; preset leagues match hand-calculated golden rows; every Must requirement is Done or Retired.",
-      "depends_on": "3.001; 3.004",
+      "depends_on": "3.001; 3.005",
       "status": "Planned"
     }
   ],
@@ -508,8 +517,8 @@
       "type": "Functional",
       "priority": "Must",
       "source": "Transcript L224; D-006; D-041; CONTRACTS.md §1, §13.2",
-      "target_version": "3.002",
-      "acceptance_criteria": "Adding a league column to scoring_weights.csv and a row to leagues.csv in NFL/02-config on GitHub, with no code change, adds an FF_<League> column to PlayerGames and the matching total and average columns to SeasonTotals in the next workbook, and the three rule sheets show the new rows. Moved to 3.002 by D-045: the scoring change saved on GitHub that rebuilds the workbook has not yet been made (roadmap 3.002).",
+      "target_version": "3.003",
+      "acceptance_criteria": "Adding a league column to scoring_weights.csv and a row to leagues.csv in NFL/02-config on GitHub, with no code change, adds an FF_<League> column to PlayerGames and the matching total and average columns to SeasonTotals in the next workbook, and the three rule sheets show the new rows. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the scoring change saved on GitHub that rebuilds the workbook has not yet been made (roadmap 3.003).",
       "status": "In progress"
     },
     {
@@ -534,12 +543,12 @@
     },
     {
       "id": "FR-07",
-      "requirement": "Analysis by player, season and week from the workbook's own tables: SeasonTotals gives player-season totals and averages per league, and the owner can make PivotTables from the PlayerGames table. Further analysis sheets are the analysis layer (roadmap 3.004). (Changed 2026-11-21 from 'PivotTables on the Data Model with slicers'.)",
+      "requirement": "Analysis by player, season and week from the workbook's own tables: SeasonTotals gives player-season totals and averages per league, and the owner can make PivotTables from the PlayerGames table. Further analysis sheets are the analysis layer (roadmap 3.005). (Changed 2026-11-21 from 'PivotTables on the Data Model with slicers'.)",
       "type": "Functional",
       "priority": "Should",
       "source": "Transcript L250; D-041; CONTRACTS.md §13.2",
-      "target_version": "3.004",
-      "acceptance_criteria": "SeasonTotals equals the sum of the weekly values in PlayerGames (control C-21). Analysis sheets, if built, are accepted under roadmap 3.004.",
+      "target_version": "3.005",
+      "acceptance_criteria": "SeasonTotals equals the sum of the weekly values in PlayerGames (control C-21). Analysis sheets, if built, are accepted under roadmap 3.005.",
       "status": "Planned"
     },
     {
@@ -638,7 +647,7 @@
       "type": "Functional",
       "priority": "Could",
       "source": "Transcript L51",
-      "target_version": "3.005",
+      "target_version": "3.006",
       "acceptance_criteria": "A DraftKings preset scores +3 at 300 passing yards and at 100 rushing or receiving yards; a FanDuel preset scores 0.5 per reception; both match hand-calculated golden rows, and their leagues appear as FF_ columns in the workbook.",
       "status": "Planned"
     },
@@ -728,8 +737,8 @@
       "type": "Functional",
       "priority": "Must",
       "source": "D-022; CONTRACTS.md §8; Prior-art review round 3 (private, D-034) §6 (ADOPT 1-4, 17)",
-      "target_version": "3.002",
-      "acceptance_criteria": "Installed file: tests/test_workflows.py checks the cron days, months and non-zero minutes. Live (3.002): within one in-season week after the merge, run_log.csv has a row with a scheduled trigger; a run with nothing new ends as SKIP without a commit.",
+      "target_version": "3.003",
+      "acceptance_criteria": "Installed file: tests/test_workflows.py checks the cron days, months and non-zero minutes. Live (3.003): within one in-season week after the merge, run_log.csv has a row with a scheduled trigger; a run with nothing new ends as SKIP without a commit.",
       "status": "In progress"
     },
     {
@@ -738,7 +747,7 @@
       "type": "Functional",
       "priority": "Must",
       "source": "CONTRACTS.md §8; Prior-art review round 3 (private, D-034) §6 (ADOPT 18)",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "acceptance_criteria": "A forced HOLD on GitHub creates one issue; a second forced HOLD comments on the same issue instead of opening another; the workflow run is red.",
       "status": "Planned"
     },
@@ -748,8 +757,8 @@
       "type": "Functional",
       "priority": "Should",
       "source": "CONTRACTS.md §7, §8; Prior-art review round 3 (private, D-034) §6 (ADOPT 19)",
-      "target_version": "3.002",
-      "acceptance_criteria": "'watchdog --max-age-hours N' exits 0 when run_log's last PUBLISH is newer than N hours and 5 when older (unit test, 1.006); the Friday workflow is green after a weekly publish (live, 3.002).",
+      "target_version": "3.003",
+      "acceptance_criteria": "'watchdog --max-age-hours N' exits 0 when run_log's last PUBLISH is newer than N hours and 5 when older (unit test, 1.006); the Friday workflow is green after a weekly publish (live, 3.003).",
       "status": "In progress"
     },
     {
@@ -758,7 +767,7 @@
       "type": "Functional",
       "priority": "Should",
       "source": "D-029; CONTRACTS.md §8",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "acceptance_criteria": "A manual dispatch of the monthly workflow ends PUBLISH or SKIP with every blocking gate passing; run_log.csv shows seasons_requested covering the whole window.",
       "status": "Planned"
     },
@@ -768,7 +777,7 @@
       "type": "Functional",
       "priority": "Should",
       "source": "CONTRACTS.md §8",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "acceptance_criteria": "After the merge, a push or pull request changing a file in NFL/03-pipeline triggers the CI workflow and it reports the pytest result.",
       "status": "Planned"
     },
@@ -848,7 +857,7 @@
       "type": "Functional",
       "priority": "Should",
       "source": "D-021; D-039; BLOCKERS.csv Q-007; BLOCKERS.csv Q-008; BLOCKERS.csv Q-016; BLOCKERS.csv Q-017",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "acceptance_criteria": "For each answered question (BLOCKERS.csv Q-016, Q-017), 06-qa/fixtures/espn_actuals.csv holds the ESPN value, the rule in 02-config follows it, and G-ESPN passes.",
       "status": "Planned"
     },
@@ -858,8 +867,8 @@
       "type": "Non-functional",
       "priority": "Must",
       "source": "Transcript L212, L259; User instruction 2026-11-19; D-036; D-041; BLOCKERS.csv Q-014",
-      "target_version": "3.002",
-      "acceptance_criteria": "On the owner's computer, with no Python, no git and no copy of the repository, the downloaded workbook opens in Excel and shows data without any refresh, and the owner confirms it. Moved to 3.002 by D-045: the owner has not yet opened the workbook in Excel (BLOCKERS.csv Q-024). Met 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046); no refresh and nothing installed.",
+      "target_version": "3.003",
+      "acceptance_criteria": "On the owner's computer, with no Python, no git and no copy of the repository, the downloaded workbook opens in Excel and shows data without any refresh, and the owner confirms it. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the owner has not yet opened the workbook in Excel (BLOCKERS.csv Q-024). Met 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046); no refresh and nothing installed.",
       "status": "Done"
     },
     {
@@ -909,7 +918,7 @@
       "priority": "Should",
       "source": "Orchestrator review; D-041; CONTRACTS.md §13.1, §13.5",
       "target_version": "3.002",
-      "acceptance_criteria": "Build time and file size are measured on the first GitHub run and recorded in RELEASES.md; the owner agrees a target for 3.005 (measured about 38 MB on 2026-11-21 for 2017-2026; the contract first estimated about 20 MB; UNVERIFIED until built); the owner reports that opening the workbook needs no wait. Moved to 3.002 by D-045: build time (12 seconds) and size (40,018,688 bytes, about 38 MB) are measured on GitHub, but the owner's report that opening needs no wait, and the target for 3.005, wait for Q-024. Update 2026-11-21 (D-046): the owner reports it opens in about a minute in desktop Excel; a target for 3.005, and whether to take the lossless size reduction of D-044, are still for the owner.",
+      "acceptance_criteria": "Build time and file size are measured on the first GitHub run and recorded in RELEASES.md; the owner agrees a target for 3.006 (measured about 38 MB on 2026-11-21 for 2017-2026; the contract first estimated about 20 MB; UNVERIFIED until built); the owner reports that opening the workbook needs no wait. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): build time (12 seconds) and size (40,018,688 bytes, about 38 MB) are measured on GitHub, but the owner's report that opening needs no wait, and the target for 3.006, wait for Q-024. Update 2026-11-21 (D-046): the owner reports it opens in about a minute in desktop Excel; a target for 3.006, and whether to take the lossless size reduction of D-044, are still for the owner. Note (D-047): roadmap 3.002 targets the size: criterion (d) is a file under 10 MB, measured and recorded. NFR-06 now targets 3.002 because the size is the part still open (build time is measured and the owner has reported about a minute to open 3.001); the owner's reported time to open the 3.002 file (Q-025) closes the rest, and the agreed target in 3.006 is then confirmed against the measured size.",
       "status": "In progress"
     },
     {
@@ -958,8 +967,8 @@
       "type": "Non-functional",
       "priority": "Must",
       "source": "Prior-art review round 3 (private, D-034) §6 (ADOPT 1, 19), §8",
-      "target_version": "3.002",
-      "acceptance_criteria": "Installed workflows have three weekly cron entries, none at minute 0 (test_workflows.py). Live (3.002): a week where one attempt is late still ends with one PUBLISH and no duplicate commit.",
+      "target_version": "3.003",
+      "acceptance_criteria": "Installed workflows have three weekly cron entries, none at minute 0 (test_workflows.py). Live (3.003): a week where one attempt is late still ends with one PUBLISH and no duplicate commit.",
       "status": "In progress"
     },
     {
@@ -1098,7 +1107,7 @@
       "type": "Functional",
       "priority": "Must",
       "source": "BLOCKERS.csv Q-014; D-036; CONTRACTS.md §8",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "acceptance_criteria": "Installed file: tests/test_workflows.py finds the push trigger on NFL/02-config/** (2.001). Live: a change committed to a file in NFL/02-config on main starts the weekly workflow; it ends with PUBLISH, status.csv shows a new config_sha256, and the workflow's own commit starts no other workflow.",
       "status": "In progress"
     },
@@ -1108,7 +1117,7 @@
       "type": "Functional",
       "priority": "Must",
       "source": "D-036; CONTRACTS.md §8",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "acceptance_criteria": "A monthly run with no data change still leaves the repository active as CONTRACTS.md §8 describes; in September 2027 the weekly schedule is still enabled after the off-season (checked on the Actions tab).",
       "status": "In progress"
     },
@@ -1218,8 +1227,8 @@
       "type": "Functional",
       "priority": "Must",
       "source": "D-042; CONTRACTS.md §13.5",
-      "target_version": "3.002",
-      "acceptance_criteria": "After a publish, the stable address downloads a file whose SHA-256 equals the exporter's output and whose About sheet matches status.csv; the release notes name the data through, run id and gate counts; the repository's tree contains no .xlsx under NFL/04-data or NFL/05-excel except the archive (CON-15, CON-16). Moved to 3.002 by D-045: the first publish created the release and the stable address works (SHA-256 matches, About matches status.csv, release notes name data through, run id and gates, no .xlsx outside the archive in the tree), but there was no older asset, so a second publish replacing it is not yet seen.",
+      "target_version": "3.003",
+      "acceptance_criteria": "After a publish, the stable address downloads a file whose SHA-256 equals the exporter's output and whose About sheet matches status.csv; the release notes name the data through, run id and gate counts; the repository's tree contains no .xlsx under NFL/04-data or NFL/05-excel except the archive (CON-15, CON-16). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the first publish created the release and the stable address works (SHA-256 matches, About matches status.csv, release notes name data through, run id and gates, no .xlsx outside the archive in the tree), but there was no older asset, so a second publish replacing it is not yet seen.",
       "status": "In progress"
     },
     {
@@ -1228,8 +1237,8 @@
       "type": "Functional",
       "priority": "Must",
       "source": "D-041; D-042; CONTRACTS.md §13.5, §8",
-      "target_version": "3.002",
-      "acceptance_criteria": "tests/test_workflows.py checks the steps and their permissions in the installed files; on GitHub, a manual dispatch rebuilds the asset, a PUBLISH replaces it, a deleted asset is rebuilt by the next run, and a forced failure opens the rolling alert issue without undoing the data commit (roadmap 3.001 (f)). Moved to 3.002 by D-045: the first run (event push) built and uploaded the workbook; a manual dispatch, a second publish, a rebuild after a deleted asset and a forced failure opening the alert are not yet seen.",
+      "target_version": "3.003",
+      "acceptance_criteria": "tests/test_workflows.py checks the steps and their permissions in the installed files; on GitHub, a manual dispatch rebuilds the asset, a PUBLISH replaces it, a deleted asset is rebuilt by the next run, and a forced failure opens the rolling alert issue without undoing the data commit (roadmap 3.001 (f)). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the first run (event push) built and uploaded the workbook; a manual dispatch, a second publish, a rebuild after a deleted asset and a forced failure opening the alert are not yet seen.",
       "status": "In progress"
     },
     {
@@ -1258,8 +1267,8 @@
       "type": "Non-functional",
       "priority": "Must",
       "source": "BLOCKERS.csv Q-020; D-041",
-      "target_version": "3.002",
-      "acceptance_criteria": "The owner opens the downloaded file in desktop Excel and sees none of those (control C-32). Until then the documents say it has not yet been opened in Excel; the build container can only read the file back with openpyxl and open it in LibreOffice. Moved to 3.002 by D-045: not yet opened in desktop Excel (BLOCKERS.csv Q-024). Met 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046). The file has no connections, queries or macros, so there is no prompt to give.",
+      "target_version": "3.003",
+      "acceptance_criteria": "The owner opens the downloaded file in desktop Excel and sees none of those (control C-32). Until then the documents say it has not yet been opened in Excel; the build container can only read the file back with openpyxl and open it in LibreOffice. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): not yet opened in desktop Excel (BLOCKERS.csv Q-024). Met 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046). The file has no connections, queries or macros, so there is no prompt to give.",
       "status": "Done"
     },
     {
@@ -1301,6 +1310,16 @@
       "target_version": "3.001",
       "acceptance_criteria": "NFL/08-releases/NFL-Analysis-2.001.xlsx still has SHA-256 ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87; the archive folder holds powerquery/, build/, experimental/ and both workbook copies, moved with git mv (shown as renames); NFL/05-excel/ holds only README.md and archive-2.x/.",
       "status": "Done"
+    },
+    {
+      "id": "FR-52",
+      "requirement": "In the data rows of PlayerGames and SeasonTotals, a cell that directly follows the previous written cell carries no r (cell reference) attribute; a cell after a gap (an empty cell not written) keeps its r. The header rows, the other sheets and every value, style and column are unchanged. The workbook design version is 3.002.",
+      "type": "Functional",
+      "priority": "Must",
+      "source": "D-047; CONTRACTS.md §13.3, §13.4",
+      "target_version": "3.002",
+      "acceptance_criteria": "Every cell value equals the 3.001 file built from the same data apart from the version text; the rule holds on the real file; openpyxl and an independent reader place every value in the same cell; two builds give the same SHA-256; the XML validates against the schema and LibreOffice opens it (roadmap 3.002 (a), (b), (c), (e); control C-36).",
+      "status": "Planned"
     }
   ],
   "raid": [
@@ -1367,7 +1386,7 @@
       "rating": "Low",
       "response": "Accepted: season_type is a published column and a slicer field; SeasonTypes can be set to REG.",
       "owner": "Orchestrator",
-      "target_version": "3.004",
+      "target_version": "3.005",
       "status": "Accepted"
     },
     {
@@ -1510,7 +1529,7 @@
       "rating": "Low",
       "response": "A failed download on the runner is an error (exit 1) that publishes nothing; the next attempt or the monthly run repairs it; the watchdog flags prolonged silence. The workbook is a single file at a stable address, so a blocked network can fetch it on another network; the published CSV files are readable at the data address.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -1598,7 +1617,7 @@
       "rating": "Medium",
       "response": "Closed: gate G-OVERLAP (advisory, CONTRACTS.md §6) warns when a league weights a total and its components; notes in scoring_weights.csv warn against it.",
       "owner": "Orchestrator",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Closed"
     },
     {
@@ -1651,9 +1670,9 @@
       "title": "Invalid Applies_To codes score 0 silently",
       "detail": "A typo such as 'DL;LB' or 'DBB' makes a gated rule score 0 for everyone. Gate G-OVERLAP now warns when an Applies_To code is not a position or position group in the data (advisory, publishes).",
       "rating": "Low",
-      "response": "Decide in 3.003 whether an invalid code should hold the publish (blocking) and add the same check to the workbook's metric check.",
+      "response": "Decide in 3.004 whether an invalid code should hold the publish (blocking) and add the same check to the workbook's metric check.",
       "owner": "Orchestrator",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -1662,9 +1681,9 @@
       "title": "Golden sample coverage is thin",
       "detail": "06-qa/fixtures/golden_sample.csv has 25 rows: no D/ST row and few long-TD or kicker cases. The ESPN reconciliation covers 12 players and 2 D/STs.",
       "rating": "Low",
-      "response": "Extend with D/ST, kicker and long-TD rows (roadmap 3.003).",
+      "response": "Extend with D/ST, kicker and long-TD rows (roadmap 3.004).",
       "owner": "B2 Gates and Test Engineer",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -1682,7 +1701,7 @@
       "id": "RAID-35",
       "type": "Decision",
       "title": "D-017: the owner's answers on D/ST, kickers, IDP and order",
-      "detail": "Team D/ST and a kicker, no IDP; bonuses and team D/ST before the analysis layer. The order is kept: 1.006 carries bonuses and D/ST, the analysis layer is 3.004.",
+      "detail": "Team D/ST and a kicker, no IDP; bonuses and team D/ST before the analysis layer. The order is kept: 1.006 carries bonuses and D/ST, the analysis layer is 3.005.",
       "rating": "Low",
       "response": "Accepted.",
       "owner": "User",
@@ -1708,7 +1727,7 @@
       "rating": "Medium",
       "response": "Three idempotent attempts Tuesday to Thursday at off-hour minutes; resolve skips when there is nothing new; Friday watchdog. An external dispatcher is not adopted.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -1750,9 +1769,9 @@
       "title": "Workflows not yet run on GitHub",
       "detail": "The workflow files are installed at /.github/workflows/ (D-036) and become active when the pull request reaches main (Q-015). They can only be checked by tests here. Permissions, the commit step, the config-push trigger, concurrency, the heartbeat and the rolling issues are untested until they run on GitHub.",
       "rating": "High",
-      "response": "tests/test_workflows.py checks the installed files; 3.002 starts with a manual run of each workflow before relying on the schedule.",
+      "response": "tests/test_workflows.py checks the installed files; 3.003 starts with a manual run of each workflow before relying on the schedule.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -1785,7 +1804,7 @@
       "rating": "Medium",
       "response": "The monthly workflow keeps the repository active (heartbeat, D-036; FR-41); the watchdog shows if schedules stop. Proven when the weekly schedule is still enabled in September 2027.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -1796,7 +1815,7 @@
       "rating": "Medium",
       "response": "sources.csv logs the upstream Last-Modified on every run, so the first in-season weeks measure it; adjust the cron times in a later version if needed.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -1829,7 +1848,7 @@
       "rating": "Medium",
       "response": "Built to the defaults; they affect kicker or player points only in games with those events.",
       "owner": "Orchestrator",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -1871,9 +1890,9 @@
       "title": "Repository settings let the workflow commit",
       "detail": "The weekly and monthly workflows commit NFL/04-data with the built-in token. That needs Actions enabled, the job's write permission and no branch rule blocking the commit. In a public repository Actions are enabled by default (Q-009 response). UNVERIFIED until the first run.",
       "rating": "Medium",
-      "response": "The first manual run in 3.002 proves it; if a rule blocks the commit, the run fails at the commit step and opens its alert issue.",
+      "response": "The first manual run in 3.003 proves it; if a rule blocks the commit, the run fails at the commit step and opens its alert issue.",
       "owner": "Orchestrator",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -1970,9 +1989,9 @@
       "title": "Q-007 and Q-016: Does ESPN count a blocked field goal as a miss?",
       "detail": "BLOCKERS.csv Q-007 is Still open: the pasted text was the owner's own week 8 lineup, which does not include the Seattle kicker (D-039). The follow-up Q-016 asks for J. Myers' 2026 ESPN game log.",
       "rating": "Low",
-      "response": "Not a miss meanwhile (RAID-48). Settled in roadmap 3.003 (FR-38).",
+      "response": "Not a miss meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38).",
       "owner": "User",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -1981,9 +2000,9 @@
       "title": "Q-008 and Q-017: Long-TD stacking and return fumbles",
       "detail": "BLOCKERS.csv Q-008 is Still open: the pasted text was the owner's own lineup, which includes none of the players asked about (D-039). The follow-up Q-017 asks for the 2026 ESPN game log of any listed long-TD or return-fumble player.",
       "rating": "Low",
-      "response": "Stacking and -2 for a return fumble meanwhile (RAID-48). Settled in roadmap 3.003 (FR-38).",
+      "response": "Stacking and -2 for a return fumble meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38).",
       "owner": "User",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -2025,9 +2044,9 @@
       "title": "Any green run closed the shared alert issue (QA M-04)",
       "detail": "One alert label for three workflows: a SKIP after a stale watchdog closed the issue while the data was still stale.",
       "rating": "Medium",
-      "response": "CONTRACTS.md §8: one rolling issue per workflow, closed only by a run that proves the problem is gone; a SKIP never closes an alert. Untested until the workflows run on GitHub (RAID-41; roadmap 3.002).",
+      "response": "CONTRACTS.md §8: one rolling issue per workflow, closed only by a run that proves the problem is gone; a SKIP never closes an alert. Untested until the workflows run on GitHub (RAID-41; roadmap 3.003).",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2058,9 +2077,9 @@
       "title": "Windows behaviour simulated, not observed (QA 1.006)",
       "detail": "Windows behaviour was simulated or reasoned in the Linux build container: line endings on a Windows clone (handled by /.gitattributes), Windows file locks, and Excel-saved config CSVs (byte-order mark, CRLF; the copies in NFL/04-data/config are normalized, CONTRACTS.md §5.4). With GitHub as the only runtime the owner no longer needs a clone; a config CSV saved from Excel and uploaded on GitHub is still possible.",
       "rating": "Medium",
-      "response": "Confirmed by the owner opening the generated workbook in Excel (3.001, NFR-15) and by the first config change made on GitHub (3.002); the documents say 'not yet opened in Excel' where that is the truth. Moved to 3.002 by D-045: not yet opened in Excel, and no config change has been made on GitHub. Update 2026-11-21 (D-046): the Excel half is confirmed (the owner opened the workbook in desktop Excel with no problem); a config change made on GitHub is still to come.",
+      "response": "Confirmed by the owner opening the generated workbook in Excel (3.001, NFR-15) and by the first config change made on GitHub (3.003); the documents say 'not yet opened in Excel' where that is the truth. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): not yet opened in Excel, and no config change has been made on GitHub. Update 2026-11-21 (D-046): the Excel half is confirmed (the owner opened the workbook in desktop Excel with no problem); a config change made on GitHub is still to come.",
       "owner": "Orchestrator",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2091,9 +2110,9 @@
       "title": "Some ordinary rule changes leave little independent test coverage",
       "detail": "QA re-test finding N-6: by design, a league whose rules the owner changed has its stored test values skipped. With RoundDecimals 0 or 1 every golden and ESPN value is skipped and the reconciliation tolerance widens, so a scoring error in kicking, D/ST or bonuses (which the control leagues do not use) could publish unnoticed.",
       "rating": "Low",
-      "response": "Visible as WARN lines in checks/gates.csv and on the workbook's Pipeline_Status table. The owner chose to keep skipping (Q-013). Planned for 3.003: more golden rows for D/ST, kicker and long-TD.",
+      "response": "Visible as WARN lines in checks/gates.csv and on the workbook's Pipeline_Status table. The owner chose to keep skipping (Q-013). Planned for 3.004: more golden rows for D/ST, kicker and long-TD.",
       "owner": "B2 Gates and Test Engineer",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -2179,9 +2198,9 @@
       "title": "Q-016: Paste the Seattle kicker J. Myers' 2026 ESPN game log",
       "detail": "BLOCKERS.csv Q-016, follow-up to Q-007 (RAID-61). One week with a blocked field goal decides whether ESPN counts a block as a miss.",
       "rating": "Low",
-      "response": "Default in force: a blocked field goal is not a miss (0 points). Settled in roadmap 3.003.",
+      "response": "Default in force: a blocked field goal is not a miss (0 points). Settled in roadmap 3.004.",
       "owner": "User",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -2190,9 +2209,9 @@
       "title": "Q-017: Paste the 2026 ESPN game log of a long-TD or return-fumble player",
       "detail": "BLOCKERS.csv Q-017, follow-up to Q-008 (RAID-62). One player with a 50+ yard touchdown and one with a fumble lost on a return settle both rules.",
       "rating": "Low",
-      "response": "Default in force: a 50+ yard TD earns both bonuses; a lost return fumble costs 2 points. Settled in roadmap 3.003.",
+      "response": "Default in force: a 50+ yard TD earns both bonuses; a lost return fumble costs 2 points. Settled in roadmap 3.004.",
       "owner": "User",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -2201,9 +2220,9 @@
       "title": "Q-018: Is the split between public and private what you want?",
       "detail": "BLOCKERS.csv Q-018. Public: the pipeline, scoring rules, published data, workbook, workflows, plan and QA records. Private: the 1.x archive and workbooks, the transcript, the raw ESPN pastes and the prior-art reviews (D-034).",
       "rating": "Low",
-      "response": "Default in force: the archive and raw inputs stay private. Nothing is blocked; the answer only decides what else, if anything, becomes public. Moved to 3.002 by D-045: the BLOCKERS.csv row is still open.",
+      "response": "Default in force: the archive and raw inputs stay private. Nothing is blocked; the answer only decides what else, if anything, becomes public. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2236,7 +2255,7 @@
       "rating": "Medium",
       "response": "The gates catch invalid edits (G-CONFIG holds the publish); every change is in git history and can be reverted the same way; NFL/02-config/README.md recommends a pull request for bigger changes so the tests run first; the Scoring and Bonus sheets of the rebuilt workbook show the rules in use.",
       "owner": "Orchestrator",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2258,7 +2277,7 @@
       "rating": "Low",
       "response": "The last good data stays published and readable; the watchdog and rolling issues show silence; a manual run can be started from the Actions tab; a developer can still run the pipeline by hand (NFL/03-pipeline/README.md).",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2267,9 +2286,9 @@
       "title": "raw.githubusercontent.com serves the files promptly and without limits that affect readers of the data",
       "detail": "Readers of the published CSV files (other tools; the workbook no longer reads them) fetch them from raw.githubusercontent.com. How quickly a new commit becomes visible there, and any request limits for anonymous reads, are UNVERIFIED. The workbook is built on the runner from the checked-out files and does not depend on it.",
       "rating": "Low",
-      "response": "Measure in 3.002 the time from a publish to the new status.csv being served; the workbook's About sheet shows which publish it holds.",
+      "response": "Measure in 3.003 the time from a publish to the new status.csv being served; the workbook's About sheet shows which publish it holds.",
       "owner": "Orchestrator",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2335,7 +2354,7 @@
       "rating": "Low",
       "response": "Defaults in force (D-038): special-teams touchdowns and blocked-kick returns count as points allowed; a safety against the offense does not; a team's own end-zone fumble recovery is credited to its D/ST as the nflverse data reports it. In 2026 so far these affect 6 of 300 team-games.",
       "owner": "User",
-      "target_version": "3.003",
+      "target_version": "3.004",
       "status": "Open"
     },
     {
@@ -2344,9 +2363,9 @@
       "title": "Q-021: Is CC BY 4.0, crediting nflverse, the licence the owner wants for the derived data?",
       "detail": "BLOCKERS.csv Q-021. DATA-LICENSE.md states that the derived files in NFL/04-data are shared under CC BY 4.0 with credit to nflverse, and that the code is under the MIT licence the owner chose.",
       "rating": "Low",
-      "response": "Default in force: CC BY 4.0 for the derived data. Nothing technical depends on the answer. Moved to 3.002 by D-045: the BLOCKERS.csv row is still open.",
+      "response": "Default in force: CC BY 4.0 for the derived data. Nothing technical depends on the answer. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2366,9 +2385,9 @@
       "title": "Q-022: Require approval before pull requests from outside contributors run workflows",
       "detail": "BLOCKERS.csv Q-022. The repository is public, so anyone can open a pull request, which runs the test workflow. The owner is asked to set Settings > Actions > General > fork pull request approval to 'Require approval for all external contributors'.",
       "rating": "Low",
-      "response": "Default in force: GitHub's default (approval for first-time contributors only). The workflows use no secrets and a read-only token on pull requests (CONTRACTS.md §8, Security). Moved to 3.002 by D-045: the BLOCKERS.csv row is still open.",
+      "response": "Default in force: GitHub's default (approval for first-time contributors only). The workflows use no secrets and a read-only token on pull requests (CONTRACTS.md §8, Security). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2377,9 +2396,9 @@
       "title": "Q-023: Keep the Power Query route available at all?",
       "detail": "BLOCKERS.csv Q-023. The Power Query workbooks (2.001 and the experimental copy) are retired in favour of the workbook the pipeline builds. The sources, generators and copies are archived in NFL/05-excel/archive-2.x.",
       "rating": "Low",
-      "response": "Default in force: retired and not maintained (D-043); the released 2.001 workbook stays in NFL/08-releases. Nothing is blocked; answer B would mean keeping a second, slower route up to date. Moved to 3.002 by D-045: the BLOCKERS.csv row is still open.",
+      "response": "Default in force: retired and not maintained (D-043); the released 2.001 workbook stays in NFL/08-releases. Nothing is blocked; answer B would mean keeping a second, slower route up to date. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2388,9 +2407,9 @@
       "title": "A generated workbook may not open cleanly in Excel",
       "detail": "The exporter writes the file with zipfile and XML text (D-025), without Excel or a library that Excel has accepted. The build container has no Excel, so it can read the file back with openpyxl and open it in LibreOffice, but only desktop Excel can show a repair message, a style or table problem, or a slow open of a file of about 38 MB.",
       "rating": "High",
-      "response": "Tests read every sheet and table back; the XML is checked against the file format's rules; the first real test is the owner opening the file (NFR-15, control C-32); every document says 'not yet opened in Excel' until then. If Excel offers a repair, the owner reports the message word for word (BLOCKERS.csv). Moved to 3.002 by D-045: the file has not yet been opened in Excel (still not observed after the 3.001 publish). Closed 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046).",
+      "response": "Tests read every sheet and table back; the XML is checked against the file format's rules; the first real test is the owner opening the file (NFR-15, control C-32); every document says 'not yet opened in Excel' until then. If Excel offers a repair, the owner reports the message word for word (BLOCKERS.csv). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the file has not yet been opened in Excel (still not observed after the 3.001 publish). Closed 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046).",
       "owner": "B1 Pipeline Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Closed"
     },
     {
@@ -2399,9 +2418,9 @@
       "title": "The workbook upload to the release fails or is not run",
       "detail": "The build or upload step can fail (permissions to write release assets, a network error, an asset replaced half-way), be skipped, or never run for want of an upload condition. Then the stable link serves an old file or none. A scheduled workflow that has no activity for 60 days is also disabled (RAID-44). The first upload ran green on 2026-11-21; the failure path has not run.",
       "rating": "High",
-      "response": "A failed build or upload turns the run red and raises the workflow's alert (FR-50); the workbook is also rebuilt when the asset is missing; the About sheet shows the data through, so an old file is recognisable; the watchdog looks at the data publish, not at the workbook. Replacement is checked on the first runs (roadmap 3.002). Moved to 3.002 by D-045: on 2026-11-21 the first build and upload ran green (run 44853664413, upload renamed through the API with no warning), so the success path works; no failure path, no second publish and no manual run has been seen on GitHub, so the risk stays open.",
+      "response": "A failed build or upload turns the run red and raises the workflow's alert (FR-50); the workbook is also rebuilt when the asset is missing; the About sheet shows the data through, so an old file is recognisable; the watchdog looks at the data publish, not at the workbook. Replacement is checked on the first runs (roadmap 3.003). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): on 2026-11-21 the first build and upload ran green (run 44853664413, upload renamed through the API with no warning), so the success path works; no failure path, no second publish and no manual run has been seen on GitHub, so the risk stays open.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2410,7 +2429,7 @@
       "title": "File size and release asset limits",
       "detail": "The measured size is about 38 MB for the full ten-season window (2026-11-21; the contract first estimated about 20 MB) (CONTRACTS.md section 13.5; measured by the exporter on the real data). A larger file takes longer to download and to open, and each replacement uploads the whole file again. GitHub limits the size of a release asset; the limit has not been checked here.",
       "rating": "Low",
-      "response": "Measure the size on the first runs and record it in RELEASES.md (NFR-06); the window is configurable if the size becomes a problem; the workbook is not committed to git, so the repository does not grow (CON-15). On 2026-11-21 the 40,018,688-byte file (about 38 MB) was built in 12 seconds and uploaded and downloaded without a problem; the size is recorded. Moved to 3.002 by D-045: opening time in Excel and a repeated upload are not yet seen, and the size reductions in D-044 wait for Q-024. Update 2026-11-21 (D-046): it opens in about a minute in the owner's Excel; the lossless size reduction is unblocked and waits for the owner's go-ahead; a repeated upload is still to be seen.",
+      "response": "Measure the size on the first runs and record it in RELEASES.md (NFR-06); the window is configurable if the size becomes a problem; the workbook is not committed to git, so the repository does not grow (CON-15). On 2026-11-21 the 40,018,688-byte file (about 38 MB) was built in 12 seconds and uploaded and downloaded without a problem; the size is recorded. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): opening time in Excel and a repeated upload are not yet seen, and the size reductions in D-044 wait for Q-024. Update 2026-11-21 (D-046): it opens in about a minute in the owner's Excel; the lossless size reduction is unblocked and waits for the owner's go-ahead; a repeated upload is still to be seen. Update (D-047): roadmap 3.002 is the response: omitting cell references in the data rows gave 8,432,121 bytes (about 8 MB) on the real data, and its criterion (d) requires under 10 MB, measured and recorded.",
       "owner": "Orchestrator",
       "target_version": "3.002",
       "status": "Open"
@@ -2432,9 +2451,9 @@
       "title": "The release download address is public, stable and works without a sign-in",
       "detail": "The owner downloads https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx with no login, and the address keeps pointing at the newest file after each replacement. Verified for the first upload on 2026-11-21; UNVERIFIED after a replacement.",
       "rating": "Medium",
-      "response": "Check the address after the first upload and after the first replacement (roadmap 3.002); the release page is the fallback. Verified 2026-11-21 for the first publish: the address answered 206 to a ranged request and the downloaded file has the published SHA-256. Moved to 3.002 by D-045: that the address keeps pointing at the newest file after a replacement is not yet seen.",
+      "response": "Check the address after the first upload and after the first replacement (roadmap 3.003); the release page is the fallback. Verified 2026-11-21 for the first publish: the address answered 206 to a ranged request and the downloaded file has the published SHA-256. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): that the address keeps pointing at the newest file after a replacement is not yet seen.",
       "owner": "C1 Actions Engineer",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Open"
     },
     {
@@ -2454,10 +2473,32 @@
       "title": "Q-024: Does the generated 3.001 workbook open cleanly in Excel, how long does it take, and are the ESPN points as expected?",
       "detail": "BLOCKERS.csv Q-024. The workbook is checked against the ECMA-376 schema and opens in LibreOffice, but Excel itself has not opened it. The owner is asked for any repair message, the time to open, and a spot check of FF_ESPN_League.",
       "rating": "Medium",
-      "response": "Outcome: answered 2026-11-21 (D-046): no repair message, about a minute to open, the ESPN points for a known player and week matched. The size reductions of D-044 are no longer blocked and wait for the owner's go-ahead. Before the answer: Untested in Excel meanwhile. The size reductions in D-044 wait for this answer. Moved to 3.002 by D-045: still untested in Excel.",
+      "response": "Outcome: answered 2026-11-21 (D-046): no repair message, about a minute to open, the ESPN points for a known player and week matched. The size reductions of D-044 are no longer blocked and wait for the owner's go-ahead. Before the answer: Untested in Excel meanwhile. The size reductions in D-044 wait for this answer. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): still untested in Excel.",
+      "owner": "User",
+      "target_version": "3.003",
+      "status": "Closed"
+    },
+    {
+      "id": "RAID-106",
+      "type": "Risk",
+      "title": "Excel may handle a missing cell reference worse than the schema allows",
+      "detail": "3.002 leaves out the r attribute of a cell that directly follows the previous written cell in PlayerGames and SeasonTotals. The ECMA-376 schema makes r optional and LibreOffice and openpyxl read it, but desktop Excel has not opened such a file; it could show a repair message, open slowly or place values wrongly (D-047).",
+      "rating": "Medium",
+      "response": "The owner opens the 3.002 file in desktop Excel and reports any message and the time to open before 3.002 counts as released (roadmap 3.002 (g); Q-025); a full-file comparison with the 3.001 form is made first (C-36). If Excel objects, reverting to writing r on every cell is a one-line change in the exporter, which restores the 3.001 form that opened cleanly (D-046).",
+      "owner": "B1 Pipeline Engineer",
+      "target_version": "3.002",
+      "status": "Open"
+    },
+    {
+      "id": "RAID-107",
+      "type": "Question",
+      "title": "Q-025: Does the 3.002 workbook open cleanly in Excel, how long does it take, and does About say 3.002?",
+      "detail": "BLOCKERS.csv Q-025. After the 3.002 merge and a green run, the owner downloads the workbook again, checks that About says 3.002, reports any repair message word for word and gives the time to open compared with about a minute for 3.001 (D-046).",
+      "rating": "Medium",
+      "response": "Not yet opened in Excel. Meanwhile 3.001 stays valid in the owner's hands, and reverting to the 3.001 form (r on every cell) is a one-line change in the exporter (RAID-106).",
       "owner": "User",
       "target_version": "3.002",
-      "status": "Closed"
+      "status": "Open"
     }
   ],
   "controls": [
@@ -2650,7 +2691,7 @@
       "control": "Watchdog",
       "method": "The Friday workflow runs 'nflpipe watchdog --max-age-hours N' against run_log.csv.",
       "expected_result": "Green when a publish landed within N hours; red (exit 5) otherwise.",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Designed"
     },
     {
@@ -2682,7 +2723,7 @@
       "control": "Config change published from GitHub",
       "method": "Commit a change to a file in NFL/02-config on main and follow the weekly workflow run it starts.",
       "expected_result": "PUBLISH within that run, a new config_sha256 in status.csv, no second workflow started by the workflow's own commit.",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Designed"
     },
     {
@@ -2690,7 +2731,7 @@
       "control": "Schedule heartbeat",
       "method": "Check the monthly run's heartbeat in the off-season and the weekly schedule's state on the Actions tab when the season starts.",
       "expected_result": "The repository shows activity every month and the weekly schedule is still enabled in September.",
-      "target_version": "3.002",
+      "target_version": "3.003",
       "status": "Designed"
     },
     {
@@ -2705,16 +2746,16 @@
       "id": "C-32",
       "control": "Opens cleanly in Excel",
       "method": "The owner (or a tester) opens the file downloaded from the stable address in desktop Excel. The build container can only read it with openpyxl and open it in LibreOffice, which does not replace this check.",
-      "expected_result": "No repair message, no Enable Content bar, no connection prompt, nothing to refresh; About is the first sheet shown (NFR-15). Not yet run in Excel. Moved to 3.002 by D-045. Passed 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046).",
-      "target_version": "3.002",
+      "expected_result": "No repair message, no Enable Content bar, no connection prompt, nothing to refresh; About is the first sheet shown (NFR-15). Not yet run in Excel. Moved to 3.002 by D-045 (renumbered 3.003 by D-047). Passed 2026-11-21: the owner opened the file from the stable address in desktop Excel on 2026-11-21: no repair message, about a minute to open, ESPN league points for a known player and week matched (BLOCKERS.csv Q-024, D-046).",
+      "target_version": "3.003",
       "status": "Passing"
     },
     {
       "id": "C-33",
       "control": "Publication at the stable address",
       "method": "After a publish, download the file from the stable address and compare its SHA-256 with the exporter's output and its About sheet with status.csv; read the release notes. Repeat after the next publish.",
-      "expected_result": "Same hash and same data through; the release notes name the data through, run id and gates; the second publish replaced the asset at the same address (FR-49). First publish checked 2026-11-21 (same hash, About matches status.csv, notes name data through, run id and gates); the second publish replacing the asset is not yet seen. Moved to 3.002 by D-045.",
-      "target_version": "3.002",
+      "expected_result": "Same hash and same data through; the release notes name the data through, run id and gates; the second publish replaced the asset at the same address (FR-49). First publish checked 2026-11-21 (same hash, About matches status.csv, notes name data through, run id and gates); the second publish replacing the asset is not yet seen. Moved to 3.002 by D-045 (renumbered 3.003 by D-047).",
+      "target_version": "3.003",
       "status": "Designed"
     },
     {
@@ -2732,6 +2773,14 @@
       "expected_result": "The text stays a text cell; an input beyond the limits exits 1 with no file (FR-47). Passing 2026-11-21 (3.001): cell-safety tests pass (679 tests).",
       "target_version": "3.001",
       "status": "Passing"
+    },
+    {
+      "id": "C-36",
+      "control": "Cell references omitted without moving any value",
+      "method": "Build the workbook with the 3.001 form (r on every cell) and the 3.002 form from the same published data; read both back with openpyxl and an independent reader, and compare every cell of every sheet: position and value. Check that the rule holds in the real file.",
+      "expected_result": "Every cell has the same position and value in both files; only the version text (About, file properties) differs; the file is under 10 MB (FR-52, NFR-06).",
+      "target_version": "3.002",
+      "status": "Designed"
     }
   ],
   "glossary": [
