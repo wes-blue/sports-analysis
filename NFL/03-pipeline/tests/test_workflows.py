@@ -29,6 +29,21 @@ PUBLISH_GROUP = "nfl-pipeline-publish"
 SEASON_MONTHS = "1,2,9-12"
 ALLOWED_JOB_PERMISSIONS = {"contents": {"read", "write"}, "issues": {"write"}}
 ALLOWED_EVENTS = {"schedule", "push", "pull_request", "workflow_dispatch"}
+# Each file has exactly the events it needs: a pull request must never reach a publishing workflow (A2-13 #23).
+EVENTS = {
+    "nfl-pipeline-weekly.yml": {"schedule", "push", "workflow_dispatch"},
+    "nfl-pipeline-monthly.yml": {"schedule", "workflow_dispatch"},
+    "nfl-pipeline-watchdog.yml": {"schedule", "workflow_dispatch"},
+    "nfl-pipeline-ci.yml": {"push", "pull_request", "workflow_dispatch"},
+}
+JOB_TIMEOUT = {"nfl-pipeline-weekly.yml": 45, "nfl-pipeline-monthly.yml": 90}
+WB_TAG = "nfl-workbook"
+WB_ASSET = "NFL-Analysis.xlsx"
+WB_URL = f"https://github.com/wes-blue/sports-analysis/releases/download/{WB_TAG}/{WB_ASSET}"
+DECIDE = "Decide whether to build the workbook"
+BUILD = "Build the workbook"
+PUBLISH_WB = "Publish the workbook (release nfl-workbook)"
+KEEP_WB = "Keep the workbook (run artifact, 7 days)"
 
 NAMES = ["nfl-pipeline-weekly.yml", "nfl-pipeline-monthly.yml", "nfl-pipeline-watchdog.yml", "nfl-pipeline-ci.yml"]
 SCHEDULED = NAMES[:3]
@@ -125,7 +140,14 @@ def test_only_safe_events_for_a_public_repository(wf):
     assert set(triggers(doc)) <= ALLOWED_EVENTS, set(triggers(doc)) - ALLOWED_EVENTS
     code = "\n".join(ln for ln in text.splitlines() if not ln.lstrip().startswith("#"))
     assert "pull_request_target" not in code
-    assert "continue-on-error" not in code
+    for _j, step in steps(doc):      # continue-on-error hides a failure: only the convenience artifact copies may use it
+        if "continue-on-error" in step:
+            assert step.get("uses", "").startswith("actions/upload-artifact@"), step.get("name")
+
+
+def test_each_workflow_has_exactly_its_events(wf):
+    name, _text, doc = wf
+    assert set(triggers(doc)) == EVENTS[name]
 
 
 def test_scoped_to_the_nfl_folder(wf):
@@ -197,6 +219,12 @@ def test_weekly_push_trigger_publishes_config_changes_without_a_loop():
               "NFL/02-config/pipeline_config.csv", "NFL/02-config/scoring_weights (1).csv"):
         assert path_filter_matches(paths, p), p
     assert not path_filter_matches(paths, "NFL/02-config/README.md"), "a README edit is not a config change"
+    # A1 / R2-01: the merge of a pipeline or workflow change takes the normal path, so the workbook gets built.
+    for p in ("NFL/03-pipeline/nflpipe/export_xlsx.py", "NFL/03-pipeline/nflpipe/run.py", ".github/workflows/nfl-pipeline-weekly.yml"):
+        assert path_filter_matches(paths, p), p
+    for p in ("NFL/03-pipeline/AUTOMATION.md", "NFL/03-pipeline/tests/test_workflows.py", ".github/workflows/nfl-pipeline-monthly.yml",
+              "NFL/05-excel/README.md"):
+        assert not path_filter_matches(paths, p), p
     # The workflow commits only NFL/04-data: those paths must never match its own trigger.
     for p in ("NFL/04-data/status.csv", "NFL/04-data/config/leagues.csv", "NFL/04-data/player_week/player_week_2026.csv"):
         assert not path_filter_matches(paths, p), p
@@ -231,9 +259,10 @@ def test_ci_paths():
 def test_weekly_dispatch_inputs():
     _text, doc = load("nfl-pipeline-weekly.yml")
     inputs = triggers(doc)["workflow_dispatch"]["inputs"]
-    assert set(inputs) == {"seasons", "dry_run", "force"}
+    assert set(inputs) == {"seasons", "dry_run", "force", "workbook_only"}
     assert inputs["seasons"]["default"] == "current"
-    assert inputs["dry_run"]["type"] == inputs["force"]["type"] == "boolean"
+    assert inputs["dry_run"]["type"] == inputs["force"]["type"] == inputs["workbook_only"]["type"] == "boolean"
+    assert inputs["workbook_only"]["default"] is False
 
 
 @pytest.mark.parametrize("name", PUBLISHING)
@@ -316,7 +345,8 @@ def test_token_only_where_needed(wf):
     name, text, doc = wf
     assert "secrets." not in text, "no secrets in a public repository's workflows"
     assert "NFL_DATA_REPO" not in text, "the second data repository is gone"
-    allowed = {"Commit 04-data", "Heartbeat (keep the schedules alive)", "Update the rolling alert issue"}
+    allowed = {"Commit 04-data", "Heartbeat (keep the schedules alive)", "Update the rolling alert issue",
+               DECIDE, PUBLISH_WB}
     for _j, step in steps(doc):
         if "github.token" in str(step.get("env", {})):
             assert step["name"] in allowed, f"{name}: {step['name']} gets the token"
@@ -487,7 +517,7 @@ def run_step(name, step_name, tmp_path, *, cwd, env, bin_dir=None, expect_rc=0):
     full.update({k: str(v) for k, v in doc.get("env", {}).items()})
     full.update({k: str(v) for k, v in (step.get("env") or {}).items() if "${{" not in str(v)})
     full.update(GITHUB_OUTPUT=str(out), GITHUB_STEP_SUMMARY=str(summary), GITHUB_SERVER_URL="https://github.com",
-                GITHUB_RUN_ID="42", RUNNER_TEMP=str(tmp_path))
+                GITHUB_RUN_ID="42", GITHUB_RUN_ATTEMPT="1", RUNNER_TEMP=str(tmp_path))
     if bin_dir:
         full["PATH"] = f"{bin_dir}{os.pathsep}{full['PATH']}"
     full.update(env)
@@ -532,19 +562,24 @@ def resolve(tmp_path, root, event="schedule", ref="refs/heads/main", rc=0, **inp
     log = tmp_path / "python.log"
     log.write_text("")
     env = {"EVENT": event, "REF": ref, "SHA": "abcdef1234567890", "FAKE_LOG": str(log), "FAKE_RC": str(rc),
-           "IN_SEASONS": inputs.get("seasons", ""), "IN_FORCE": inputs.get("force", ""),
+           "IN_SEASONS": inputs.get("seasons", ""), "IN_FORCE": inputs.get("force", ""), "IN_WORKBOOK_ONLY": inputs.get("workbook_only", ""),
            "IN_DRY_RUN": inputs.get("dry_run", "")}
     outputs, _done = run_step("nfl-pipeline-weekly.yml", RESOLVE, tmp_path, cwd=root / "NFL" / "03-pipeline",
                               env=env, bin_dir=bin_dir)
     return outputs, log.read_text()
 
 
-def test_resolve_step_push_runs_with_force_and_skips_resolve(tmp_path):
+def test_resolve_step_push_runs_without_force_and_skips_resolve(tmp_path):
+    """Any push (config, pipeline code, this workflow) takes the normal path: `run` publishes if something differs,
+    otherwise SKIPs and the workbook step repairs what is missing. No --force, so one rule covers every push."""
     outputs, calls = resolve(tmp_path, project_tree(tmp_path), event="push")
-    assert outputs["decision"] == "run" and outputs["force"] == "true" and outputs["seasons"] == "current"
+    assert outputs["decision"] == "run" and outputs["force"] == "false" and outputs["seasons"] == "current"
     assert outputs["dry_run"] == "false"
     assert "abcdef1" in outputs["reason"]
-    assert calls == "", "a config push must not depend on resolve's verdict"
+    assert calls == "", "a push must not depend on resolve's verdict"
+    for event in ("push", "schedule", "workflow_dispatch"):      # --force is only ever the owner's checkbox
+        outputs, _calls = resolve(tmp_path / event, project_tree(tmp_path / event), event=event)
+        assert outputs.get("force", "false") == "false"
 
 
 @pytest.mark.parametrize("rc,decision", [(0, "run"), (3, "skip"), (1, "error"), (2, "error")])
@@ -579,6 +614,23 @@ def test_resolve_step_holds_on_a_missing_config_file_folder(tmp_path):
     (root / "NFL" / "02-config" / "sub").mkdir()
     outputs, _calls = resolve(tmp_path, root, event="push")
     assert outputs["decision"] == "hold" and "sub" in outputs["reason"]
+
+
+@pytest.mark.parametrize("seasons", ["current\nforce=true", "all\n", "2025\r", "all; rm -rf /", "$(id)", "20255", "2017-2026-2030",
+                                     "2025 ", "../../x", "CURRENT"])
+def test_resolve_step_rejects_a_bad_seasons_input_without_echoing_it(tmp_path, seasons):
+    """A2-12: the free-text input never reaches $GITHUB_OUTPUT or a command; the run is red (decision=error)."""
+    outputs, calls = resolve(tmp_path, project_tree(tmp_path), event="workflow_dispatch", seasons=seasons)
+    assert outputs["decision"] == "error" and outputs["seasons"] == "current" and outputs["dry_run"] == "true"
+    assert outputs["force"] == "false" and calls == ""
+    assert set(outputs) == {"decision", "seasons", "dry_run", "force", "reason"}, "no extra line reached the output file"
+    assert "rm -rf" not in outputs["reason"] and "$(id)" not in outputs["reason"]
+
+
+@pytest.mark.parametrize("seasons", ["", "current", "all", "2025", "2017-2026"])
+def test_resolve_step_accepts_the_documented_seasons(tmp_path, seasons):
+    outputs, _calls = resolve(tmp_path, project_tree(tmp_path), event="workflow_dispatch", seasons=seasons, force="false")
+    assert outputs["seasons"] == (seasons or "current") and outputs["decision"] in ("run", "skip")
 
 
 def test_resolve_step_off_main_is_always_a_dry_run(tmp_path):
@@ -807,7 +859,7 @@ def alert_step(name):
     return step_named(doc, "Update the rolling alert issue"), doc
 
 
-def run_alert(tmp_path, name, outcome, job_status="success", dry_run="", details=""):
+def run_alert(tmp_path, name, outcome, job_status="success", dry_run="", details="", **extra_env):
     """Run the workflow's real alert script with a fake gh; returns the open issues by label."""
     need_tools()
     step, doc = alert_step(name)
@@ -821,7 +873,7 @@ def run_alert(tmp_path, name, outcome, job_status="success", dry_run="", details
     env.update(PATH=f"{bin_dir}{os.pathsep}{os.environ['PATH']}", GH_STATE=str(state),
                ALERT_LABEL=doc["env"]["ALERT_LABEL"], GUIDE_URL=doc["env"]["GUIDE_URL"], JOB_STATUS=job_status,
                OUTCOME=outcome, DRY_RUN=dry_run, WORKFLOW_NAME=doc["name"], RUN_URL="https://example.invalid/run",
-               EVENT="schedule", SHA="abcdef1234", ALERT_DETAILS=str(detail_file))
+               EVENT="schedule", SHA="abcdef1234", ALERT_DETAILS=str(detail_file), **extra_env)
     done = subprocess.run(["bash", "-c", step["run"]], env=env, capture_output=True, text=True, timeout=30)
     assert done.returncode == 0, done.stderr
     return {f.name: f.read_text().strip() for f in state.glob("nfl-pipeline-alert-*")}
@@ -881,3 +933,1027 @@ def test_dry_run_summary_says_nothing_was_committed():
     assert "PUBLISH (dry run: checked only, nothing was committed)" in text
     text, _doc = load("nfl-pipeline-monthly.yml")
     assert "PUBLISH (dry run)" in text
+
+
+# ---- the workbook release (CONTRACTS.md section 13.5, decision D-042; reviews A2 and R2 of 3.001) ---------
+
+def dry_step_id(name):
+    return "resolve" if name == "nfl-pipeline-weekly.yml" else "outcome"
+
+
+def script_of(name, step_name):
+    return step_named(load(name)[1], step_name)["run"]
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_workbook_steps_exist_in_order_and_after_the_data_commit(name):
+    _text, doc = load(name)
+    names = [s.get("name") for _j, s in steps(doc)]
+    order = ["Commit 04-data", DECIDE, BUILD, PUBLISH_WB, KEEP_WB, "Update the rolling alert issue"]
+    assert [names.index(n) for n in order] == sorted(names.index(n) for n in order)
+    assert doc["env"]["WORKBOOK_TAG"] == WB_TAG and doc["env"]["WORKBOOK_ASSET"] == WB_ASSET
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_workbook_runs_only_after_publish_skip_or_by_hand_never_on_dry_runs(name):
+    """A failed data commit blocks it (no always()); HOLD, ERROR and HEARTBEAT never reach it."""
+    _text, doc = load(name)
+    cond = step_named(doc, DECIDE)["if"]
+    assert "always()" not in cond and "cancelled()" not in cond, "a failed commit must stop the workbook"
+    for outcome in ("PUBLISH", "SKIP", "WORKBOOK"):
+        assert f"steps.outcome.outputs.outcome == '{outcome}'" in cond
+    for outcome in ("HOLD", "ERROR", "HEARTBEAT"):
+        assert outcome not in cond
+    assert f"steps.{dry_step_id(name)}.outputs.dry_run != 'true'" in cond
+    assert "github.ref == 'refs/heads/main'" in cond
+    for step_name in (BUILD, PUBLISH_WB):
+        step = step_named(doc, step_name)
+        assert step["if"] == "steps.wbcheck.outputs.build == 'true'", "SKIP with a current workbook builds nothing"
+    keep = step_named(doc, KEEP_WB)
+    assert "steps.wbbuild.outcome == 'success'" in keep["if"] and "!cancelled()" in keep["if"]
+    assert keep["with"]["retention-days"] == 7
+    assert keep["with"]["path"] == "NFL/.work/workbook/NFL-Analysis.xlsx"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_run_artifacts_cannot_fail_the_run_or_collide_on_a_rerun(name):
+    """A2-03: artifacts belong to the run, not the attempt. 'Re-run failed jobs' keeps the run id, so the attempt is
+    in the name, and a convenience copy must never turn a good run red."""
+    _text, doc = load(name)
+    for step_name in (KEEP_WB, "Keep the gate report (run artifact, 30 days)"):
+        step = step_named(doc, step_name)
+        assert step["continue-on-error"] is True, step_name
+        assert step["with"]["name"].endswith("-${{ github.run_id }}-${{ github.run_attempt }}"), step_name
+    assert step_named(doc, KEEP_WB)["with"]["name"] == "workbook-${{ github.run_id }}-${{ github.run_attempt }}"
+    assert step_named(doc, KEEP_WB)["with"]["compression-level"] == 0, "38 MB of zip data does not compress; store it"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_every_workbook_step_has_a_timeout_and_the_job_keeps_its_own(name):
+    _text, doc = load(name)
+    for step_name in (DECIDE, BUILD, PUBLISH_WB):
+        assert 0 < step_named(doc, step_name)["timeout-minutes"] <= 30, step_name
+    job = next(iter(doc["jobs"].values()))
+    assert job["timeout-minutes"] == JOB_TIMEOUT[name], "the all-seasons run plus the export must not be cut short"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_workbook_export_command_and_token_scope(name):
+    _text, doc = load(name)
+    build = step_named(doc, BUILD)
+    assert "python -m nflpipe export --data-dir ../04-data --out" in build["run"]
+    assert "github.token" not in str(build.get("env", {})), "the export step needs no token"
+    assert "gh " not in build["run"]
+    for step_name in (DECIDE, PUBLISH_WB):
+        assert step_named(doc, step_name)["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert step_named(doc, KEEP_WB).get("env") is None
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_the_zip_is_fully_checked_before_anything_is_uploaded(name):
+    """A2-13 #25 and #34: testzip (every member's checksum), the member name and a size floor."""
+    build = step_named(load(name)[1], BUILD)
+    assert "z.testzip() is not None" in build["run"] and '"xl/workbook.xml" not in z.namelist()' in build["run"]
+    assert "python -I -" in build["run"], "the check runs in isolated mode"
+    assert int(build["env"]["WORKBOOK_MIN_BYTES"]) >= 1_000_000
+    assert '"$size" -ge "$WORKBOOK_MIN_BYTES"' in build["run"]
+    assert "built, ${size} bytes" in build["run"]
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_release_is_a_prerelease_never_latest_and_needs_no_extra_permission(name):
+    text, doc = load(name)
+    script = step_named(doc, PUBLISH_WB)["run"]
+    for fragment in ('gh release create "$WORKBOOK_TAG"', '--target "$(git rev-parse HEAD)"', "--prerelease",
+                     "--latest=false", 'gh release edit "$WORKBOOK_TAG" --notes-file', "for attempt in 1 2 3"):
+        assert fragment in script, fragment
+    # Releases and assets need `contents: write`, which the job already has: no new permission scope.
+    job = next(iter(doc["jobs"].values()))
+    assert job["permissions"] == {"contents": "write", "issues": "write"}
+    assert doc["permissions"] == {"contents": "read"}
+    # Creating a tag or release must not start anything: no release/create/tag trigger, and `push` is branch-filtered.
+    assert not {"release", "create", "registry_package"} & set(triggers(doc))
+    push = triggers(doc).get("push")
+    assert push is None or push.get("branches") == ["main"]
+    assert doc["concurrency"]["group"] == PUBLISH_GROUP, "uploads wait for data commits and for each other"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_publish_swaps_the_asset_and_never_deletes_the_live_one_first(name):
+    """A2-02: gh `release upload --clobber` deletes the old asset BEFORE uploading. The new file is uploaded under a
+    temporary name, checked, and only then does the old one go and the new one take its name."""
+    s = script_of(name, PUBLISH_WB)
+    assert 'next="${WORKBOOK_ASSET%.xlsx}.next.xlsx"' in s
+    order = ['gh release upload "$WORKBOOK_TAG" "$stage/$next"',      # 3 upload under the temporary name
+             'new="$(asset_ids "$next"',                              # 4 confirm it (finished, right size)
+             'drop_assets "$WORKBOOK_ASSET"',                         # 5 the old one goes
+             "gh api -X PATCH",                                        # 6 the new one takes the stable name
+             "curl ",                                                  # 7 the public address answers
+             'gh release edit "$WORKBOOK_TAG" --notes-file']          # 8 only now do the notes carry the new key
+    positions = [s.index(x) for x in order]
+    assert positions == sorted(positions) and len(set(positions)) == len(positions), order
+    assert '-f name="$WORKBOOK_ASSET"' in s
+    # --clobber appears once, as the fallback after the rename failed, when no live asset is left to overwrite.
+    code = "\n".join(ln for ln in s.splitlines() if not ln.lstrip().startswith("#"))
+    assert code.count("--clobber") == 1 and code.index("--clobber") > code.index("gh api -X PATCH")
+    assert 'gh release upload "$WORKBOOK_TAG" "$WORKBOOK_FILE" --clobber' in code
+    # a leftover temporary asset from a dead run is removed before the upload
+    assert s.index('drop_assets "$next" || return 1') < s.index('gh release upload "$WORKBOOK_TAG" "$stage/$next"')
+    assert "state==\\\"uploaded\\\" and .size==${size}" in s
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_publish_checks_the_public_address_and_retries_the_cdn(name):
+    """A2-06: ask for the stable address the way a browser does; 200 or 206 or the run is red."""
+    s = script_of(name, PUBLISH_WB)
+    assert "curl -sL --max-time 60 -r 0-0 -o /dev/null -w '%{http_code}' \"$url\"" in s
+    assert '"$code" == "200" || "$code" == "206"' in s and "for attempt in 1 2 3 4 5" in s
+    assert "sleep $((attempt * 5))" in s
+    assert 'answers ${code:-nothing}' in s
+    for fragment in ("sleep $((attempt * 10))", "sleep $((attempt * 5))", "sleep 2"):   # backoff on every retried write
+        assert fragment in s, fragment
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_release_detection_is_structured_fails_closed_and_treats_a_draft_as_unpublished(name):
+    """A2-05, A2-06: no parsing of gh's English error text; a failed read is a stop, never 'missing'."""
+    for step_name in (DECIDE, PUBLISH_WB):
+        s = script_of(name, step_name)
+        assert "release not found" not in s.lower()
+        assert 'gh api --paginate "' in s and "select(.tag_name==" in s and '(.draft)' in s
+        assert "is a draft" in s
+        assert 'stop "could not list the releases' in s
+    decide = script_of(name, DECIDE)
+    assert "gh release create" not in decide and "gh release view" not in decide
+    assert "retry gh api" in decide and "for n in 1 2 3; do" in decide and "sleep $((n * 5))" in decide
+    assert '.state=="uploaded" and .size>0' in decide, "an empty 'starter' asset does not count as present"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_freshness_key_includes_the_workbook_design_version(name):
+    """A2-07: a change to the workbook's design republishes the file even when the data did not change."""
+    s = script_of(name, DECIDE)
+    assert 'key="${run_id}|${version}|${design}"' in s
+    assert "WORKBOOK_VERSION" in s and "nflpipe/export_xlsx.py" in s
+    assert "import" not in s.split("design=")[1].split("\n")[0], "the version is read from the source, not imported"
+    real = (PIPELINE_DIR / "nflpipe" / "export_xlsx.py").read_text(encoding="utf-8")
+    assert re.search(r'^WORKBOOK_VERSION = "[0-9A-Za-z._-]+"', real, re.M), "the workflow's sed no longer finds the constant"
+    assert 'grep -qF "nfl-workbook-key: ${key} " <<< "$body"' in s, "trailing space: 1.2.1 is not a prefix match of 1.2.10"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_workbook_is_built_from_the_latest_data_on_main(name):
+    """A2-09: a queued run was started from an older commit."""
+    s = script_of(name, DECIDE)
+    assert "git fetch -q --no-tags --depth=1 origin main" in s
+    assert "git checkout -q FETCH_HEAD -- ../04-data" in s
+    assert s.index("git checkout -q FETCH_HEAD") < s.index("run_id=")
+
+
+def test_notes_are_updated_only_after_the_upload():
+    """If the notes (which carry the build key) changed first, a failed upload would look 'current' to the next run."""
+    for name in PUBLISHING:
+        script = script_of(name, PUBLISH_WB)
+        assert script.index("gh release upload") < script.index("gh release edit")
+        assert "--notes \"The workbook is being uploaded" in script, "first creation holds a placeholder, not the key"
+        assert "nfl-workbook-key: ${WORKBOOK_KEY}" in script
+
+
+def test_workbook_only_dispatch_is_wired_in_both_workflows():
+    for name in PUBLISHING:
+        _text, doc = load(name)
+        inputs = triggers(doc)["workflow_dispatch"]["inputs"]
+        assert inputs["workbook_only"]["type"] == "boolean" and inputs["workbook_only"]["default"] is False
+    _t, weekly = load("nfl-pipeline-weekly.yml")
+    assert step_named(weekly, RESOLVE)["env"]["IN_WORKBOOK_ONLY"] == "${{ inputs.workbook_only }}"
+    assert "workbook) outcome=WORKBOOK" in step_named(weekly, "Record outcome")["run"]
+    _t, monthly = load("nfl-pipeline-monthly.yml")
+    assert step_named(monthly, "Run pipeline (all seasons)")["env"]["IN_WORKBOOK_ONLY"] == "${{ inputs.workbook_only }}"
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_workbook_outcome_is_green_never_closes_and_does_not_fail_the_run(name):
+    _text, doc = load(name)
+    alert = step_named(doc, "Update the rolling alert issue")
+    assert "WORKBOOK" in alert["env"]["GREEN_OUTCOMES"].split()
+    assert "WORKBOOK" not in alert["env"]["CLOSING_OUTCOMES"].split()
+    assert "outcome != 'WORKBOOK'" in list(steps(doc))[-1][1]["if"]
+
+
+# -- stand-ins: a release store that behaves like GitHub (and like gh, which deletes before it uploads), and curl --
+
+GH_RELEASE_STUB = r'''#!/usr/bin/env python3
+"""Stand-in for the GitHub CLI: the release and REST calls the workbook steps use, on a JSON store $GH_STATE/state.json.
+Modelled on cli/cli v2.89.0 (review A2): `release upload --clobber` DELETES the asset with that name FIRST, then
+uploads; without --clobber an existing name is refused; a duplicate asset name on rename is refused (422).
+Knobs (env): GH_<KIND>_FAILS = how many calls of that kind fail (kinds: list get create upload delete patch edit),
+GH_<KIND>_FAIL_NAME = only for calls about this asset name, GH_LIST_ERROR = the error text, GH_CREATE_PHANTOM = a failed
+create has still created the release, GH_UPLOAD_LEAVES_STARTER = a failed upload leaves an empty asset, GH_UPLOAD_SHORT =
+the upload 'succeeds' but the asset stays empty. Invariant checks write $GH_STATE/violations."""
+import json, os, subprocess, sys
+S = os.environ["GH_STATE"]; P = os.path.join(S, "state.json"); LIVE = "NFL-Analysis.xlsx"; NEXT = "NFL-Analysis.next.xlsx"
+a = sys.argv[1:]
+with open(os.path.join(S, "log"), "a") as f:
+    f.write("gh " + " ".join(a) + "\n")
+def die(msg, rc=1):
+    sys.stderr.write(msg + "\n"); sys.exit(rc)
+if not os.environ.get("GH_TOKEN") or not os.environ.get("GH_REPO"):
+    die("gh: no token or repo", 4)
+s = json.load(open(P)) if os.path.exists(P) else {"releases": [], "next_id": 100, "n": {}}
+def save():
+    json.dump(s, open(P, "w"), indent=1)
+def violation(text):
+    open(os.path.join(S, "violations"), "a").write(text + "\n")
+def fails(kind, name=None):
+    only = os.environ.get(f"GH_{kind.upper()}_FAIL_NAME")
+    if only and name != only:
+        return False
+    s["n"][kind] = s["n"].get(kind, 0) + 1; save()
+    return s["n"][kind] <= int(os.environ.get(f"GH_{kind.upper()}_FAILS", "0"))
+def opt(flag, default=None):
+    return a[a.index(flag) + 1] if flag in a else default
+def jq(obj, expr):
+    r = subprocess.run(["jq", "-r", expr], input=json.dumps(obj), capture_output=True, text=True)
+    sys.stdout.write(r.stdout); sys.stderr.write(r.stderr); sys.exit(r.returncode)
+def find(tag):
+    return next((r for r in s["releases"] if r["tag_name"] == tag), None)
+def new_release(tag, body, prerelease):
+    s["next_id"] += 1
+    r = {"id": s["next_id"], "tag_name": tag, "draft": False, "prerelease": prerelease, "body": body, "assets": []}
+    s["releases"].append(r); return r
+def new_asset(r, name, size, state="uploaded"):
+    s["next_id"] += 1
+    r["assets"].append({"id": s["next_id"], "name": name, "size": size, "state": state})
+if a[:2] == ["release", "create"]:
+    if fails("create"):
+        if os.environ.get("GH_CREATE_PHANTOM"):
+            new_release(a[2], opt("--notes", ""), "--prerelease" in a); save()
+        die("HTTP 500: Server Error")
+    if find(a[2]):
+        die("HTTP 422: Validation Failed (already_exists)")
+    new_release(a[2], opt("--notes", ""), "--prerelease" in a); save()
+elif a[:2] == ["release", "upload"]:
+    r = find(a[2])
+    if not r:
+        die("release not found")
+    name = os.path.basename(a[3]); clobber = "--clobber" in a
+    existing = [x for x in r["assets"] if x["name"] == name]
+    if existing and not clobber:
+        die(f"HTTP 422: asset under the same name already exists: [{name}]")
+    if existing:
+        if name == LIVE and not r["draft"]:
+            violation("--clobber on a live asset (gh deletes it before it uploads)")
+        r["assets"] = [x for x in r["assets"] if x["name"] != name]; save()
+    if fails("upload", name):
+        if os.environ.get("GH_UPLOAD_LEAVES_STARTER"):
+            new_asset(r, name, 0, "starter")
+        save(); die("HTTP 502: Bad Gateway (https://uploads.github.com/...)")
+    if os.environ.get("GH_UPLOAD_SHORT"):
+        new_asset(r, name, 0, "starter")
+    else:
+        new_asset(r, name, os.path.getsize(a[3]))
+    save()
+elif a[:2] == ["release", "edit"]:
+    if fails("edit"):
+        die("HTTP 500: Server Error")
+    find(a[2])["body"] = open(opt("--notes-file")).read(); save()
+elif a[0] == "api":
+    method = opt("-X", "GET")
+    endpoint = next(x for x in a[1:] if x.startswith("repos/"))
+    tail = endpoint.split("?")[0].split("/")[3:]
+    if tail == ["releases"]:
+        if fails("list"):
+            die(os.environ.get("GH_LIST_ERROR", "HTTP 502: Bad Gateway"))
+        jq(s["releases"], opt("--jq", "."))
+    elif len(tail) == 2 and tail[0] == "releases":
+        if fails("get"):
+            die("HTTP 502: Bad Gateway")
+        rel = next((x for x in s["releases"] if str(x["id"]) == tail[1]), None)
+        if not rel:
+            die("gh: Not Found (HTTP 404)")
+        jq(rel, opt("--jq", "."))
+    elif tail[:2] == ["releases", "assets"]:
+        hit = [(r, x) for r in s["releases"] for x in r["assets"] if str(x["id"]) == tail[2]]
+        if not hit:
+            die("gh: Not Found (HTTP 404)")
+        r, asset = hit[0]
+        if method == "DELETE":
+            if fails("delete", asset["name"]):
+                die("HTTP 502: Bad Gateway")
+            if asset["name"] == LIVE and not any(x["name"] == NEXT and x["state"] == "uploaded" and x["size"] > 0 for x in r["assets"]):
+                violation("the live asset was deleted before the new file was on the release")
+            r["assets"].remove(asset); save()
+        elif method == "PATCH":
+            if fails("patch"):
+                die("HTTP 502: Bad Gateway")
+            new = a[a.index("-f") + 1].split("=", 1)[1]
+            if any(x["name"] == new for x in r["assets"]):
+                die("gh: Validation Failed (HTTP 422) already_exists")
+            asset["name"] = new; save()
+        else:
+            die("unexpected method " + method, 2)
+    else:
+        die("unexpected api call " + endpoint, 2)
+else:
+    die("unexpected gh call: " + " ".join(a), 2)
+'''
+
+CURL_STUB = r'''#!/usr/bin/env python3
+"""Stand-in for the ranged GET on the public download address. Serves what GitHub would: a published (not draft)
+release with a finished, non-empty NFL-Analysis.xlsx answers 206, anything else 404. Knobs: CURL_404_FIRST = this many
+calls answer 404 first (the CDN catching up), CURL_CODE = always this code."""
+import json, os, sys
+S = os.environ["GH_STATE"]; args = sys.argv[1:]
+open(os.path.join(S, "curl.log"), "a").write(" ".join(args) + "\n")
+if "-sL" not in args or args[args.index("-r") + 1] != "0-0" or "--max-time" not in args:
+    sys.stderr.write("curl: not a ranged, redirect-following, time-limited GET\n"); sys.exit(2)
+url = args[-1]; count_file = os.path.join(S, "curl.count")
+n = int(open(count_file).read()) + 1 if os.path.exists(count_file) else 1
+open(count_file, "w").write(str(n))
+if os.environ.get("CURL_CODE"):
+    sys.stdout.write(os.environ["CURL_CODE"]); sys.exit(0)
+if n <= int(os.environ.get("CURL_404_FIRST", "0")):
+    sys.stdout.write("404"); sys.exit(0)
+state = json.load(open(os.path.join(S, "state.json"))) if os.path.exists(os.path.join(S, "state.json")) else {"releases": []}
+tag, name = url.split("/")[-2], url.split("/")[-1]
+ok = any(r["tag_name"] == tag and not r["draft"] and any(x["name"] == name and x["state"] == "uploaded" and x["size"] > 0 for x in r["assets"])
+         for r in state["releases"])
+sys.stdout.write("206" if ok else "404")
+'''
+
+EXPORT_PYTHON = r"""#!/usr/bin/env bash
+# Stand-in for `python -m nflpipe export`: FAKE_EXPORT=ok writes a tiny valid package, notxlsx a zip without a workbook,
+# badcrc a zip whose workbook member fails its checksum, garbage a non-zip file, fail exits 1. Every other call goes to
+# the real interpreter.
+if [[ "$1 $2 $3" == "-m nflpipe export" ]]; then
+  echo "python $*" >> "$FAKE_LOG"
+  out=""; while [[ $# -gt 0 ]]; do [[ "$1" == "--out" ]] && out="$2"; shift; done
+  case "${FAKE_EXPORT:-ok}" in
+    fail) echo "export: ERROR: cannot read status.csv"; exit 1 ;;
+    garbage) mkdir -p "$(dirname "$out")"; echo "not a zip" > "$out"; exit 0 ;;
+    notxlsx) mkdir -p "$(dirname "$out")"
+       "$REAL_PY" -c 'import sys, zipfile
+z = zipfile.ZipFile(sys.argv[1], "w"); z.writestr("readme.txt", "hello"); z.close()' "$out"; exit 0 ;;
+    badcrc) mkdir -p "$(dirname "$out")"
+       "$REAL_PY" -c 'import sys, zipfile
+z = zipfile.ZipFile(sys.argv[1], "w", zipfile.ZIP_STORED); z.writestr("xl/workbook.xml", "<workbook>" * 20); z.close()
+data = bytearray(open(sys.argv[1], "rb").read()); i = data.index(b"<workbook>"); data[i + 1] ^= 1
+open(sys.argv[1], "wb").write(bytes(data))' "$out"; exit 0 ;;
+    *) mkdir -p "$(dirname "$out")"
+       "$REAL_PY" -c 'import sys, zipfile
+z = zipfile.ZipFile(sys.argv[1], "w"); z.writestr("xl/workbook.xml", "<workbook/>"); z.close()' "$out"; exit 0 ;;
+  esac
+fi
+exec "$REAL_PY" "$@"
+"""
+
+STATUS = ("key,value\nrun_id,20261120T233201Z-gh1\ngenerated_utc,2026-11-20T23:32:09Z\npipeline_version,1.2.1\n"
+          "latest_season,2026\nlatest_week,11\nlatest_season_type,REG\ngates_pass,13\ngates_warn,1\ngates_fail,0\n"
+          'data_source,"nflverse, https://github.com/nflverse/nflverse-data"\n')
+DESIGN = "3.001"
+KEY = f"20261120T233201Z-gh1|1.2.1|{DESIGN}"
+OLD_KEY = f"20260101T000000Z-gh0|1.2.1|{DESIGN}"
+OLD_SIZE = 1000          # the 'old workbook' on the release; the new test workbook is a few hundred bytes
+
+
+class WB:
+    """A throwaway workspace (git clone of a bare 'origin' with NFL/04-data/status.csv and the exporter source),
+    a release store, and stand-in gh, curl, sleep and export."""
+
+    def __init__(self, tmp_path, name):
+        import sys
+        need_tools("git", "jq")
+        self.name, self.tmp = name, tmp_path
+        self.remote = tmp_path / "origin.git"
+        git("init", "-q", "--bare", "-b", "main", str(self.remote), cwd=tmp_path)
+        seed = tmp_path / "seed"
+        (seed / "NFL" / "03-pipeline" / "nflpipe").mkdir(parents=True)
+        (seed / "NFL" / "04-data").mkdir(parents=True)
+        (seed / "NFL" / "04-data" / "status.csv").write_text(STATUS)
+        (seed / "NFL" / "04-data" / "old_file.csv").write_text("a\n")
+        (seed / "NFL" / "03-pipeline" / "nflpipe" / "export_xlsx.py").write_text(f'"""x"""\nWORKBOOK_VERSION = "{DESIGN}"\nOTHER = 1\n')
+        git("init", "-q", "-b", "main", cwd=seed)
+        git("add", "-A", cwd=seed)
+        git("commit", "-q", "-m", "seed", cwd=seed)
+        git("remote", "add", "origin", f"file://{self.remote}", cwd=seed)
+        git("push", "-q", "origin", "main", cwd=seed)
+        self.ws = tmp_path / "ws"
+        git("clone", "-q", "--depth", "1", f"file://{self.remote}", str(self.ws), cwd=tmp_path)
+        self.sha = git("rev-parse", "HEAD", cwd=self.ws)
+        self.state = tmp_path / "gh-state"
+        self.state.mkdir()
+        self.bin = tmp_path / "bin"
+        self.bin.mkdir()
+        (self.bin / "gh").write_text(GH_RELEASE_STUB)
+        (self.bin / "curl").write_text(CURL_STUB)
+        (self.bin / "python").write_text(EXPORT_PYTHON)
+        (self.bin / "sleep").write_text('#!/bin/sh\necho "$1" >> "$GH_STATE/sleeps"\n')       # retries without waiting
+        for f in self.bin.iterdir():
+            f.chmod(0o755)
+        self.real_py = sys.executable
+        self.log = tmp_path / "python.log"
+        self.log.write_text("")
+        self.details = tmp_path / "details.md"
+        self.details.write_text("")
+
+    # -- the release store
+    def load_state(self):
+        import json
+        f = self.state / "state.json"
+        return json.loads(f.read_text()) if f.exists() else {"releases": [], "next_id": 100, "n": {}}
+
+    def save_state(self, st):
+        import json
+        (self.state / "state.json").write_text(json.dumps(st))
+
+    def release(self, assets=(), body="", draft=False, tag=WB_TAG):
+        st = self.load_state()
+        rel = {"id": 50 + len(st["releases"]), "tag_name": tag, "draft": draft, "prerelease": True, "body": body, "assets": []}
+        for i, a in enumerate(assets):
+            spec = a if isinstance(a, dict) else {"name": a}
+            rel["assets"].append({"id": 70 + 10 * len(st["releases"]) + i, "size": OLD_SIZE, "state": "uploaded", **spec})
+        st["releases"].append(rel)
+        self.save_state(st)
+
+    @property
+    def rel(self):
+        return next(r for r in self.load_state()["releases"] if r["tag_name"] == WB_TAG)
+
+    def asset_names(self):
+        return sorted(a["name"] for a in self.rel["assets"])
+
+    def served(self):
+        """What the stable address answers: the size of the workbook it serves, or None for 'not found'."""
+        st = self.load_state()
+        for r in st["releases"]:
+            if r["tag_name"] == WB_TAG and not r["draft"]:
+                for a in r["assets"]:
+                    if a["name"] == WB_ASSET and a["state"] == "uploaded" and a["size"] > 0:
+                        return a["size"]
+        return None
+
+    @property
+    def violations(self):
+        f = self.state / "violations"
+        return f.read_text().splitlines() if f.exists() else []
+
+    @property
+    def gh_calls(self):
+        f = self.state / "log"
+        return f.read_text().splitlines() if f.exists() else []
+
+    def writes(self):
+        """The gh calls that change anything."""
+        return [c for c in self.gh_calls if c.startswith(("gh release create", "gh release upload", "gh release edit"))
+                or "-X DELETE" in c or "-X PATCH" in c]
+
+    @property
+    def sleeps(self):
+        f = self.state / "sleeps"
+        return f.read_text().split() if f.exists() else []
+
+    def advance_remote(self, status=None, delete=()):
+        work = self.tmp / f"adv-{time.monotonic_ns()}"
+        git("clone", "-q", f"file://{self.remote}", str(work), cwd=self.tmp)
+        if status is not None:
+            (work / "NFL" / "04-data" / "status.csv").write_text(status)
+        for d in delete:
+            (work / "NFL" / "04-data" / d).unlink()
+        git("add", "-A", cwd=work)
+        git("commit", "-q", "-m", "newer data", cwd=work)
+        git("push", "-q", "origin", "main", cwd=work)
+
+    # -- running the steps
+    def env(self, **extra):
+        env = {"GH_STATE": str(self.state), "GH_TOKEN": "t", "GH_REPO": "wes-blue/sports-analysis", "FAKE_LOG": str(self.log),
+               "REAL_PY": self.real_py, "ALERT_DETAILS": str(self.details), "EXPORT_LOG": str(self.tmp / "export.log"),
+               "WORKBOOK_MIN_BYTES": "100"}
+        env.update(extra)
+        return env
+
+    def step(self, step_name, expect_rc=0, cwd=None, **env):
+        cwd = cwd or self.ws / "NFL" / "03-pipeline"
+        return run_step(self.name, step_name, self.tmp, cwd=cwd, bin_dir=self.bin, expect_rc=expect_rc, env=self.env(**env))
+
+    def decide(self, outcome, **kw):
+        return self.step(DECIDE, OUTCOME=outcome, **kw)
+
+    def build(self, **kw):
+        return self.step(BUILD, **kw)
+
+    def publish(self, release_exists, **kw):
+        return self.step(PUBLISH_WB, cwd=self.ws, RELEASE_EXISTS=str(release_exists).lower(), WORKBOOK_KEY=KEY,
+                         RUN_URL="https://github.com/wes-blue/sports-analysis/actions/runs/42",
+                         NOTES_FILE=str(self.tmp / "notes.md"), **kw)
+
+    @property
+    def body(self):
+        return self.rel["body"]
+
+    @property
+    def summary(self):
+        return (self.tmp / "summary.md").read_text()
+
+
+@pytest.fixture
+def wb(tmp_path, request):
+    return WB(tmp_path, request.param if hasattr(request, "param") else "nfl-pipeline-weekly.yml")
+
+
+def both(fn):
+    return pytest.mark.parametrize("wb", PUBLISHING, indirect=True)(fn)
+
+
+def live_release(wb, key=OLD_KEY):
+    """A release that already serves a workbook (OLD_SIZE bytes) built from older data."""
+    wb.release([WB_ASSET], body=f"old notes\n<!-- nfl-workbook-key: {key} -->\n")
+
+
+# ---- Decide ---------------------------------------------------------------------------------------------
+
+@both
+def test_decide_first_run_after_the_merge_finds_no_release_and_builds(wb):
+    out, _ = wb.decide("SKIP")                       # the merge push: `run` skipped, nothing is published yet
+    assert out["build"] == "true" and out["release_exists"] == "false" and out["key"] == KEY
+    assert wb.writes() == [] and "there is no nfl-workbook release" in wb.summary
+
+
+@both
+def test_decide_skip_with_a_current_workbook_only_reads(wb):
+    wb.release([WB_ASSET], body=f"x\n<!-- nfl-workbook-key: {KEY} -->\n")
+    out, _ = wb.decide("SKIP")
+    assert out["build"] == "false" and out["release_exists"] == "true"
+    assert wb.writes() == [] and wb.log.read_text() == "", "reads only: no export, no upload"
+    assert all(c.startswith("gh api") for c in wb.gh_calls) and len(wb.gh_calls) == 3, wb.gh_calls
+
+
+@both
+@pytest.mark.parametrize("assets,body,why", [
+    ([], f"<!-- nfl-workbook-key: {KEY} -->", "no finished"),                                   # an upload did not finish
+    ([{"name": WB_ASSET, "state": "starter", "size": 0}], f"<!-- nfl-workbook-key: {KEY} -->", "no finished"),   # A2-02: empty asset
+    ([WB_ASSET], f"<!-- nfl-workbook-key: {OLD_KEY} -->", "not built from"),                    # an earlier build failed
+    ([WB_ASSET], "<!-- nfl-workbook-key: 20261120T233201Z-gh1|1.2.1 -->", "not built from"),    # the old two-part key
+    ([WB_ASSET], "a hand-written note", "not built from"),
+    (["something-else.xlsx"], f"<!-- nfl-workbook-key: {KEY} -->", "no finished")])
+def test_decide_skip_repairs_a_missing_empty_or_stale_workbook(wb, assets, body, why):
+    wb.release(assets, body=body)
+    out, _ = wb.decide("SKIP")
+    assert out["build"] == "true" and out["release_exists"] == "true" and why in wb.summary
+
+
+@both
+def test_decide_a_new_workbook_design_republishes_although_the_data_did_not_change(wb):
+    """A2-07: the key carries the exporter's WORKBOOK_VERSION."""
+    wb.release([WB_ASSET], body=f"<!-- nfl-workbook-key: {KEY} -->")
+    assert wb.decide("SKIP")[0]["build"] == "false"
+    exporter = wb.ws / "NFL" / "03-pipeline" / "nflpipe" / "export_xlsx.py"
+    exporter.write_text(exporter.read_text().replace(f'"{DESIGN}"', '"3.002"'))
+    out, _ = wb.decide("SKIP")
+    assert out["build"] == "true" and out["key"] == "20261120T233201Z-gh1|1.2.1|3.002"
+    exporter.write_text("OTHER = 1\n")
+    wb.decide("SKIP", expect_rc=1)
+    assert "WORKBOOK_VERSION" in wb.details.read_text()
+
+
+@both
+def test_decide_manual_rebuild_builds_even_when_the_release_is_current(wb):
+    wb.release([WB_ASSET], body=f"<!-- nfl-workbook-key: {KEY} -->")
+    out, _ = wb.decide("WORKBOOK")
+    assert out["build"] == "true" and "requested by hand" in wb.summary
+
+
+@both
+def test_decide_a_draft_release_is_not_published_and_never_gets_a_duplicate(wb):
+    """A2-06: a hand-made draft with a current key must not pass as the live workbook."""
+    wb.release([WB_ASSET], body=f"<!-- nfl-workbook-key: {KEY} -->", draft=True)
+    wb.decide("SKIP", expect_rc=1)
+    assert "is a draft" in wb.details.read_text()
+    assert wb.writes() == [] and wb.served() is None
+
+
+@both
+@pytest.mark.parametrize("error", ["HTTP 401: Bad credentials", "release not found", "gh: Not Found (HTTP 404)",
+                                   "HTTP 403: API rate limit exceeded", "Release introuvable"])
+def test_decide_unknown_is_never_treated_as_missing(wb, error):
+    """A2-05: whatever the error text says (even 'release not found', or a reworded one), a failed read stops the run;
+    the decision never depends on gh's wording, so no duplicate release can be created."""
+    wb.decide("SKIP", expect_rc=1, GH_LIST_FAILS="99", GH_LIST_ERROR=error)
+    assert "could not list the releases" in wb.details.read_text()
+    assert wb.writes() == []
+    assert wb.sleeps == ["5", "10"], "three tries, 5 s and 10 s apart"
+
+
+@both
+def test_decide_retries_its_reads(wb):
+    wb.release([WB_ASSET], body=f"<!-- nfl-workbook-key: {KEY} -->")
+    out, _ = wb.decide("SKIP", GH_LIST_FAILS="1", GH_GET_FAILS="2")
+    assert out["build"] == "false", "transient 502s on the reads do not turn the run red"
+    wb.decide("SKIP", expect_rc=1, GH_GET_FAILS="99")
+    assert "could not read the assets" in wb.details.read_text()
+
+
+@both
+def test_decide_stops_on_two_releases_with_the_tag(wb):
+    wb.release([WB_ASSET])
+    wb.release([])
+    wb.decide("SKIP", expect_rc=1)
+    assert "more than one release" in wb.details.read_text()
+
+
+@both
+def test_decide_fails_loudly_when_status_is_missing_or_carries_odd_characters(wb):
+    status = wb.ws / "NFL" / "04-data" / "status.csv"
+    wb.advance_remote(status="key,value\npipeline_version,1.2.1\n")
+    wb.decide("PUBLISH", expect_rc=1)
+    assert "no run_id" in wb.details.read_text()
+    for bad in ("x$(id)", "a b", "x\r"):          # nothing from status.csv reaches a command or the output file raw
+        wb.details.write_text("")
+        wb.advance_remote(status=f"key,value\nrun_id,{bad}\npipeline_version,1.2.1\n")
+        wb.decide("PUBLISH", expect_rc=1)
+        assert "unexpected characters" in wb.details.read_text()
+    assert status.exists()
+
+
+@both
+def test_decide_builds_from_the_newest_data_on_main(wb):
+    """A2-09: this run was queued behind another publish, so its checkout is older than main."""
+    wb.release([WB_ASSET], body=f"<!-- nfl-workbook-key: {KEY} -->")
+    newer = STATUS.replace("20261120T233201Z-gh1", "20261121T120000Z-gh2")
+    wb.advance_remote(status=newer, delete=["old_file.csv"])
+    data = wb.ws / "NFL" / "04-data"
+    assert "gh1" in (data / "status.csv").read_text() and (data / "old_file.csv").exists()
+    out, _ = wb.decide("SKIP")
+    assert out["key"] == f"20261121T120000Z-gh2|1.2.1|{DESIGN}" and out["build"] == "true"
+    assert "gh2" in (data / "status.csv").read_text() and not (data / "old_file.csv").exists()
+
+
+@both
+def test_decide_stops_when_main_cannot_be_fetched(wb):
+    wb.remote.rename(wb.tmp / "gone.git")
+    wb.decide("SKIP", expect_rc=1)
+    assert "could not fetch the latest NFL/04-data" in wb.details.read_text()
+    assert wb.sleeps == ["5", "10"]
+
+
+# ---- Build ----------------------------------------------------------------------------------------------
+
+@both
+def test_build_writes_the_file_and_reports_its_size(wb):
+    wb.build()
+    f = wb.ws / "NFL" / ".work" / "workbook" / WB_ASSET
+    assert f.is_file() and f"built, {f.stat().st_size} bytes" in wb.summary
+    assert "export --data-dir ../04-data" in wb.log.read_text()
+
+
+@both
+def test_build_export_failure_is_red_leaves_no_file_and_names_the_cause(wb):
+    wb.build(expect_rc=1, FAKE_EXPORT="fail")
+    assert not (wb.ws / "NFL" / ".work" / "workbook" / WB_ASSET).exists()
+    text = wb.details.read_text()
+    assert "export exited 1" in text and "cannot read status.csv" in text
+    assert "FAILED to build" in wb.summary
+    assert wb.gh_calls == [], "nothing is uploaded after a failed build"
+
+
+@both
+@pytest.mark.parametrize("kind", ["garbage", "notxlsx", "badcrc"])
+def test_build_a_file_that_is_not_a_workbook_is_never_kept(wb, kind):
+    """A2-13 #25: not a zip, a zip without the workbook, and a zip whose member fails its checksum (testzip)."""
+    wb.build(expect_rc=1, FAKE_EXPORT=kind)
+    assert not (wb.ws / "NFL" / ".work" / "workbook" / WB_ASSET).exists()
+    assert "not a readable Excel workbook" in wb.details.read_text()
+
+
+@both
+def test_build_a_truncated_file_is_never_kept(wb):
+    wb.build(expect_rc=1, WORKBOOK_MIN_BYTES="1000000")          # the workflow's own floor, against the tiny stand-in file
+    assert "bytes (at least 1000000 expected)" in wb.details.read_text()
+    assert not (wb.ws / "NFL" / ".work" / "workbook" / WB_ASSET).exists()
+
+
+# ---- Publish: the swap ----------------------------------------------------------------------------------
+
+def stage(wb, *, old=True, key=OLD_KEY):
+    """Release serving an old workbook (or none) and a freshly built new one (a few hundred bytes)."""
+    if old:
+        live_release(wb, key)
+    wb.build()
+    return (wb.ws / "NFL" / ".work" / "workbook" / WB_ASSET).stat().st_size
+
+
+def kinds(wb):
+    out = []
+    for c in wb.gh_calls:
+        if "-X DELETE" in c:
+            out.append("delete")
+        elif "-X PATCH" in c:
+            out.append("patch")
+        elif c.startswith("gh release "):
+            out.append(c.split()[2])
+    return out
+
+
+@both
+def test_publish_first_run_creates_the_release_and_the_link_works(wb):
+    """The merge: no release, no asset. Afterwards the stable address serves the new file."""
+    new_size = stage(wb, old=False)
+    wb.publish(False)
+    calls = wb.gh_calls
+    create = next(c for c in calls if c.startswith("gh release create"))
+    assert WB_TAG in create and f"--target {wb.sha}" in create and "--prerelease" in create and "--latest=false" in create
+    assert kinds(wb) == ["create", "upload", "patch", "edit"], kinds(wb)
+    assert wb.asset_names() == [WB_ASSET] and wb.served() == new_size and wb.violations == []
+    assert wb.rel["prerelease"] is True
+    body = wb.body
+    assert "season 2026, week 11 (REG)" in body and "20261120T233201Z-gh1" in body and "13 passed, 1 warned, 0 failed" in body
+    assert WB_URL in body and f"<!-- nfl-workbook-key: {KEY} -->" in body and "CC BY 4.0" in body
+    assert "wes-blue" not in body.replace("wes-blue/sports-analysis", "")
+    assert "published at " + WB_URL in wb.summary
+
+
+@both
+def test_publish_replaces_the_live_asset_without_deleting_it_first(wb):
+    new_size = stage(wb)
+    wb.publish(True)
+    assert kinds(wb) == ["upload", "delete", "patch", "edit"], kinds(wb)       # new file on the release before the old goes
+    assert not any("--clobber" in c for c in wb.gh_calls) and not any(c.startswith("gh release create") for c in wb.gh_calls)
+    assert wb.violations == [] and wb.asset_names() == [WB_ASSET] and wb.served() == new_size
+    assert f"nfl-workbook-key: {KEY} " in wb.body and "OLD" not in wb.body and OLD_KEY not in wb.body
+    assert len(wb.state.joinpath("curl.log").read_text().splitlines()) == 1
+
+
+@both
+def test_publish_upload_failure_leaves_the_old_workbook_serving(wb):
+    """A2-02: the stand-in deletes before it uploads (like gh --clobber would); the swap never gets there."""
+    stage(wb)
+    wb.publish(True, expect_rc=1, GH_UPLOAD_FAILS="99", GH_UPLOAD_LEAVES_STARTER="1")
+    assert sum(c.startswith("gh release upload") for c in wb.gh_calls) == 3
+    assert "10" in wb.sleeps and "20" in wb.sleeps, "backoff between the upload attempts"
+    assert wb.asset_names() == [WB_ASSET], "the half-uploaded temporary asset was cleaned up, the old workbook is untouched"
+    assert wb.served() == OLD_SIZE and wb.violations == []
+    assert OLD_KEY in wb.body, "notes must not claim the new data until the upload worked"
+    text = wb.details.read_text()
+    assert "could not upload" in text and "was not touched" in text and "workbook-42-1" in text
+
+
+@both
+def test_publish_upload_is_retried_and_a_second_attempt_succeeds(wb):
+    new_size = stage(wb)
+    wb.publish(True, GH_UPLOAD_FAILS="1", GH_UPLOAD_LEAVES_STARTER="1")          # the failed first try leaves an empty asset
+    assert sum(c.startswith("gh release upload") for c in wb.gh_calls) == 2
+    assert wb.asset_names() == [WB_ASSET] and wb.served() == new_size and wb.violations == []
+
+
+@both
+@pytest.mark.parametrize("leftover", [{"state": "uploaded", "size": 7}, {"state": "starter", "size": 0}])
+def test_publish_removes_a_temporary_asset_left_by_a_dead_run(wb, leftover):
+    new_size = stage(wb, old=False)
+    wb.release([WB_ASSET, {"name": "NFL-Analysis.next.xlsx", **leftover}], body=f"<!-- nfl-workbook-key: {OLD_KEY} -->")
+    wb.publish(True)
+    assert wb.asset_names() == [WB_ASSET] and wb.served() == new_size and wb.violations == []
+
+
+@both
+def test_publish_an_incomplete_upload_is_not_swapped_in(wb):
+    stage(wb)
+    wb.publish(True, expect_rc=1, GH_UPLOAD_SHORT="1")           # 'succeeds' but the asset stays empty (state starter)
+    assert "not on the release as one complete asset" in wb.details.read_text()
+    assert wb.asset_names() == [WB_ASSET] and wb.served() == OLD_SIZE and wb.violations == []
+
+
+@both
+def test_publish_failing_delete_of_the_old_asset_keeps_the_old_workbook(wb):
+    stage(wb)
+    wb.publish(True, expect_rc=1, GH_DELETE_FAILS="99", GH_DELETE_FAIL_NAME=WB_ASSET)
+    assert wb.served() == OLD_SIZE and "NFL-Analysis.next.xlsx" in wb.asset_names()
+    assert "left in place" in wb.details.read_text() and OLD_KEY in wb.body
+
+
+@both
+def test_publish_rename_retried_then_succeeds(wb):
+    new_size = stage(wb)
+    wb.publish(True, GH_PATCH_FAILS="2")
+    assert sum("-X PATCH" in c for c in wb.gh_calls) == 3
+    assert wb.asset_names() == [WB_ASSET] and wb.served() == new_size
+
+
+@both
+def test_publish_when_the_rename_is_refused_the_new_file_is_uploaded_again_under_the_stable_name(wb):
+    """The one step GitHub alone can confirm (PATCH on an asset of a pre-release). If it fails, the dark window is an upload."""
+    new_size = stage(wb)
+    wb.publish(True, GH_PATCH_FAILS="99")
+    assert sum("-X PATCH" in c for c in wb.gh_calls) == 5
+    clobber = [c for c in wb.gh_calls if "--clobber" in c]
+    assert len(clobber) == 1 and clobber[0].endswith("NFL-Analysis.xlsx --clobber")
+    assert wb.asset_names() == [WB_ASSET], "the temporary asset is gone"
+    assert wb.served() == new_size and wb.violations == []
+
+
+@both
+def test_publish_when_even_the_fallback_fails_the_link_is_dark_until_the_next_run_repairs_it(wb):
+    new_size = stage(wb)
+    wb.publish(True, expect_rc=1, GH_PATCH_FAILS="99", GH_UPLOAD_FAILS="99", GH_UPLOAD_FAIL_NAME=WB_ASSET)
+    assert wb.served() is None, "worst case: the old file was already removed and the rename never worked"
+    assert wb.asset_names() == ["NFL-Analysis.next.xlsx"]
+    text = wb.details.read_text()
+    assert "could not be renamed" in text and "not found until the next run puts it back" in text
+    assert OLD_KEY in wb.body
+    # the next scheduled run: SKIP sees no finished asset under the stable name, builds, removes the leftover and swaps
+    out, _ = wb.decide("SKIP")
+    assert out["build"] == "true" and "no finished" in wb.summary
+    wb.build()
+    wb.publish(True)
+    assert wb.asset_names() == [WB_ASSET] and wb.served() == new_size and f"nfl-workbook-key: {KEY} " in wb.body
+
+
+@both
+def test_publish_asks_for_the_public_address_and_waits_for_the_cdn(wb):
+    new_size = stage(wb)
+    wb.publish(True, CURL_404_FIRST="2")
+    assert wb.sleeps.count("5") >= 1 and "10" in wb.sleeps
+    assert len((wb.state / "curl.log").read_text().splitlines()) == 3 and wb.served() == new_size
+    assert f"nfl-workbook-key: {KEY} " in wb.body
+
+
+@both
+def test_publish_a_dead_public_address_is_red_and_leaves_the_old_key_in_the_notes(wb):
+    """A2-06: the API said fine, the address says 404 (an immutable-release rule, a wrong name): never report success."""
+    stage(wb)
+    wb.publish(True, expect_rc=1, CURL_CODE="404")
+    assert len((wb.state / "curl.log").read_text().splitlines()) == 5
+    assert "answers 404" in wb.details.read_text()
+    assert OLD_KEY in wb.body and not any(c.startswith("gh release edit") for c in wb.gh_calls)
+    assert wb.decide("SKIP")[0]["build"] == "true", "the next run builds and publishes it again"
+
+
+@both
+def test_publish_notes_update_is_retried_and_a_persistent_failure_self_repairs(wb):
+    stage(wb)
+    wb.publish(True, GH_EDIT_FAILS="2")
+    assert sum(c.startswith("gh release edit") for c in wb.gh_calls) == 3 and f"nfl-workbook-key: {KEY} " in wb.body
+
+
+@both
+def test_publish_notes_failure_after_the_swap_is_red_but_the_link_works(wb):
+    new_size = stage(wb)
+    wb.publish(True, expect_rc=1, GH_EDIT_FAILS="99")
+    assert "link works" in wb.details.read_text() and "notes could not be updated" in wb.details.read_text()
+    assert wb.served() == new_size
+    assert wb.decide("SKIP")[0]["build"] == "true", "the old key is still in the notes: the next run rebuilds once"
+
+
+@both
+def test_publish_release_creation_is_retried_and_never_duplicated(wb):
+    stage(wb, old=False)
+    wb.publish(False, GH_CREATE_FAILS="1", GH_CREATE_PHANTOM="1")      # the call failed but the release exists
+    assert sum(c.startswith("gh release create") for c in wb.gh_calls) == 1
+    assert len(wb.load_state()["releases"]) == 1 and wb.asset_names() == [WB_ASSET]
+
+
+@both
+def test_publish_release_creation_failure_uploads_nothing(wb):
+    stage(wb, old=False)
+    wb.publish(False, expect_rc=1, GH_CREATE_FAILS="3")
+    assert sum(c.startswith("gh release create") for c in wb.gh_calls) == 3
+    assert not any(c.startswith("gh release upload") for c in wb.gh_calls)
+    assert "could not create the release" in wb.details.read_text() and wb.served() is None
+
+
+@both
+def test_publish_a_failed_read_of_the_release_touches_nothing(wb):
+    stage(wb)
+    wb.publish(True, expect_rc=1, GH_LIST_FAILS="99")
+    assert wb.writes() == [] and wb.served() == OLD_SIZE
+
+
+@both
+def test_publish_a_draft_release_is_not_built_on(wb):
+    wb.release([WB_ASSET], body="x", draft=True)
+    wb.build()
+    wb.publish(True, expect_rc=1)
+    assert "is a draft" in wb.details.read_text() and wb.writes() == [] and wb.served() is None
+
+
+# ---- the other steps of the weekly and monthly workflows --------------------------------------------------
+
+def test_resolve_workbook_only_skips_resolve_and_the_stray_file_check(tmp_path):
+    root = project_tree(tmp_path)
+    (root / "NFL" / "02-config" / "scoring_weights (1).csv").write_text("x\n")
+    outputs, calls = resolve(tmp_path, root, event="workflow_dispatch", workbook_only="true", force="true", seasons="all")
+    assert outputs["decision"] == "workbook" and outputs["force"] == "false" and calls == ""
+    assert "pipeline did not run" in outputs["reason"]
+
+
+def test_resolve_workbook_only_off_main_says_plainly_that_it_did_nothing(tmp_path):
+    """A2-10: it used to end green and claim a rebuild."""
+    outputs, calls = resolve(tmp_path, project_tree(tmp_path), event="workflow_dispatch", ref="refs/heads/test", workbook_only="true")
+    assert outputs["decision"] == "error" and outputs["dry_run"] == "true" and calls == ""
+    assert "NOTHING was rebuilt" in outputs["reason"] and "test" in outputs["reason"] and "main" in outputs["reason"]
+    _o, done = run_step("nfl-pipeline-weekly.yml", RESOLVE, tmp_path / "x", cwd=project_tree(tmp_path / "x") / "NFL" / "03-pipeline",
+                        env={"EVENT": "workflow_dispatch", "REF": "refs/heads/test", "SHA": "abc", "IN_WORKBOOK_ONLY": "true",
+                             "IN_SEASONS": "", "IN_FORCE": "", "IN_DRY_RUN": ""}, bin_dir=make_bin(tmp_path / "x", python="fake"))
+    assert "::error title=Workbook only: nothing done::" in done.stdout and "rebuilt from the data on main" not in done.stdout
+
+
+def test_record_outcome_maps_workbook_only_to_a_green_outcome_and_a_refused_one_to_red(tmp_path):
+    root = project_tree(tmp_path)
+    common = {"RUN_OUTCOME": "", "RUN_RC": "", "DRY_RUN": "false", "EVENT": "workflow_dispatch",
+              "RUN_LOG": str(tmp_path / "none.log"), "ALERT_DETAILS": str(tmp_path / "d.md")}
+    outputs, _ = run_step("nfl-pipeline-weekly.yml", "Record outcome", tmp_path, cwd=root / "NFL" / "03-pipeline",
+                          bin_dir=make_bin(tmp_path, python="real"),
+                          env=dict(common, DECISION="workbook", RESOLVE_REASON="workbook rebuild requested by hand"))
+    assert outputs["outcome"] == "WORKBOOK"
+    outputs, _ = run_step("nfl-pipeline-weekly.yml", "Record outcome", tmp_path, cwd=root / "NFL" / "03-pipeline",
+                          bin_dir=make_bin(tmp_path, python="real"),
+                          env=dict(common, DECISION="error", RESOLVE_REASON="workbook_only was started on test, not main, so NOTHING was rebuilt"))
+    assert outputs["outcome"] == "ERROR" and "NOTHING was rebuilt" in (tmp_path / "d.md").read_text()
+
+
+def test_record_outcome_skip_after_a_push_says_the_pipeline_ran(tmp_path):
+    root = project_tree(tmp_path)
+    _o, done = run_step("nfl-pipeline-weekly.yml", "Record outcome", tmp_path, cwd=root / "NFL" / "03-pipeline",
+                        bin_dir=make_bin(tmp_path, python="real"),
+                        env={"DECISION": "run", "RUN_OUTCOME": "SKIP", "RUN_RC": "3", "DRY_RUN": "false", "EVENT": "push",
+                             "RESOLVE_REASON": "a push to main changed the pipeline code", "RUN_LOG": str(tmp_path / "none.log"),
+                             "ALERT_DETAILS": str(tmp_path / "d.md")})
+    assert "the pipeline ran and found nothing to publish" in done.stdout
+
+
+def test_monthly_workbook_only_does_not_run_the_pipeline(tmp_path):
+    root = project_tree(tmp_path)
+    bin_dir = make_bin(tmp_path, python="fake")
+    log = tmp_path / "python.log"
+    log.write_text("")
+    env = {"IN_DRY_RUN": "", "IN_WORKBOOK_ONLY": "true", "REF": "refs/heads/main", "EVENT_SCHEDULE": "",
+           "TRIGGER": "workflow_dispatch-monthly", "FAKE_LOG": str(log),
+           "RUN_LOG": str(tmp_path / "run.log"), "ALERT_DETAILS": str(tmp_path / "d.md")}
+    outputs, _ = run_step("nfl-pipeline-monthly.yml", "Run pipeline (all seasons)", tmp_path,
+                          cwd=root / "NFL" / "03-pipeline", bin_dir=bin_dir, env=env)
+    assert outputs == {"dry_run": "false", "outcome": "WORKBOOK"} and log.read_text() == ""
+    # A2-10: off main it cannot publish, so it says so (red) instead of reporting a rebuild
+    outputs, done = run_step("nfl-pipeline-monthly.yml", "Run pipeline (all seasons)", tmp_path,
+                             cwd=root / "NFL" / "03-pipeline", bin_dir=bin_dir, env=dict(env, REF="refs/heads/test"))
+    assert outputs == {"dry_run": "true", "outcome": "ERROR"} and log.read_text() == ""
+    assert "NOTHING was rebuilt" in (tmp_path / "d.md").read_text() and "rebuilt from the data on main" not in done.stdout
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+def test_workbook_outcome_alert_is_green_and_leaves_an_open_issue(tmp_path, name):
+    assert run_alert(tmp_path, name, "WORKBOOK") == {}
+    run_alert(tmp_path, name, "HOLD")
+    assert run_alert(tmp_path, name, "WORKBOOK") == {doc_label(name): "1"}
+    assert run_alert(tmp_path, name, "PUBLISH", job_status="failure") == {doc_label(name): "1"}   # workbook step failed: red
+
+
+@pytest.mark.parametrize("name", PUBLISHING)
+@pytest.mark.parametrize("failed,words", [
+    ({"WBCHECK_OUTCOME": "failure"}, "the workbook check failed"),
+    ({"WBBUILD_OUTCOME": "failure"}, "the workbook could not be built"),
+    ({"WBPUBLISH_OUTCOME": "failure"}, "the workbook could not be published"),
+    ({"COMMIT_OUTCOME": "failure"}, "the data could not be committed to main"),
+    ({}, "a step after the pipeline failed")])
+def test_alert_heading_says_what_failed_not_ended_skip(tmp_path, name, failed, words):
+    """A2-04: a green pipeline result with a red job used to read 'ended SKIP (job status: failure)'."""
+    run_alert(tmp_path, name, "SKIP", job_status="failure", **failed)
+    log = (tmp_path / "gh-state" / "log").read_text()
+    assert words in log and "pipeline result SKIP" in log and "ended **SKIP**" not in log
+    (tmp_path / "b").mkdir()
+    run_alert(tmp_path / "b", name, "HOLD", job_status="failure")
+    assert "**HOLD**" in (tmp_path / "b" / "gh-state" / "log").read_text()
+
+
+def doc_label(name):
+    return load(name)[1]["env"]["ALERT_LABEL"]
+
+
+def test_monthly_alert_names_a_failed_heartbeat(tmp_path):
+    run_alert(tmp_path, "nfl-pipeline-monthly.yml", "SKIP", job_status="failure", HEARTBEAT_OUTCOME="failure")
+    assert "the heartbeat commit could not be saved" in (tmp_path / "gh-state" / "log").read_text()
+
+
+def test_guide_tells_the_owner_where_the_workbook_is():
+    text = GUIDE.read_text(encoding="utf-8")
+    assert WB_URL in text
+    assert "workbook_only" in text
+    for stale in ("Refresh All", "Power Query", "Refresh the workbook"):
+        assert stale not in text, f"the guide must not tell the owner to refresh: {stale!r}"
+
+
+def test_guide_first_time_steps_describe_this_merge_and_the_failure_behaviour():
+    """R2-01, R2-02, R2-03, R2-17 and A2-02: the guide says what the merge starts, when the link works, what the swap does."""
+    text = GUIDE.read_text(encoding="utf-8")
+    sec2 = text.split("## 2. ")[1].split("## 3. ")[0]
+    assert sec2.index("Watch the workbook get built") < sec2.index("Check that Actions is allowed"), "the step that makes the link work comes first"
+    assert "actions/workflows/nfl-pipeline-weekly.yml" in text, "points at the run on the Actions tab"
+    assert "there is no nfl-workbook release yet" in sec2 and "When the run has a green tick, the link works" in sec2
+    assert "counts as a config change, so two runs" not in text and "a newer commit by **github-actions[bot]** named" not in sec2.split("4. ")[0]
+    assert "**If the link says not found.**" in text and "Rebuild only the workbook" in text.split("**If the link says not found.**")[1][:900]
+    assert "20 MB" not in text and "38 MB" in text
+    assert "uploaded first under a temporary name" in text and "never leaves the link empty" in text
+    assert "deleted only after the new one is safely on the release" in text and "the link keeps giving the old workbook" in text
+    assert "Re-run failed jobs" in text and "workbook-RUN-ATTEMPT" in text
+    assert "NOTHING was rebuilt" in text, "workbook_only from a branch is red, and the guide says so"
+    assert "right-hand side" not in text, "R2-17: the sidebar claim is unverified"
+    for stale in ("the link above gives the new workbook. During the few seconds", "only the download link still gives the previous workbook",
+                  "--clobber"):
+        assert stale not in text, stale

@@ -35,7 +35,7 @@ Below, `<Sport>` is the new folder's name (for example `NBA`) and `<sport>` the 
 
 7. **Check `.gitattributes`** at the repository root. Its patterns (`*/04-data/** -text`, `*/06-qa/fixtures/** -text`, `*/02-config/*.csv -text`) already cover any sport folder that keeps the numbered folder names; add a pattern only if the sport publishes or hashes files elsewhere. Without them, a Windows clone changes line endings and every published file's SHA-256 check fails.
 
-8. **Build the workbook** in `<Sport>/05-excel/`, named `<SPORT>-Analysis-<version>.xlsx`, reading `<Sport>/04-data/` from `https://raw.githubusercontent.com/wes-blue/sports-analysis/main/<Sport>/04-data/` by default. Versioning for a new sport (its own name, its own version line from 1.001): `00-Governance/VERSIONING.md`.
+8. **Build the workbook with the pipeline.** Give the sport's pipeline an `export` command that writes `<SPORT>-Analysis.xlsx` from `<Sport>/04-data/` (values only, standard library only, deterministic; model: `NFL/03-pipeline/nflpipe/export_xlsx.py` and `NFL/CONTRACTS.md` §13), and have the weekly and monthly workflows publish it as a release asset under the tag `<sport>-workbook`. Do not commit the workbook to git; it would grow the repository every week.
 
 9. **Write the sport's READMEs**: `<Sport>/README.md` (model: `NFL/README.md`), `<Sport>/04-data/README.md` with the address pattern and the data attribution (model: `NFL/04-data/README.md`), and `<Sport>/08-releases/RELEASES.md` in place of the placeholder README there.
 
@@ -54,7 +54,7 @@ Below, `<Sport>` is the new folder's name (for example `NBA`) and `<sport>` the 
 | `02-config/` | Inputs the owner edits (CSV) | One fact lives in one file. A change on `main` starts the pipeline. |
 | `03-pipeline/` | Code, tests and `AUTOMATION.md` | Runs from source; no hand-edited outputs. |
 | `04-data/` | Outputs the pipeline publishes | Never edited by hand. Public. |
-| `05-excel/` | The workbook, its Power Query and its generator | The working copy the owner opens. |
+| `05-excel/` | Where to get the workbook and what is in it | The workbook itself is a release asset, not a file in this folder. |
 | `06-qa/` | QA reports, dispositions, evidence, test fixtures | Every finding gets a disposition. |
 | `07-research/` | Design notes and investigations | Evidence, with sources. |
 | `08-releases/` | `RELEASES.md` and released workbooks | Released files are immutable. |

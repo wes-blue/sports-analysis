@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Independent structural checks of a built NFL-Analysis workbook (quality gate G3).
 
-Usage: python3 NFL/05-excel/build/verify_workbook.py <workbook.xlsx> --version 2.001 --date 2026-11-20
+Usage: python3 NFL/05-excel/archive-2.x/build/verify_workbook.py <workbook.xlsx> --version 2.001 --date 2026-11-20
 Reads expectations from WORKBOOK-REQUIREMENTS.md, the seed CSVs, manifest.json and the .pq files,
 NOT from build_workbook.py, so it checks the generator instead of repeating it. Writes the M text it
 extracts from the workbook to NFL/.work/verify/mx/ (LF, as stored) and NFL/.work/verify/mx_clip/
@@ -19,12 +19,12 @@ from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.utils import column_index_from_string as cidx, get_column_letter, range_boundaries
 
-HERE = Path(__file__).resolve().parent      # NFL/05-excel/build
-P = HERE.parents[1]                          # NFL
+HERE = Path(__file__).resolve().parent      # NFL/05-excel/archive-2.x/build
+P = HERE.parents[2]                          # NFL
 E1 = P / ".work" / "verify"                  # scratch output (git-ignored)
 E1.mkdir(parents=True, exist_ok=True)
 ROOT = P.parent
-PQ = P / "05-excel" / "powerquery"
+PQ = P / "05-excel" / "archive-2.x" / "powerquery"
 REQ = (PQ / "WORKBOOK-REQUIREMENTS.md").read_text(encoding="utf-8")
 
 args = sys.argv[1:]

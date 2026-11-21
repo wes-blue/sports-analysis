@@ -4,7 +4,7 @@
 Source files are the single source of truth; the workbook is a build output.
 Adapted from the 1.x generator (archived in the owner's private repository).
 See README.md beside this file for usage. One command for the 2.001 candidate (from the repository root):
-    python3 NFL/05-excel/build/build_workbook.py --version 2.001 --release-date 2026-11-20 --force
+    python3 NFL/05-excel/archive-2.x/build/build_workbook.py --version 2.001 --release-date 2026-11-20 --force
 """
 import argparse
 import csv
@@ -31,8 +31,8 @@ from openpyxl.worksheet.hyperlink import Hyperlink
 from openpyxl.worksheet.properties import PageSetupProperties
 from openpyxl.worksheet.table import Table, TableFormula, TableStyleInfo
 
-HERE = Path(__file__).resolve().parent            # <repo>/NFL/05-excel/build
-DEFAULT_ROOT = HERE.parents[2]                    # <repo> (holds BLOCKERS.csv and NFL/)
+HERE = Path(__file__).resolve().parent            # <repo>/NFL/05-excel/archive-2.x/build
+DEFAULT_ROOT = HERE.parents[3]                    # <repo> (holds BLOCKERS.csv and NFL/)
 PROJ = "NFL"
 sys.path.insert(0, str(HERE))
 import pii_scan  # noqa: E402  (personal-data scan of the output; this repository is public)
@@ -309,7 +309,7 @@ def build(args):
     global FIXED_DT
     root = Path(args.input_root).resolve()
     P = root / PROJ
-    pq_dir = P / "05-excel" / "powerquery"
+    pq_dir = P / "05-excel" / "archive-2.x" / "powerquery"
 
     plan_p = P / "01-plan" / "plan.json"
     if not plan_p.exists():
@@ -941,7 +941,7 @@ def build_start_here(ws, manifest, n_open, version):
     step(1, "In your browser, open %s and click the folders NFL, then 05-excel. Two workbooks are there:\n"
             "a. %s: the same workbook with the %d queries already installed, so there is nothing to paste. Try it "
             "first. It has not yet been opened in Excel, so it is labelled experimental; the page "
-            "NFL/05-excel/experimental/README.md on GitHub says exactly what to do and what to report.\n"
+            "NFL/05-excel/archive-2.x/experimental/README.md on GitHub says exactly what to do and what to report.\n"
             "b. NFL-Analysis-%s.xlsx (this file): paste-ready. Every table and check location is in place; you add "
             "the %d queries once, which takes about 30 minutes (section 4). Use it if the experimental file does "
             "not work." % (REPO_URL, exp_name, nq, version, nq))
@@ -985,7 +985,7 @@ def build_start_here(ws, manifest, n_open, version):
             "Checks sheet (section 6).")
     step(4, "Save the file. Tell Claude how it went: the saved, query-filled file can become the next version.")
     p("Do not edit the M inside Excel; if a query must change, paste the new text again. Every step, every message "
-      "and what to do about it: NFL/05-excel/powerquery/README.md on GitHub (the runbook).", F_NOTE)
+      "and what to do about it: NFL/05-excel/archive-2.x/powerquery/README.md on GitHub (the runbook).", F_NOTE)
 
     h("5. Each week")
     step(1, "Open the workbook and click Data > Refresh All. That is all: GitHub runs the pipeline and publishes new "
@@ -1093,7 +1093,7 @@ def build_start_here(ws, manifest, n_open, version):
       "Leave it. It also accepts the full path of a folder on your PC that holds a copy of the 04-data folder "
       "(for example to work offline), and blank means a 04-data folder next to the workbook's folder. If a "
       "message says HTTP 404, the data is not at that address: see section 2, step 3." % DATA_URL)
-    p("Help: NFL/05-excel/README.md on GitHub is the starting page; NFL/05-excel/powerquery/README.md is the "
+    p("Help: NFL/05-excel/README.md on GitHub is the starting page; NFL/05-excel/archive-2.x/powerquery/README.md is the "
       "runbook with every message and its fix.", F_NOTE)
     ws.freeze_panes = "A4"
 

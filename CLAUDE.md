@@ -56,7 +56,7 @@ Inside a sport folder:
 | `02-config/` | CSV inputs the owner edits: leagues, scoring weights, bonus bands, settings |
 | `03-pipeline/` | The Python package, its tests and the automation guide |
 | `04-data/` | CSV outputs the pipeline publishes. Never edited by hand. |
-| `05-excel/` | The workbook, its Power Query and the workbook generator |
+| `05-excel/` | Where to get the workbook (the pipeline builds it on GitHub and publishes it as a release asset; `NFL/CONTRACTS.md` §13), plus the retired 2.x Power Query material in `archive-2.x/` |
 | `06-qa/` | QA reports, evidence and test fixtures |
 | `07-research/` | Design notes |
 | `08-releases/` | Released workbooks and `RELEASES.md`. Released files are immutable. |

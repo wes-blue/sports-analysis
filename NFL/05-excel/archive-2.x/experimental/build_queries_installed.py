@@ -6,7 +6,7 @@ Checks sheet, applies the 2.001 data steps and removes the personal data that Ex
 direct OOXML editing (D-020 technique; openpyxl never saves this file). Output is byte-reproducible.
 
 One command (from the repository root; the base is the owner's private file, passed by argument):
-    python3 NFL/05-excel/experimental/build_queries_installed.py --base <path to the owner's 1.005 workbook>
+    python3 NFL/05-excel/archive-2.x/experimental/build_queries_installed.py --base <path to the owner's 1.005 workbook>
 
 Options:
     --base PATH   the owner's private base workbook (or set NFL_EXPERIMENTAL_BASE). Checked by SHA-256.
@@ -57,11 +57,11 @@ from pathlib import Path
 from lxml import etree
 
 HERE = Path(__file__).resolve().parent
-P = HERE.parents[1]                                   # NFL (the sport folder)
-sys.path.insert(0, str(P / "05-excel" / "build"))
+P = HERE.parents[2]                                   # NFL (the sport folder)
+sys.path.insert(0, str(P / "05-excel" / "archive-2.x" / "build"))
 import pii_scan  # noqa: E402
 BASE_SHA256 = "ac302c95c9bed31552bd4d6b0aaa6b51faba6b0a5af32b93302ed41392b60877"
-PQ_DIR = P / "05-excel/powerquery"
+PQ_DIR = P / "05-excel/archive-2.x/powerquery"
 CFG = P / "02-config"
 GOLDEN = P / "06-qa/fixtures/golden_sample.csv"
 GOLDEN_RULES = P / "06-qa/fixtures/fixture_contracts.csv"
@@ -78,7 +78,7 @@ KNOWN_DIFFERENCES = (
     "Experimental, not a release. Compared with the paste-ready NFL-Analysis-2.001.xlsx:\n"
     "1. Plan, Requirements, RAID, Data_Dictionary and M_Code are 1.x snapshots, for reference only.\n"
     "2. tblScoring sits just below tblLeagues: insert sheet rows above row 17 before adding more than one new league.\n"
-    "3. There is no Start_Here sheet: follow NFL/05-excel/experimental/README.md on GitHub.\n"
+    "3. There is no Start_Here sheet: follow NFL/05-excel/archive-2.x/experimental/README.md on GitHub.\n"
     "4. Metric_Check on the Scoring sheet (1.x) looks each metric up in the 1.x Data_Dictionary snapshot, so it says "
     "NOT IN DATASET for dst_points_allowed_excl_def, which the pipeline derives. Check_Metrics on the Checks sheet is "
     "the check that counts.")
@@ -141,7 +141,7 @@ if not base_arg:
     fail("no base workbook given. This build needs the owner's private Excel-authored 1.005 workbook, which is never "
          "stored in this public repository. Pass it with --base <path> (or set NFL_EXPERIMENTAL_BASE). A session "
          "without access to that private file cannot rebuild the experimental workbook; the paste-ready workbook "
-         "(05-excel/build/build_workbook.py) needs no private input.")
+         "(05-excel/archive-2.x/build/build_workbook.py) needs no private input.")
 BASE = Path(base_arg).expanduser()
 if not BASE.is_file():
     fail("the base workbook was not found at the path given with --base (%s). It is the owner's private file; a session "
@@ -873,7 +873,7 @@ setv(cells(rows[8])["C"], "Superseded by 1.006")
 setv(cells(rows[9])["C"], "Withdrawn (never released; D-028)")
 tm = cells(rows[9])
 # QA-m8: the 1.006 row (the last 1.x release) from build/version_history.csv, then the experimental row
-vh = {r_["Version"]: r_ for r_ in read_csv(P / "05-excel/build/version_history.csv")}
+vh = {r_["Version"]: r_ for r_ in read_csv(P / "05-excel/archive-2.x/build/version_history.csv")}
 check("1.006" in vh, "version_history.csv has no 1.006 row")
 v6 = vh["1.006"]
 r = newrow(10, "1:6")
@@ -896,7 +896,7 @@ put("xl/tables/table19.xml", set_table_ref("xl/tables/table19.xml", "A4:F11"))
 sh = parse("xl/worksheets/sheet8.xml")
 rows = rowmap(sh)
 setv(cells(rows[2])["A"], "1.x snapshot of the M code, for reference only. The 2.001 queries are installed in this "
-     "workbook (Data > Queries & Connections); their source is 05-excel/powerquery/*.pq. Do not paste from this sheet.")
+     "workbook (Data > Queries & Connections); their source is 05-excel/archive-2.x/powerquery/*.pq. Do not paste from this sheet.")
 put("xl/worksheets/sheet8.xml", sh)
 sh = parse("xl/worksheets/sheet13.xml")
 rows = rowmap(sh)

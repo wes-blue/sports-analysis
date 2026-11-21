@@ -1,8 +1,8 @@
-"""Assemble 05-excel/powerquery/*.pq from templates plus shared snippets.
+"""Assemble 05-excel/archive-2.x/powerquery/*.pq from templates plus shared snippets.
 
 The data-location resolver (snippets/resolver.m) and the season window (snippets/window.m) must be
 byte-identical in every query that reads published CSVs (firewall rule D-009 forbids sharing them through
-another query). Edit the snippet or a template here, then run (from the NFL folder):  python3 05-excel/build/pq/build_pq.py
+another query). Edit the snippet or a template here, then run (from the NFL folder):  python3 05-excel/archive-2.x/build/pq/build_pq.py
 Never edit the generated .pq files by hand.
 """
 import pathlib, sys

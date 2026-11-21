@@ -31,17 +31,13 @@ Owns `gates.py`, `check.py`, the test suite, the fixtures in `<sport>/06-qa/fixt
 
 Owns `resolve.py`, `watchdog.py`, `freshness.py`, their tests, the workflow files in `.github/workflows/` and the owner's guide `<sport>/03-pipeline/AUTOMATION.md`. The repository is public: least privilege, pinned actions, no secrets, no `pull_request_target`.
 
-## D1 Power Query Engineer
+## D1, E1, E2 (retired with the 2.x Power Query workbook, D-043)
 
-Owns `<sport>/05-excel/powerquery/` (`*.pq`, `manifest.json`, the runbook) and the generator in `05-excel/build/pq/`. Keeps the firewall rule (a query that reads a source references no other query). Every query must pass Microsoft's M parser. Changes Excel-proven logic as little as possible.
+The Power Query engineer, the paste-ready workbook builder and the mashup engineer built the 2.x workbook, now archived in `<sport>/05-excel/archive-2.x/`. Their work is not maintained. The workbook is now built by the pipeline (`nflpipe export`, owned by B1; `NFL/CONTRACTS.md` §13).
 
-## E1 Workbook Builder
+## X1 Workbook Exporter (part of B1 from 3.001)
 
-Owns `<sport>/05-excel/build/` and the generated workbook. The generated workbook is paste-ready: every table, named cell, check anchor and the full M text are in place, and the queries are added in Excel.
-
-## E2 Mashup Engineer (experimental)
-
-Owns `<sport>/05-excel/experimental/`. Builds a workbook with the queries already installed by editing the Power Query package of an Excel-authored workbook. The base workbook is the owner's private file and is never committed here. The result is labelled experimental until the owner opens it in Excel.
+Owns `<sport>/03-pipeline/nflpipe/export_xlsx.py` and its tests: the values-only workbook built from the published data, standard library only, deterministic, and readable by Excel without a repair prompt.
 
 ## Q1 QA Reviewer
 

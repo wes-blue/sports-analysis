@@ -11,7 +11,8 @@ List every file format and command behaviour that one part of the project hands 
 6. Gates
 7. Command line (`03-pipeline/`)
 8. GitHub Actions (`/.github/workflows/<sport>-pipeline-*.yml`)
-9. Power Query (`05-excel/powerquery/`)
+9. (NFL only: the retired Power Query workbook. A new sport skips this section.)
 10. Plan content (`01-plan/plan.json`)
 11. Blockers for the owner (`/BLOCKERS.csv`)
 12. Releases (`08-releases/`)
+13. The generated workbook (the `export` command, sheets, cell rules, publication as a release asset)

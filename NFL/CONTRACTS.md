@@ -1,6 +1,6 @@
 # Interface Contracts: NFL-Analysis Pipeline
 
-These are the file formats and command behaviours that the pipeline, the GitHub Actions workflows, the Power Query code and the workbook hand to each other.
+These are the file formats and command behaviours that the pipeline, the GitHub Actions workflows and the workbook hand to each other.
 
 This file lives in the repository `wes-blue/sports-analysis` (public). Each sport has its own top-level folder; this is the contract for `NFL/`. **Paths are relative to `NFL/`** unless they start with `/`, which means the repository root (for example `/.github/workflows/`, `/BLOCKERS.csv`, `/00-Governance/`).
 
@@ -24,12 +24,14 @@ nflverse releases (public)        02-config/*.csv (you edit)
                                     04-data/*.csv   (plain CSV files, committed)
                                             |
                                             v
-                                    05-excel workbook (Power Query)
-                                    reads 04-data, re-scores with the weights on its Scoring sheet,
-                                    and checks itself against the pipeline's own scores
+                                    python -m nflpipe export  (§13)
+                                            |
+                                            v
+                                    NFL-Analysis.xlsx  (values only; GitHub Release asset)
+                                    the owner downloads it and opens it: nothing to refresh
 ```
 
-GitHub Actions (`/.github/workflows/nfl-pipeline-*.yml`) runs the same command on a schedule, and whenever `02-config` changes on `main`, and commits `04-data`. Excel reads `04-data` from the web address above, so the owner's PC does not need Python, git or a copy of the repository.
+GitHub Actions (`/.github/workflows/nfl-pipeline-*.yml`) runs the same command on a schedule, and whenever `02-config` changes on `main`, commits `04-data`, and then builds and publishes the workbook (§13.5). The owner's PC needs only Excel: no Python, git, copy of the repository or Power Query. Anyone can also read the CSV files in `04-data` from the web address above.
 
 ## 1. Config files: `02-config/` (inputs; the single source of scoring rules)
 
@@ -80,7 +82,7 @@ All upstream content is untrusted data: parse it, never execute it.
 - `dst_points_allowed_excl_def_st` (an older approximation from the team-stats file that also subtracts special-teams touchdowns and an offense's own end-zone fumble recoveries) is kept at weight 0 for reference; it is not ESPN's rule.
 - `dst_yards_allowed` = opponent passing yards + rushing yards + sack yards lost (net yards).
 
-## 4. Scoring semantics (must match in Python and in Power Query)
+## 4. Scoring semantics (Python; the 2.x Power Query mirrored it)
 
 For one row and one league:
 
@@ -193,8 +195,8 @@ Every workflow sets the working directory to `NFL/03-pipeline`. The pipeline nee
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `nfl-pipeline-weekly.yml` | Tue, Wed and Thu in season (months 1, 2, 9–12), off the hour; a push to `main` that changes `NFL/02-config/**` (not its README); manual dispatch | A check for stray files in `02-config` (for example `scoring_weights (1).csv`); `resolve` on scheduled runs; `run --seasons current` (with `--force` after a config push, so every config commit ends in PUBLISH or a red run; a changed config already makes `current` rebuild every season); commit `NFL/04-data` on PUBLISH; open or update its rolling issue on HOLD or error. Started on a branch other than `main`, it is always a dry run. |
-| `nfl-pipeline-monthly.yml` | The 1st of each month (`run --seasons all`, which repairs back-corrections) and the 16th (heartbeat only); manual dispatch | Both fires end with the heartbeat |
+| `nfl-pipeline-weekly.yml` | Tue, Wed and Thu in season (months 1, 2, 9–12), off the hour; a push to `main` that changes `NFL/02-config/**` (not its README), `NFL/03-pipeline/nflpipe/**` or this workflow file; manual dispatch | A check for stray files in `02-config` (for example `scoring_weights (1).csv`); `resolve` on scheduled runs; `run --seasons current` (no `--force` on any push: a changed config or pipeline version makes `current` rebuild every season and PUBLISH; an unchanged re-save ends SKIP); commit `NFL/04-data` on PUBLISH; then the workbook steps (§13.5); open or update its rolling issue on HOLD or error. Started on a branch other than `main`, it is always a dry run, and `workbook_only` there ends red saying nothing was rebuilt. |
+| `nfl-pipeline-monthly.yml` | The 1st of each month (`run --seasons all`, which repairs back-corrections) and the 16th (heartbeat only); manual dispatch | After a PUBLISH on the 1st, builds and publishes the workbook (§13.5). Both fires end with the heartbeat |
 | `nfl-pipeline-watchdog.yml` | Fri in season | `watchdog`; turns red when no publish landed. It has its own concurrency group, so a queued watchdog never displaces a waiting publish. |
 | `nfl-pipeline-ci.yml` | Push or pull request touching `NFL/03-pipeline/**`, `NFL/02-config/**`, `NFL/06-qa/fixtures/**` or the workflow files | `pytest`; on pull requests also `config-check`, a dry run of the pipeline with the proposed config |
 
@@ -206,7 +208,9 @@ Every workflow sets the working directory to `NFL/03-pipeline`. The pipeline nee
 
 **Security.** The repository is public. Workflows run only on `schedule`, `push`, `pull_request` and `workflow_dispatch` (never `pull_request_target`), give each job only the permissions it needs, do not leave the token on disk after checkout, pin third-party actions by commit SHA, pass inputs through `env:`, and use no secrets. The alert steps count only issues opened by the workflow's own bot, because anyone can open an issue in a public repository.
 
-## 9. Power Query: `05-excel/powerquery/`
+## 9. Power Query (retired, 2.x): `05-excel/archive-2.x/powerquery/`
+
+**Retired by D-043.** This section describes the 2.x workbook, kept for the record. Its files moved to `05-excel/archive-2.x/` and are not maintained. The current workbook is §13.
 
 `manifest.json` lists the queries in dependency order (same shape as 1.x):
 
@@ -232,7 +236,7 @@ Workbook tables the queries read: `tblConfig` (`Setting`, `Value`), `tblLeagues`
 - `tblConfig` also holds `ReconcileTolerance` (default 0.005, the pipeline's value).
 - `Check_Parity` treats two scores as equal when they differ by no more than 0.000001. With the current rules no score sits on a rounding boundary, so the workbook and the pipeline agree exactly.
 - A season the window asks for that the pipeline has not published shows as `NOT PUBLISHED`; it is not an error.
-- The `.pq` files are generated: edit `05-excel/build/pq/templates/` or `snippets/`, then run `python3 05-excel/build/pq/build_pq.py`. `lint.js` in that folder checks for undefined names and firewall breaches.
+- The `.pq` files are generated: edit `05-excel/archive-2.x/build/pq/templates/` or `snippets/`, then run `python3 05-excel/archive-2.x/build/pq/build_pq.py`. `lint.js` in that folder checks for undefined names and firewall breaches.
 
 ## 10. Plan content: `01-plan/plan.json`
 
@@ -244,4 +248,62 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 
 ## 12. Releases: `08-releases/`
 
-`RELEASES.md` is the release register. Released workbooks are `NFL-Analysis-<version>.xlsx`; the working copy the owner opens is the byte-identical file in `05-excel/`. Versions 1.001 to 1.006 were released in the owner's private repository and are listed for the record only.
+`RELEASES.md` is the release register. From 3.001 the workbook is a GitHub Release asset rebuilt on every publish (§13.5), and the register records each design version with the run that first published it. The 2.001 workbook (`NFL-Analysis-2.001.xlsx`) stays here unchanged for the record; its working copies moved to `05-excel/archive-2.x/`. Versions 1.001 to 1.006 were released in the owner's private repository and are listed for the record only.
+
+## 13. The generated workbook (design generation 3.x)
+
+**Why (decision D-041).** The owner's first refresh of the 2.001 workbook was still running after five minutes: Power Query re-scoring 180,000 rows in Excel is too slow. From 3.001 the pipeline builds the finished workbook itself, on GitHub, every time it publishes. The workbook holds **values only**: no Power Query, no formulas, no connections, no macros, nothing to refresh. Scoring is changed by editing `02-config/` on GitHub (§8); the next run rebuilds the workbook.
+
+### 13.1 Command
+
+`python -m nflpipe export [--data-dir DIR] [--out FILE]`, run from `03-pipeline/`. Defaults: `--data-dir ../04-data`, `--out ../.work/workbook/NFL-Analysis.xlsx`.
+
+- Reads **only** the published files in `--data-dir` (§5). It never downloads anything and never changes `04-data`.
+- Refuses (exit 1) when `status.csv` `data_contract_version` is missing or is not the version the exporter understands (today `1`), naming both values.
+- Exit codes: `0` written; `1` error (message names the cause; no partial file is left at `--out`).
+- **Standard library only** (D-025): the file is written with `zipfile` and XML text. Test code may use `openpyxl` to read it back.
+- **Deterministic:** the same `04-data` gives byte-identical output with the same Python build (verified across Python 3.11 and 3.13 here; a different zlib library could in principle compress differently, which changes the bytes but never a value). Time stamps inside the file come from `status.csv` `generated_utc`, never from the clock; zip entries use a fixed date and a fixed order.
+- Runs in well under 5 minutes on a GitHub runner for the full window.
+
+### 13.2 Sheets, in this order
+
+| Sheet | Contents | Excel table |
+|---|---|---|
+| `About` | Title; workbook version (`3.001`); a line naming each league column (`FF_<League>`) and saying which leagues are scored; when the latest season is `in_progress` (`seasons.csv`), a line saying the latest week may still be incomplete; data through (`latest_season`, `latest_week`, `latest_season_type` from `status.csv`); generated (UTC); pipeline and data contract versions; gates passed / warned / failed; the data source and licence lines from `status.csv` (`data_source`, `data_license`) with the nflverse and licence addresses; where the latest file is (§13.5); how to change scoring (edit `NFL/02-config/` on GitHub, link to `NFL/03-pipeline/AUTOMATION.md`); one line per sheet saying what it holds. Two columns: item, value. | none |
+| `PlayerGames` | One row per row of every `player_week/player_week_<season>.csv`, **newest first**: season descending, week descending (so a season's playoff weeks come before its regular season), then the published order within a week. Columns: `season, week, season_type, player_display_name, position, team, opponent_team`, then `FF_<League>` for each Active league (`config/leagues.csv` order, so the owner controls the order; values from the `scored/scored_<season>.csv` row with the same key, found by **column name**, never by position), then `player_id, position_group, fantasy_points, fantasy_points_ppr`, then every metric column of `player_week` in its file order. | `tblPlayerGames` |
+| `SeasonTotals` | One row per `season, season_type, player_id`. Columns: `season, season_type, player_display_name, position, team, games`, then for each Active league `FF_<League>_total` and `FF_<League>_avg`, then `player_id`. `player_display_name`, `position` and `team` come from the player's last game in that season and season type (highest week; ties keep the later published row); `games` counts rows; `_total` is the sum rounded half away from zero to `RoundDecimals` (§4); `_avg` is `_total / games` rounded the same way. Sorted newest season first, `REG` before `POST`, then by the first Active league's total, highest first, then `player_id`. | `tblSeasonTotals` |
+| `Leagues`, `Scoring`, `Bonus` | `config/leagues.csv`, `config/scoring_weights.csv`, `config/bonus_rules.csv` exactly as published: the rules these scores were made with. A note row above each table says: to change them, edit the file in `NFL/02-config/` on GitHub. | `tblLeagues`, `tblScoring`, `tblBonus` |
+| `Checks` | `checks/gates.csv` | `tblGates` |
+| `Dictionary` | One row per column of `PlayerGames`, in its order: the identity and `FF_<League>` columns described by the exporter (a league's description comes from `config/leagues.csv`), then the rows of `dictionary.csv` | `tblDictionary` |
+
+### 13.3 Cell rules
+
+- A CSV value that parses as a number is a **number cell** (whole numbers stay whole). A blank CSV value is an **empty cell** (no cell written). Everything else is a **text cell**.
+- Identity columns (`player_id`, `season_type`, names, positions, teams) are always text, even if a value looks numeric. `season` and `week` are numbers.
+- **Text is never a formula.** Text is written as a typed string cell, so a value that starts with `=`, `+`, `-` or `@` stays text. Upstream names are untrusted data.
+- Characters XML 1.0 does not allow are removed; text longer than 32,767 characters (Excel's cell limit) is an error, not silently cut.
+- Every table has a header row, AutoFilter, and a frozen header row. `PlayerGames` and `SeasonTotals` also freeze through `player_display_name`. Column widths are set for readability; number formats show whole numbers without decimals and fantasy points with `RoundDecimals` places.
+- Every input value is validated before it reaches the file: numbers must be finite (`nan`, `inf` and values Excel cannot store are errors naming the file, row and column); `status.csv` `generated_utc` must be an ISO 8601 UTC time stamp; text that becomes a table column name or a header must be unique after Excel's own normalisation (case-insensitive, whitespace collapsed) and at most 255 characters; text longer than 32,767 UTF-16 code units is an error. Blank lines in a CSV are ignored everywhere. Scored values are matched to `player_week` rows by key and column name, and a `scored` file whose keys or leagues do not match is an error.
+- The workbook carries no theme part and no style refers to a theme colour, so nothing depends on one.
+- Limits are checked before writing: a sheet with more than 1,048,575 data rows or 16,384 columns is an error. (The rolling ten-season window is about 180,000 rows.)
+
+### 13.4 Versions
+
+- **Workbook design version** `3.001` (D-041, `00-Governance/VERSIONING.md`): a constant in the exporter, shown on `About` and in the file properties (Title `NFL-Analysis 3.001`). It changes only when the workbook's design changes (sheets, columns, rules), not when the data changes.
+- **Data version** is the `run_id` and "data through" of the `status.csv` it was built from, shown on `About`.
+- File properties carry no personal data: author `NFL-Analysis pipeline`.
+
+### 13.5 Publication (decision D-042)
+
+- The workbook is **not committed to git**: a file of about 38 MB (measured 2026-11-21 for 2017–2026; it grows with the window) rebuilt every week would grow the repository by more than a gigabyte a season.
+- It is a **GitHub Release asset**: release tag `nfl-workbook`, asset name `NFL-Analysis.xlsx`, replaced on every publish. Stable download address:
+  `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
+- The weekly and monthly workflows build and upload it after a PUBLISH. A SKIP rebuilds it only when the release or its asset is missing, or when the release notes' freshness key (`nfl-workbook-key: <run_id>|<pipeline_version>|<WORKBOOK_VERSION>`, a hidden marker) differs from the published data and the exporter, so a failed earlier upload repairs itself and a new workbook design republishes. The workbook is always built from the latest `NFL/04-data` on `main`. Dry runs, runs on other branches and the monthly heartbeat-only fire never build it. Merging a change to the pipeline code starts the weekly workflow (§8), so a merge that changes the exporter publishes a new workbook within minutes.
+- Manual dispatch with the input `workbook_only` rebuilds and republishes it from the data on `main` without a pipeline run; that run's outcome is `WORKBOOK` (green, and it never closes an alert issue).
+- The release is a **pre-release, never marked Latest**, created at the commit of the first run that needs it; the tag is never moved. Releases are found from a structured listing (`gh api` on the releases list), and an error in that listing stops the run rather than creating a duplicate. A **draft** release with the tag stops the run with a message for the owner.
+- **Replacing the asset:** the new file is uploaded as `NFL-Analysis.next.xlsx` and checked (size at least 1 MB, state uploaded); then the old `NFL-Analysis.xlsx` is deleted and the new asset renamed to it through the releases API. The stable address is missing only between the delete and the rename (about a second). If the rename is refused, the file is uploaded again under the stable name. A leftover temporary asset from an earlier failed run is removed first.
+- After publishing, a ranged request to the stable public address must return HTTP 200 or 206 (with retries for the CDN), or the run fails.
+- The build step checks that the file is a readable zip containing `xl/workbook.xml` before uploading. A failed build or upload turns the run red and raises the workflow's alert issue; the data commit already made stays, and the built file (if any) is kept as a run artifact named with the run id and attempt for 7 days.
+- The release notes say which data the file holds (data through, run id, gates).
+- The 2.x Power Query workbooks stay immutable in `08-releases/` for the record; they are no longer the recommended route (D-043).
+

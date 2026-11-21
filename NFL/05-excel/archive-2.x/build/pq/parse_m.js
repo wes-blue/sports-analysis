@@ -1,11 +1,11 @@
-// Usage: node NFL/05-excel/build/pq/parse_m.js [dir-or-file.pq ...]   (default: NFL/05-excel/powerquery)
+// Usage: node NFL/05-excel/archive-2.x/build/pq/parse_m.js [dir-or-file.pq ...]   (default: NFL/05-excel/archive-2.x/powerquery)
 // Lex+parse each .pq with Microsoft's @microsoft/powerquery-parser; prints PASS/FAIL with error details; exit code 1
 // on any FAIL. The parser is not committed: install it once into scratch space with
 //   npm install --prefix NFL/.work/mparser @microsoft/powerquery-parser@5.0.0
 // or point NFL_M_PARSER at an existing node_modules/@microsoft/powerquery-parser folder.
 const fs = require("fs"), path = require("path");
-const candidates = [process.env.NFL_M_PARSER, path.join(__dirname, "../../../.work/mparser/node_modules/@microsoft/powerquery-parser"),
-  path.join(__dirname, "../../../.work/legacy-1.x/t3/node_modules/@microsoft/powerquery-parser")].filter(Boolean);
+const candidates = [process.env.NFL_M_PARSER, path.join(__dirname, "../../../../.work/mparser/node_modules/@microsoft/powerquery-parser"),
+  path.join(__dirname, "../../../../.work/legacy-1.x/t3/node_modules/@microsoft/powerquery-parser")].filter(Boolean);
 const found = candidates.find(c => fs.existsSync(c));
 if (!found) { console.error("Microsoft M parser not found. See the install line at the top of this file."); process.exit(2); }
 const { DefaultSettings, TaskUtils } = require(found);

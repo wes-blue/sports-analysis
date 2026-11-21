@@ -28,6 +28,10 @@ on:
         description: "Dry run: compute and check everything, publish nothing"
         type: boolean
         default: false
+      workbook_only:
+        description: "Only rebuild and republish the Excel workbook from the data already on main (no pipeline run)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -45,6 +49,8 @@ env:
   PYTHONUNBUFFERED: "1"
   DATA_PATH: NFL/04-data
   ALERT_LABEL: nfl-pipeline-alert-monthly
+  WORKBOOK_TAG: nfl-workbook
+  WORKBOOK_ASSET: NFL-Analysis.xlsx
   HEARTBEAT_CRON: "37 11 16 * *"
   HEARTBEAT_AFTER_DAYS: "21"
   GUIDE_URL: https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md
@@ -74,6 +80,7 @@ jobs:
         id: outcome
         env:
           IN_DRY_RUN: ${{ inputs.dry_run }}
+          IN_WORKBOOK_ONLY: ${{ inputs.workbook_only }}
           REF: ${{ github.ref }}
           EVENT_SCHEDULE: ${{ github.event.schedule }}
           TRIGGER: ${{ github.event_name }}-monthly
@@ -92,6 +99,21 @@ jobs:
             echo "outcome=HEARTBEAT" >> "$GITHUB_OUTPUT"
             echo "::notice title=HEARTBEAT::mid-month fire: no pipeline run, heartbeat check only"
             echo "### NFL pipeline monthly: HEARTBEAT (mid-month check only)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [[ "${IN_WORKBOOK_ONLY:-false}" == "true" && "$REF" != "refs/heads/main" ]]; then
+            # Publishing is allowed from main only, so this request cannot be carried out. Say so, in red.
+            msg="workbook_only was started on ${REF#refs/heads/}, not main, so NOTHING was rebuilt and nothing was published. Start it again with Use workflow from set to main."
+            echo "outcome=ERROR" >> "$GITHUB_OUTPUT"
+            echo "::error title=Workbook only: nothing done::${msg}"
+            echo "workbook_only: ${msg}" >> "$ALERT_DETAILS"
+            { echo "### NFL pipeline monthly: ERROR"; echo ""; echo "- ${msg}"; } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [[ "${IN_WORKBOOK_ONLY:-false}" == "true" ]]; then
+            echo "outcome=WORKBOOK" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Workbook only::no pipeline run; the workbook is rebuilt from the data on main"
+            echo "### NFL pipeline monthly: WORKBOOK (rebuild by hand, no pipeline run)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           rm -rf ../.work/last-run
@@ -147,15 +169,17 @@ jobs:
 
       - name: Keep the gate report (run artifact, 30 days)
         if: ${{ !cancelled() && (steps.outcome.outputs.outcome == 'PUBLISH' || steps.outcome.outputs.outcome == 'HOLD' || steps.outcome.outputs.outcome == 'ERROR') }}
+        continue-on-error: true   # a convenience copy: it must never turn a good run red (a re-run has the same run id, so the attempt is in the name)
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: gate-report-${{ github.run_id }}
+          name: gate-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: NFL/.work/last-run/
           include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 30
 
       - name: Commit 04-data
+        id: commit
         if: steps.outcome.outputs.outcome == 'PUBLISH' && steps.outcome.outputs.dry_run != 'true' && github.ref == 'refs/heads/main'
         working-directory: ${{ github.workspace }}
         env:
@@ -201,7 +225,316 @@ jobs:
           echo "::error::could not push NFL/04-data after 3 attempts"
           exit 1
 
+      # ---- The finished workbook (CONTRACTS.md section 13.5). Not committed to git: a release asset. ----
+      # Runs after a PUBLISH and its data commit, after a SKIP (cheap: reads only, when the release already
+      # holds a workbook built from the published data and the current workbook design), or when asked by
+      # hand (workbook_only). Never on a dry run or off main. A failure turns the run red and the alert
+      # issue opens; the data commit above stays.
+      # The asset is replaced without ever deleting the live file first: the new file is uploaded under the
+      # temporary name NFL-Analysis.next.xlsx, checked, and only then does the old file go and the new one
+      # take its name. Whatever fails, the link keeps serving the old workbook, or the new one.
+      - name: Decide whether to build the workbook
+        id: wbcheck
+        if: (steps.outcome.outputs.outcome == 'PUBLISH' || steps.outcome.outputs.outcome == 'SKIP' || steps.outcome.outputs.outcome == 'WORKBOOK') && steps.outcome.outputs.dry_run != 'true' && github.ref == 'refs/heads/main'
+        timeout-minutes: 10
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GIT_TERMINAL_PROMPT: "0"
+          OUTCOME: ${{ steps.outcome.outputs.outcome }}
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+        run: |
+          set +e
+          out() { printf '%s\n' "$@" >> "$GITHUB_OUTPUT"; }
+          stop() {
+            echo "::error title=Workbook::$1"
+            echo "workbook: $1" >> "$ALERT_DETAILS"
+            echo "- workbook: FAILED. $1" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          err="$(mktemp)"
+          oneline() { head -c 300 "$1" | tr '\r\n' '  '; }
+          # retry COMMAND...: up to three tries, 5 s and 10 s apart. Prints the result of the first try that
+          # works; the error text of the last one stays in $err. A read that keeps failing is never "missing".
+          retry() {
+            local n tmp
+            tmp="$(mktemp)"
+            for n in 1 2 3; do
+              if "$@" >"$tmp" 2>"$err"; then cat "$tmp"; return 0; fi
+              [[ "$n" -lt 3 ]] && sleep $((n * 5))
+            done
+            return 1
+          }
+          # A run that waited in the queue was started from an older commit. The workbook is built from the
+          # newest NFL/04-data on main, so an older run can never publish older data over newer.
+          fetched=false
+          for n in 1 2 3; do
+            if git fetch -q --no-tags --depth=1 origin main 2>"$err"; then fetched=true; break; fi
+            [[ "$n" -lt 3 ]] && sleep $((n * 5))
+          done
+          [[ "$fetched" == "true" ]] || stop "could not fetch the latest NFL/04-data from main: $(oneline "$err")"
+          rm -rf ../04-data
+          git checkout -q FETCH_HEAD -- ../04-data 2>"$err" || stop "could not check out the latest NFL/04-data: $(oneline "$err")"
+          status=../04-data/status.csv
+          run_id="$(awk -F, '$1=="run_id"{print $2; exit}' "$status" 2>/dev/null)"
+          version="$(awk -F, '$1=="pipeline_version"{print $2; exit}' "$status" 2>/dev/null)"
+          [[ -n "$run_id" && -n "$version" ]] || stop "NFL/04-data/status.csv has no run_id or pipeline_version"
+          # The workbook design version is read from the exporter's source, not imported.
+          design="$(sed -n 's/^WORKBOOK_VERSION = "\([0-9A-Za-z._-]*\)".*/\1/p' nflpipe/export_xlsx.py 2>/dev/null | head -n 1)"
+          [[ -n "$design" ]] || stop "could not read WORKBOOK_VERSION from nflpipe/export_xlsx.py"
+          for v in "$run_id" "$version" "$design"; do
+            [[ "$v" =~ ^[0-9A-Za-z._-]+$ ]] || stop "run_id, pipeline_version or the workbook design version has unexpected characters"
+          done
+          # A new key whenever the data, the pipeline or the workbook's design changes.
+          key="${run_id}|${version}|${design}"
+          have_release=false; have_asset=false; current=false
+          rel_expr='.[] | select(.tag_name=="'"$WORKBOOK_TAG"'") | "\(.id) \(.draft)"'
+          rows="$(retry gh api --paginate "repos/${GH_REPO}/releases?per_page=100" --jq "$rel_expr")" \
+            || stop "could not list the releases: $(oneline "$err")"
+          case "$(grep -c . <<< "$rows")" in
+            0) echo "no release $WORKBOOK_TAG yet" ;;
+            1) [[ "$rows" =~ ^[0-9]+[[:space:]]false$ ]] \
+                 || stop "release $WORKBOOK_TAG is a draft: publish it or delete it on the Releases page (a draft has no public download address)"
+               have_release=true; rid="${rows%% *}" ;;
+            *) stop "more than one release carries the tag $WORKBOOK_TAG: delete the extra ones on the Releases page" ;;
+          esac
+          if [[ "$have_release" == "true" ]]; then
+            # Only a finished asset counts: GitHub can leave an empty one (state "starter") after a failed upload.
+            names="$(retry gh api "repos/${GH_REPO}/releases/${rid}" --jq '.assets[] | select(.state=="uploaded" and .size>0) | .name')" \
+              || stop "could not read the assets of the release: $(oneline "$err")"
+            if grep -qxF "$WORKBOOK_ASSET" <<< "$names"; then
+              have_asset=true
+              body="$(retry gh api "repos/${GH_REPO}/releases/${rid}" --jq '.body // ""')" \
+                || stop "could not read the release notes: $(oneline "$err")"
+              grep -qF "nfl-workbook-key: ${key} " <<< "$body" && current=true
+            fi
+          fi
+          if [[ "$OUTCOME" == "PUBLISH" ]]; then
+            build=true;  reason="new data was published (run ${run_id})"
+          elif [[ "$OUTCOME" == "WORKBOOK" ]]; then
+            build=true;  reason="a rebuild was requested by hand"
+          elif [[ "$have_release" != "true" ]]; then
+            build=true;  reason="there is no ${WORKBOOK_TAG} release yet"
+          elif [[ "$have_asset" != "true" ]]; then
+            build=true;  reason="the release has no finished ${WORKBOOK_ASSET} (an upload did not finish)"
+          elif [[ "$current" != "true" ]]; then
+            build=true;  reason="the workbook on the release was not built from the published data and the current workbook design (key ${key})"
+          else
+            build=false; reason="the workbook on the release already holds the published data (run ${run_id}, design ${design})"
+          fi
+          out "build=$build" "release_exists=$have_release" "key=$key"
+          echo "- workbook: build=${build}; ${reason}" >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Workbook::build=${build}; ${reason}"
+
+      - name: Build the workbook
+        id: wbbuild
+        if: steps.wbcheck.outputs.build == 'true'
+        timeout-minutes: 20
+        env:
+          WORKBOOK_DIR: ../.work/workbook
+          WORKBOOK_MIN_BYTES: "1000000"   # the real file is about 38 MB; anything this small is a broken export
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+          EXPORT_LOG: ${{ runner.temp }}/nflpipe-export.log
+        run: |
+          set +e
+          file="$WORKBOOK_DIR/$WORKBOOK_ASSET"
+          stop() {
+            rm -f "$file"
+            echo "::error title=Workbook::$1"
+            { echo "workbook: $1"; [[ -f "$EXPORT_LOG" ]] && tail -n 10 "$EXPORT_LOG" | sed 's/```/'"'''"'/g'; } 2>/dev/null | cut -c1-300 >> "$ALERT_DETAILS"
+            echo "- workbook: FAILED to build. $1" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          rm -rf "$WORKBOOK_DIR"; mkdir -p "$WORKBOOK_DIR"
+          python -m nflpipe export --data-dir ../04-data --out "$file" 2>&1 | tee "$EXPORT_LOG"
+          rc=${PIPESTATUS[0]}
+          [[ "$rc" -eq 0 ]] || stop "python -m nflpipe export exited ${rc}; the workbook was not built and nothing was uploaded"
+          # Sanity checks before anything is uploaded: a zip whose every member reads back (testzip checks
+          # the checksums) and that holds a workbook, and a size that cannot be a truncated file.
+          if ! python -I - "$file" <<'PY'
+          import sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as z:
+              if z.testzip() is not None or "xl/workbook.xml" not in z.namelist():
+                  sys.exit(1)
+          PY
+          then
+            stop "the exported file is not a readable Excel workbook; nothing was uploaded"
+          fi
+          size="$(stat -c %s "$file")"
+          [[ "$size" -ge "$WORKBOOK_MIN_BYTES" ]] || stop "the exported file is only ${size} bytes (at least ${WORKBOOK_MIN_BYTES} expected); nothing was uploaded"
+          echo "- workbook: built, ${size} bytes" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the workbook (release nfl-workbook)
+        id: wbpublish
+        if: steps.wbcheck.outputs.build == 'true'
+        timeout-minutes: 20
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_EXISTS: ${{ steps.wbcheck.outputs.release_exists }}
+          WORKBOOK_KEY: ${{ steps.wbcheck.outputs.key }}
+          WORKBOOK_FILE: NFL/.work/workbook/NFL-Analysis.xlsx
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
+          NOTES_FILE: ${{ runner.temp }}/workbook-notes.md
+        run: |
+          set +e
+          stop() {
+            echo "::error title=Workbook::$1"
+            echo "workbook: $1" >> "$ALERT_DETAILS"
+            echo "- workbook: FAILED to publish. $1" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+          err="$(mktemp)"
+          oneline() { head -c 300 "$1" | tr '\r\n' '  '; }
+          retry() {   # as in "Decide whether to build the workbook"
+            local n tmp
+            tmp="$(mktemp)"
+            for n in 1 2 3; do
+              if "$@" >"$tmp" 2>"$err"; then cat "$tmp"; return 0; fi
+              [[ "$n" -lt 3 ]] && sleep $((n * 5))
+            done
+            return 1
+          }
+          status=NFL/04-data/status.csv
+          val() { awk -F, -v k="$1" '$1==k{print $2; exit}' "$status" | tr -d '\r'; }
+          url="${GITHUB_SERVER_URL}/${GH_REPO}/releases/download/${WORKBOOK_TAG}/${WORKBOOK_ASSET}"
+          api="repos/${GH_REPO}/releases"
+          next="${WORKBOOK_ASSET%.xlsx}.next.xlsx"       # the temporary name; GitHub refuses two assets with one name
+          size="$(stat -c %s "$WORKBOOK_FILE")"
+          # The release notes say which data the file holds. The key line is what the next run compares
+          # (see "Decide whether to build the workbook"); it is written only after the upload worked.
+          cat > "$NOTES_FILE" <<NOTES
+          Latest NFL fantasy-football workbook. Values only: nothing to refresh in Excel.
+
+          Download: ${url}
+
+          - Data through: season $(val latest_season), week $(val latest_week) ($(val latest_season_type))
+          - Data run id: $(val run_id)
+          - Data generated (UTC): $(val generated_utc)
+          - Pipeline version: $(val pipeline_version)
+          - Checks: $(val gates_pass) passed, $(val gates_warn) warned, $(val gates_fail) failed
+          - Built by: ${RUN_URL}
+
+          Data: nflverse, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), modified. See DATA-LICENSE.md in the repository.
+          This is not a software release: the file under this tag is replaced on every publish.
+
+          <!-- nfl-workbook-key: ${WORKBOOK_KEY} -->
+          NOTES
+          # 1. The release. A call that failed on the network may still have created it, so look before trying again.
+          rel_expr='.[] | select(.tag_name=="'"$WORKBOOK_TAG"'") | "\(.id) \(.draft)"'
+          if [[ "$RELEASE_EXISTS" != "true" ]]; then
+            created=false
+            cerr="$(mktemp)"
+            for attempt in 1 2 3; do
+              # Tag at the commit this run built from; marked a pre-release and never "Latest", so it does not pose as a software release.
+              if gh release create "$WORKBOOK_TAG" --target "$(git rev-parse HEAD)" --prerelease --latest=false \
+                   --title "NFL workbook (always the latest)" \
+                   --notes "The workbook is being uploaded. This text is replaced when the upload finishes." 2>"$cerr"; then
+                created=true; break
+              fi
+              echo "::warning::release creation failed (attempt $attempt): $(oneline "$cerr")"
+              if [[ -n "$(retry gh api --paginate "${api}?per_page=100" --jq "$rel_expr")" ]]; then created=true; break; fi
+              sleep $((attempt * 10))
+            done
+            [[ "$created" == "true" ]] || stop "could not create the release ${WORKBOOK_TAG}: $(oneline "$cerr")"
+          fi
+          # 2. Its id. A draft is not a published release: it has no download address, so stop rather than build on it.
+          rows=""
+          for attempt in 1 2 3 4; do
+            rows="$(retry gh api --paginate "${api}?per_page=100" --jq "$rel_expr")" || stop "could not list the releases: $(oneline "$err")"
+            [[ -n "$rows" ]] && break
+            sleep $((attempt * 3))
+          done
+          [[ -n "$rows" ]] || stop "the release ${WORKBOOK_TAG} cannot be found"
+          [[ "$(grep -c . <<< "$rows")" == "1" ]] || stop "more than one release carries the tag ${WORKBOOK_TAG}"
+          [[ "$rows" =~ ^[0-9]+[[:space:]]false$ ]] || stop "release ${WORKBOOK_TAG} is a draft: publish it or delete it on the Releases page"
+          rid="${rows%% *}"
+          asset_ids() {   # asset_ids NAME [jq test]: the ids of the assets with this name
+            retry gh api "${api}/${rid}" --jq ".assets[] | select(.name==\"$1\"${2:+ and $2}) | .id"
+          }
+          drop_assets() {   # delete every asset with this name, whatever its state
+            local ids id
+            ids="$(asset_ids "$1")" || return 1
+            for id in $ids; do
+              retry gh api -X DELETE "${api}/assets/${id}" >/dev/null || return 1
+            done
+          }
+          # 3. Upload under the temporary name. A leftover of a failed earlier run is removed first. There is no
+          #    --clobber: the live asset has another name, so this can never touch it.
+          stage="$(mktemp -d)"; cp "$WORKBOOK_FILE" "$stage/$next"
+          upload_next() {
+            drop_assets "$next" || return 1
+            gh release upload "$WORKBOOK_TAG" "$stage/$next" 2>"$err"
+          }
+          uploaded=false
+          for attempt in 1 2 3; do
+            if upload_next; then uploaded=true; break; fi
+            echo "::warning::upload failed (attempt $attempt): $(oneline "$err")"
+            sleep $((attempt * 10))
+          done
+          if [[ "$uploaded" != "true" ]]; then
+            drop_assets "$next" >/dev/null 2>&1
+            stop "could not upload the new workbook after 3 attempts; the workbook already on the release was not touched; the built file is in this run's workbook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT} artifact for 7 days"
+          fi
+          # 4. Confirm the new file is on the release, finished and complete.
+          new="$(asset_ids "$next" ".state==\"uploaded\" and .size==${size}")"
+          if [[ -z "$new" || "$new" == *[[:space:]]* ]]; then
+            drop_assets "$next" >/dev/null 2>&1
+            stop "the upload finished but the new file is not on the release as one complete asset; the workbook already on the release was not touched"
+          fi
+          # 5. The old file goes. This opens the short window in which the link answers "not found".
+          drop_assets "$WORKBOOK_ASSET" || stop "could not remove the old ${WORKBOOK_ASSET}; it was left in place and the new file is on the release as ${next}"
+          # 6. The new file takes the stable name, which closes the window. Should the rename be refused, the
+          #    new file is uploaded again under the stable name (nothing is left to overwrite).
+          renamed=false
+          for attempt in 1 2 3 4 5; do
+            if gh api -X PATCH "${api}/assets/${new}" -f name="$WORKBOOK_ASSET" >/dev/null 2>"$err"; then renamed=true; break; fi
+            sleep 2
+          done
+          if [[ "$renamed" != "true" ]]; then
+            echo "::warning::could not rename ${next} to ${WORKBOOK_ASSET} ($(oneline "$err")); uploading it again under that name"
+            fallback=false
+            for attempt in 1 2 3; do
+              if gh release upload "$WORKBOOK_TAG" "$WORKBOOK_FILE" --clobber 2>"$err"; then fallback=true; break; fi
+              sleep $((attempt * 10))
+            done
+            [[ "$fallback" == "true" ]] || stop "the new workbook is on the release as ${next} but could not be renamed to ${WORKBOOK_ASSET}, and uploading it again failed ($(oneline "$err")); the link answers not found until the next run puts it back"
+            drop_assets "$next" >/dev/null 2>&1 || echo "::warning::could not remove the temporary asset ${next}; the next run removes it"
+          fi
+          # 7. Ask for the public address the way the owner's browser does. A 404 here means the file is not
+          #    served (a draft, an immutable-release rule, a wrong name), whatever the API said.
+          code=""
+          for attempt in 1 2 3 4 5; do
+            code="$(curl -sL --max-time 60 -r 0-0 -o /dev/null -w '%{http_code}' "$url")"
+            [[ "$code" == "200" || "$code" == "206" ]] && break
+            sleep $((attempt * 5))
+          done
+          [[ "$code" == "200" || "$code" == "206" ]] || stop "the workbook is on the release but ${url} answers ${code:-nothing}; the release notes still carry the old key, so the next run builds it again"
+          # 8. Only now do the notes claim the new data (the key line is what makes the next run skip).
+          edited=false
+          for attempt in 1 2 3; do
+            if gh release edit "$WORKBOOK_TAG" --notes-file "$NOTES_FILE" 2>"$err"; then edited=true; break; fi
+            sleep $((attempt * 5))
+          done
+          [[ "$edited" == "true" ]] || stop "the workbook was uploaded and the link works, but the release notes could not be updated ($(oneline "$err")); the next run rebuilds it"
+          echo "- workbook: published at ${url}" >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Workbook::published ${url}"
+
+      - name: Keep the workbook (run artifact, 7 days)
+        if: ${{ !cancelled() && steps.wbbuild.outcome == 'success' }}
+        continue-on-error: true   # a convenience copy: it must never turn a good run red
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: workbook-${{ github.run_id }}-${{ github.run_attempt }}
+          path: NFL/.work/workbook/NFL-Analysis.xlsx
+          if-no-files-found: ignore
+          compression-level: 0
+          retention-days: 7
+
       - name: Heartbeat (keep the schedules alive)
+        id: heartbeat
         # Runs after HOLD and ERROR too: a broken pipeline must not also let GitHub switch the schedules off.
         if: ${{ !cancelled() && steps.outcome.outputs.dry_run != 'true' && github.ref == 'refs/heads/main' }}
         working-directory: ${{ github.workspace }}
@@ -248,8 +581,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           JOB_STATUS: ${{ job.status }}
+          COMMIT_OUTCOME: ${{ steps.commit.outcome }}
+          WBCHECK_OUTCOME: ${{ steps.wbcheck.outcome }}
+          WBBUILD_OUTCOME: ${{ steps.wbbuild.outcome }}
+          WBPUBLISH_OUTCOME: ${{ steps.wbpublish.outcome }}
+          HEARTBEAT_OUTCOME: ${{ steps.heartbeat.outcome }}
           OUTCOME: ${{ steps.outcome.outputs.outcome }}
-          GREEN_OUTCOMES: "PUBLISH SKIP HEARTBEAT"
+          GREEN_OUTCOMES: "PUBLISH SKIP HEARTBEAT WORKBOOK"
           CLOSING_OUTCOMES: "PUBLISH"
           DRY_RUN: ${{ steps.outcome.outputs.dry_run }}
           EVENT: ${{ github.event_name }}
@@ -283,7 +621,18 @@ jobs:
             exit 1
           fi
           if [[ "$state" == "red" ]]; then
-            body="**${WORKFLOW_NAME}** ended **${OUTCOME:-ERROR}** (job status: ${JOB_STATUS}). Started by: ${EVENT:-unknown}, commit ${SHA:0:7}. Run: ${RUN_URL}"
+            # Say what failed. A green pipeline result (SKIP, PUBLISH) with a red job means a step after it failed.
+            what="${OUTCOME:-ERROR}"
+            if [[ " $GREEN_OUTCOMES " == *" ${OUTCOME:-none} "* ]]; then
+              what="a step after the pipeline failed"
+              [[ "${COMMIT_OUTCOME:-}" == "failure" ]] && what="the data could not be committed to main"
+              [[ "${HEARTBEAT_OUTCOME:-}" == "failure" ]] && what="the heartbeat commit could not be saved"
+              [[ "${WBCHECK_OUTCOME:-}" == "failure" ]] && what="the workbook check failed"
+              [[ "${WBBUILD_OUTCOME:-}" == "failure" ]] && what="the workbook could not be built"
+              [[ "${WBPUBLISH_OUTCOME:-}" == "failure" ]] && what="the workbook could not be published"
+              what="${what} (pipeline result ${OUTCOME})"
+            fi
+            body="**${WORKFLOW_NAME}** failed: **${what}**. Job status: ${JOB_STATUS}. Started by: ${EVENT:-unknown}, commit ${SHA:0:7}. Run: ${RUN_URL}"
             if [[ -s "${ALERT_DETAILS:-}" ]]; then
               body+=$'\n\n```text\n'"$(cat "$ALERT_DETAILS")"$'\n```'
             fi
@@ -300,7 +649,7 @@ jobs:
           fi
 
       - name: Fail the run on HOLD or error
-        if: steps.outcome.outputs.outcome != 'PUBLISH' && steps.outcome.outputs.outcome != 'SKIP' && steps.outcome.outputs.outcome != 'HEARTBEAT'
+        if: steps.outcome.outputs.outcome != 'PUBLISH' && steps.outcome.outputs.outcome != 'SKIP' && steps.outcome.outputs.outcome != 'HEARTBEAT' && steps.outcome.outputs.outcome != 'WORKBOOK'
         env:
           OUTCOME: ${{ steps.outcome.outputs.outcome }}
         run: |

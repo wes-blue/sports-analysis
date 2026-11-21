@@ -12,7 +12,7 @@ Every file here is public. On the `main` branch it is served at
 https://raw.githubusercontent.com/wes-blue/sports-analysis/main/NFL/04-data/<path>
 ```
 
-where `<path>` is the file's path inside this folder, for example `scored/scored_2025.csv` or `checks/gates.csv`. This is the address the NFL workbook reads by default. Any tool that reads a CSV file from a web address can use it.
+where `<path>` is the file's path inside this folder, for example `scored/scored_2025.csv` or `checks/gates.csv`. Any tool that reads a CSV file from a web address can use it.
 
 ## What each file is
 

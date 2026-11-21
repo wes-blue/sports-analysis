@@ -1,8 +1,8 @@
-// Usage: node 05-excel/build/pq/lint.js <folder with .pq files>. Needs the M parser installed under .work/legacy-1.x/t3 (npm i @microsoft/powerquery-parser).
+// Usage: node 05-excel/archive-2.x/build/pq/lint.js <folder with .pq files>. Needs the M parser installed under .work/legacy-1.x/t3 (npm i @microsoft/powerquery-parser).
 // Scope-aware lint: flags identifier references not bound by let / function parameter / each / record field,
 // unless dotted (library, e.g. Table.Join) or a known query name. Also reports which query names each file references.
 const fs=require("fs"),path=require("path");
-const P=require(path.resolve(__dirname,"../../../.work/legacy-1.x/t3/node_modules/@microsoft/powerquery-parser"));
+const P=require(path.resolve(__dirname,"../../../../.work/legacy-1.x/t3/node_modules/@microsoft/powerquery-parser"));
 const dir=process.argv[2];
 const files=fs.readdirSync(dir).filter(f=>f.endsWith(".pq")).sort();
 const queries=new Set(files.map(f=>f.replace(/\.pq$/,"")));

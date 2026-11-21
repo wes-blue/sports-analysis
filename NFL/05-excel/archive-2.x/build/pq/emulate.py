@@ -1,6 +1,6 @@
 """Python emulation of the 2.001 Power Query logic (D1 desk check; not part of the product).
 
-Mirrors, step by step, the M in NFL/05-excel/powerquery:
+Mirrors, step by step, the M in NFL/05-excel/archive-2.x/powerquery:
   Stats_Raw / Pipeline_Scored / Published_Seasons (window + typing), Scoring_Weights, Bonus_Rules, Stats_Scored,
   Check_Parity, Check_Rules_Drift, Check_RowCounts, Check_Integrity, Pipeline_Status (league contract rows),
   Check_Reconciliation and Check_Golden (2.001: widened tolerance and NOT APPLICABLE, QA finding N-1).
