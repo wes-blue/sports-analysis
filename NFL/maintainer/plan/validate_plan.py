@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate NFL/maintainer/plan/plan.json (control C-26).
 
-Checks: shape (CONTRACTS.md §10), allowed values, ID formats, unique IDs, IDs stable against a baseline copy of the
+Checks: shape (NFL/CONTRACTS.md §10), allowed values, ID formats, unique IDs, IDs stable against a baseline copy of the
 plan (none removed, new numbers above the baseline's highest, so none reused), target versions, sources, cited
 decisions, BLOCKERS.csv coverage by Status, cross-references, and a public-safety scan of the plan text.
 
@@ -211,7 +211,7 @@ for ref in sorted(set(re.findall(r"\b(?:RAID|FR|NFR|CON)-\d{2,3}\b|\bC-\d{2}\b",
         err(f"cross-reference {ref} does not exist")
 
 # Public safety (the plan is public, D-051): no private-repository paths, local paths, emails or personal descriptions
-FORBIDDEN = [r"Personal/", r"20-Projects", r"30-Deliverables", r"90-Archive", r"10-Assets", r"40-Workshop",
+FORBIDDEN = [r"Personal/", r"\b[1-9]0-[A-Z][A-Za-z]+",  # the second is any numbered private folder name
              r"[A-Za-z]:\\\\", r"\\\\Users\\\\", r"/home/", r"/tmp/", r"OneDrive -", r"[\w.+-]+@[\w-]+\.[\w.]+",
              r"wes-blue/(?!sports-analysis)[\w.-]+", r"pull request #\d+", r"(?i)\bemployer\b", r"(?i)\bjob title\b",
              r"(?<![\w.])/Users/", r"[A-Za-z]:/Users/", r"/mnt/[a-z]/Users/"]

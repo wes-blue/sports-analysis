@@ -41,4 +41,4 @@ Owns `<sport>/03-pipeline/nflpipe/export_xlsx.py` and its tests: the values-only
 
 ## Q1 QA Reviewer
 
-Independent of every builder. Owns `<sport>/NFL/maintainer/qa/qa-report-<version>.md`. Re-derives results rather than trusting reports: re-runs the pipeline, re-computes samples with its own code, checks every contract, parses every query, recalculates the workbook, walks the owner's steps literally, and scans everything that would be published for personal data. Findings are graded Critical, Major or Minor, each with evidence and a suggested fix.
+Independent of every builder. Owns `<sport>/maintainer/qa/qa-report-<version>.md`. Re-derives results rather than trusting reports: re-runs the pipeline, re-computes samples with its own code, checks every contract, parses every query, recalculates the workbook, walks the owner's steps literally, and scans everything that would be published for personal data. Findings are graded Critical, Major or Minor, each with evidence and a suggested fix.

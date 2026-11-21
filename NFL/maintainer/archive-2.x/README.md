@@ -23,4 +23,6 @@ The owner opened the experimental workbook: it opened without a problem, but Ref
 - Nothing here is maintained or tested any more. The 2.001 workbooks were never opened in Excel by a tester other than the owner's single trial above.
 - The scripts were moved here with `git mv` and their folder paths adjusted, but they were not run again after the move.
 - Nothing was deleted; the files are also in the repository's git history.
-- Whether to keep the route available at all is a question to the owner: `/BLOCKERS.csv` Q-023 (default: retired).
+- Whether to keep the route available at all is a question to the owner: `NFL/maintainer/BLOCKERS.csv` Q-023 (default: retired).
+
+The scripts in `build/` and `experimental/` still use the old folder paths of the layout they were written in, so they are kept as a record and are not run.

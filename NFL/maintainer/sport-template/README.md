@@ -42,7 +42,7 @@ Below, `<Sport>` is the new folder's name (for example `NBA`) and `<sport>` the 
 9. **Write the sport's READMEs**: `<Sport>/README.md` (model: `NFL/README.md`), `<Sport>/04-data/README.md` with the address pattern and the data attribution (model: `NFL/04-data/README.md`), and `<Sport>/maintainer/releases/RELEASES.md` in place of the placeholder README there.
 
 10. **Wire it into the shared files** (the orchestrator does this):
-    - the root `README.md`: add a row to the **Sports** table with the same five columns as the NFL row: the sport, a link to `<Sport>/README.md`, what it covers, the workbook name (`<SPORT>-Analysis-<major>.xxx`) and its status with a link to its `RELEASES.md`;
+    - the root `README.md`: add the sport to the **What's in this repository** folder table (a row linking to `<Sport>/README.md`) and to the workbook section, with the workbook name (`<SPORT>-Analysis-<major>.xxx`) and its status;
     - `DATA-LICENSE.md`: add a section with the new source's attribution and what the public repository changes;
     - `.claude/CLAUDE.md` §5 folder map, if anything differs from NFL;
     - `NFL/maintainer/governance/MEMORY.md`: the sport's status and next step;

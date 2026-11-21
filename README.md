@@ -43,6 +43,7 @@ GitHub Actions downloads the statistics, scores them, runs the checks, publishes
 | `NFL/06-qa/` | Test fixtures and evidence the checks read | Yes |
 | `NFL/maintainer/` | How the project is run (plans, decisions, reviews). You can ignore it. | Yes |
 | `.github/workflows/` | The scheduled workflows | Yes |
+| `.claude/` | Instructions for Claude sessions | Yes |
 | `LICENSE`, `DATA-LICENSE.md` | Licences and attribution | |
 
 ## Using the code yourself

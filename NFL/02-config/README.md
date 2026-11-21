@@ -9,7 +9,7 @@ These four CSV files are the pipeline's only source of scoring rules. Their colu
 | `scoring_weights.csv` | Points per unit of each statistic, one column per league, with a position gate (`Applies_To`) |
 | `bonus_rules.csv` | Bonus bands per league: yardage bonuses, long-touchdown bonuses, D/ST points-allowed and yards-allowed tiers |
 
-**This repository is public**, so these rules can be read by anyone.
+**This repository is public**, so these rules can be read by anyone. Only people with write access can save changes on `main`; anyone else can open a pull request with the change.
 
 ## Saving a change on `main` publishes it
 

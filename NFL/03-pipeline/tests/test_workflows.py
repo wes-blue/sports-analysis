@@ -154,6 +154,8 @@ def test_scoped_to_the_nfl_folder(wf):
     """A future NBA/ folder and its nba-pipeline-*.yml files never start, or get confused with, these."""
     name, text, doc = wf
     assert doc["defaults"]["run"]["working-directory"] == WORKDIR
+    # No absolute local path (Linux or macOS home folder, Windows drive path) in a public workflow file.
+    assert not re.search(r"/home/|/Users/|(?<![\w])[A-Za-z]:[\\/]", text), f"{name} contains an absolute local path"
     for event in ("push", "pull_request"):
         spec = triggers(doc).get(event)
         if isinstance(spec, dict):

@@ -16,7 +16,7 @@ Every increment is planned, verified against live sources and traceable to a req
 
 | Role | Runs on | Accountable for |
 |---|---|---|
-| Orchestrator | The session model (`.claude/CLAUDE.md` §3) | Plan direction, contracts, briefs, integration, decisions, release, memory, `BLOCKERS.csv` |
+| Orchestrator | The session model (`.claude/CLAUDE.md` §3) | Plan direction, contracts, briefs, integration, decisions, release, memory, `NFL/maintainer/BLOCKERS.csv` |
 | A1 Plan and Requirements Analyst | One tier below the orchestrator, like every member | `<Sport>/maintainer/plan/plan.json` and `PLAN.md`: requirements, roadmap, RAID, controls |
 | B1 Pipeline Engineer | Member tier | Pipeline core: ingest, derived metrics, scoring, publishing |
 | B2 Gates and Test Engineer | Member tier | Gates, check files, tests, fixtures, evidence, the full data run |
@@ -25,7 +25,7 @@ Every increment is planned, verified against live sources and traceable to a req
 | E1 Workbook Builder | Member tier | Workbook generator and build |
 | E2 Mashup Engineer | Member tier | Experimental workbook with the queries installed |
 | Q1 QA Reviewer | Member tier | Independent review against requirements, contracts and quality gates |
-| Product Owner | `wes-blue` | Priorities, approvals, decisions marked "User", merging to `main`, actions in Excel and on GitHub, answers in `BLOCKERS.csv` |
+| Product Owner | `wes-blue` | Priorities, approvals, decisions marked "User", merging to `main`, actions in Excel and on GitHub, answers in `NFL/maintainer/BLOCKERS.csv` |
 
 Role cards: `committee/ROLE-CARDS.md`. The committee is shared by all sports; a brief names the sport and the paths a member may write.
 
@@ -54,7 +54,7 @@ R = does the work, A = accountable, C = consulted, I = informed.
 2. Members write only to the paths named in their brief and follow the sport's `CONTRACTS.md`.
 3. No fabricated facts. Every number traces to a source or is labelled `ASSUMPTION` or `UNVERIFIED`. Anything not yet run on GitHub or in Excel is labelled as such.
 4. Members do not commit, push, publish or release. The orchestrator commits and pushes to a branch with a pull request; the owner merges to `main` (`.claude/CLAUDE.md` §6).
-5. **Blockers never stop the work.** A member takes the best default, continues, and reports the blocker. The orchestrator records it in `BLOCKERS.csv` for the owner.
+5. **Blockers never stop the work.** A member takes the best default, continues, and reports the blocker. The orchestrator records it in `NFL/maintainer/BLOCKERS.csv` for the owner.
 6. When members disagree, the orchestrator decides and logs it in `DECISIONS.md`. Anything that changes scope or owner-facing behaviour goes to the owner.
 7. One fact lives in one place. Where two documents would say the same thing, one says it and the other points to it.
 
