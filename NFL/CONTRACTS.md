@@ -208,9 +208,21 @@ Every workflow sets the working directory to `NFL/03-pipeline`. The pipeline nee
 
 **Security.** The repository is public. Workflows run only on `schedule`, `push`, `pull_request` and `workflow_dispatch` (never `pull_request_target`), give each job only the permissions it needs, do not leave the token on disk after checkout, pin third-party actions by commit SHA, pass inputs through `env:`, and use no secrets. The alert steps count only issues opened by the workflow's own bot, because anyone can open an issue in a public repository.
 
-## 9 to 12. Retired sections
+## 9. Power Query (retired, 2.x)
 
-Sections 9 to 12 described the retired 2.x Power Query workbook and the project's internal planning records. The records are now in `NFL/maintainer/` and the Power Query files in `NFL/maintainer/archive-2.x/`; the numbers are not reused so that references to section 13 stay valid. The current workbook is section 13.
+Retired with the 2.x workbook. Its description, the firewall rule and the query files are kept for the record in `NFL/maintainer/archive-2.x/` (see `powerquery/README.md` there) and are not maintained. The current workbook is §13.
+
+## 10. Plan content: `NFL/maintainer/plan/plan.json`
+
+`plan.json` is one JSON object with these top-level keys, in this order: `objective`, `what_you_are_trying_to_do`, `key_findings`, `architecture`, `scope_in`, `scope_out`, `roadmap`, `requirements`, `raid`, `controls`, `glossary`. `architecture[].where` may be `Python pipeline`, `GitHub Actions` or `Published CSV`. `PLAN.md` (same folder) is rendered from it by `render_plan_md.py`, and `validate_plan.py` checks the shape, the allowed values, the ID formats and the cross-references.
+
+## 11. Blockers for the owner: `NFL/maintainer/BLOCKERS.csv`
+
+Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_It_Blocks,Raised,Status,Claude_Response`. The owner fills in `Answer`. `Type` is `Answer needed` or `Action needed`. `Status` is `Open`, `Answered` (acted on; see `Claude_Response`) or `Still open` (the answer did not settle it; a follow-up question exists). Only the maintainer's coordinating session edits the other columns, and it never changes or removes an answer the owner wrote. Team members report blockers in their hand-back.
+
+## 12. Releases: `NFL/maintainer/releases/`
+
+`RELEASES.md` is the release register. From 3.001 the workbook is a GitHub Release asset rebuilt on every publish (§13.5), and the register records each design version with the run that first published it. The 2.001 workbook (`NFL-Analysis-2.001.xlsx`) stays there unchanged for the record; its working copies are in `NFL/maintainer/archive-2.x/`. Versions 1.001 to 1.006 were released from an earlier, separate repository and are listed for the record only.
 
 ## 13. The generated workbook (design generation 3.x)
 
