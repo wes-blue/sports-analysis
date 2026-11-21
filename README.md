@@ -16,7 +16,7 @@ If the link answers "not found": the workbook is being replaced or has not been 
 
 | Sport | Folder | What it covers | Workbook | Status |
 |---|---|---|---|---|
-| NFL | [`NFL/`](NFL/README.md) | Weekly player stats for a rolling 10 seasons (regular season and playoffs), team defense and special teams (D/ST) rows, long-touchdown counts, and fantasy points for several scoring systems, including one ESPN league | `NFL-Analysis` 3.001 | Moved here on 2026-11-20. Version 3.001, the workbook built on GitHub, was released on 2026-11-21; version 2.001 (Power Query) is retired; [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the releases. |
+| NFL | [`NFL/`](NFL/README.md) | Weekly player stats for a rolling 10 seasons (regular season and playoffs), team defense and special teams (D/ST) rows, long-touchdown counts, and fantasy points for several scoring systems, including one ESPN league | `NFL-Analysis` 3.002 | Moved here on 2026-11-20. Version 3.001, the workbook built on GitHub, was released on 2026-11-21; version 2.001 (Power Query) is retired; [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the releases. |
 
 NFL is the only sport for now. The structure allows more.
 
