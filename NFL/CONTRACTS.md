@@ -214,7 +214,7 @@ Retired with the 2.x workbook. Its description, the firewall rule and the query 
 
 ## 10. Plan content: `NFL/maintainer/plan/plan.json`
 
-`plan.json` is one JSON object with these top-level keys, in this order: `objective`, `what_you_are_trying_to_do`, `key_findings`, `architecture`, `scope_in`, `scope_out`, `roadmap`, `requirements`, `raid`, `controls`, `glossary`. `architecture[].where` may be `Python pipeline`, `GitHub Actions` or `Published CSV`. `PLAN.md` (same folder) is rendered from it by `render_plan_md.py`, and `validate_plan.py` checks the shape, the allowed values, the ID formats and the cross-references.
+`plan.json` is one JSON object with these top-level keys, in this order: `objective`, `what_you_are_trying_to_do`, `key_findings`, `architecture`, `scope_in`, `scope_out`, `roadmap`, `requirements`, `raid`, `controls`, `glossary`. `architecture[].where` names where a step runs, for example `nflverse (GitHub Releases)`, `Python pipeline`, `GitHub Actions`, `Published CSV`, `Excel sheet` or `PivotTable`; `validate_plan.py` holds the full list of allowed values. `PLAN.md` (same folder) is rendered from it by `render_plan_md.py`, and `validate_plan.py` checks the shape, the allowed values, the ID formats and the cross-references.
 
 ## 11. Blockers for the owner: `NFL/maintainer/BLOCKERS.csv`
 

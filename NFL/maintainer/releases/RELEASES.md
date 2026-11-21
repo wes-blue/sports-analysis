@@ -76,4 +76,4 @@ Versions 1.001 to 1.006 were built and released in the owner's earlier repositor
 | 1.005 | none | Withdrawn, never released (decision D-028); 1.006 carried its scope; the number is not reused | The owner's earlier repository (not public) |
 | 1.006 | 2026-11-19 | Pipeline and paste-ready workbook: the Python pipeline, published CSV data, workflow files stored inactive, a workbook reading a local data folder; the last 1.x release | The owner's earlier repository (not public) |
 
-The independent QA records of 1.006 are kept in that earlier repository; are summarized in [`../qa/README.md`](../qa/README.md).
+The independent QA records of 1.006 are kept in that earlier repository; [`../qa/README.md`](../qa/README.md) summarizes them.
