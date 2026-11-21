@@ -8,9 +8,9 @@ The NFL workbook is built for you on GitHub. You download it and open it; there 
 
 `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
 
-The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files** (decision D-042: it is about 8 MB and is rebuilt every week). It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
+The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files**: it is about 8 MB and is rebuilt on every publish. It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
 
-**Opening it.** The file is about 8 MB but holds about 17 million cells, so Excel takes a little while to open it. Version 3.001 (about 38 MB, the same cells) took about a minute in the owner's Excel, with no repair message (`/BLOCKERS.csv` Q-024); version 3.002 holds the same cells in a file about five times smaller to download, so expect about the same opening time (D-047; its first open in Excel is `/BLOCKERS.csv` Q-025). Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work. The newest games are at the top of `PlayerGames`, with your league columns (`FF_<League>`) right after the player's name.
+**Opening it.** The file is about 8 MB but holds about 17 million cells, so Excel takes about a minute to open it; it opened in desktop Excel with no repair message. Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work. The newest games are at the top of `PlayerGames`, with your league columns (`FF_<League>`) right after the player's name.
 
 **If the link answers "not found".** The workbook is being replaced or has not been built yet. Wait two minutes and try again. If it still answers "not found", open the repository's **Actions** tab, choose **nfl-pipeline-weekly**, click **Run workflow**, tick **workbook_only** and run it; the link works when that run is green. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) has the details.
 
@@ -37,12 +37,14 @@ After every successful data publish by the pipeline: in season on Tuesday, Wedne
 
 Edit the file in `NFL/02-config/` on GitHub. Saving it there reruns the pipeline, which rescores the data and replaces the workbook when the run on the Actions tab is green (usually within about ten minutes). Then download it again. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) explains how, what to do when a run fails and how to start a run by hand; [`../02-config/README.md`](../02-config/README.md) explains the files. Changes made inside the downloaded workbook affect only that copy and are lost at the next download.
 
-## What else is in this folder
+## Version history
 
-| Item | What it is |
-|---|---|
-| [`archive-2.x/`](archive-2.x/README.md) | The retired Power Query workbook (2.001) with its queries and generators. Not maintained (decisions D-041, D-043). Do not use it. |
+| Version | Released | Notes |
+|---|---|---|
+| **3.002** (current) | 2026-11-21 | The same cells as 3.001 in a file of about 8 MB (8,432,121 bytes) instead of about 38 MB. Opens in desktop Excel with no repair message, in about a minute. |
+| 3.001 | 2026-11-21 | The first workbook built on GitHub: values only, nothing to refresh. About 38 MB. |
+| 2.001 | 2026-11-20 | Power Query workbook that refreshed itself in Excel. Retired: re-scoring 180,000 rows in Excel was too slow. It is no longer published here. |
 
-The released 2.001 workbook stays in [`../08-releases/`](../08-releases/RELEASES.md) for the record.
+Only the current version is at the download link; it is rebuilt after every publish, and the `About` sheet inside says which data it holds.
 
 The data is derived from nflverse, licensed CC BY 4.0; see [`/DATA-LICENSE.md`](../../DATA-LICENSE.md).

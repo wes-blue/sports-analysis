@@ -36,7 +36,7 @@ This has run on GitHub since the merge on 2026-11-20 (the merge itself started t
 ## What you will see afterwards
 
 - **A mistake the pipeline can detect** (for example a misspelt statistic name or a league without a weight column) makes gate `G-CONFIG` fail. Nothing is published, the last good data stays in place, the workflow run is red, and an issue labelled `nfl-pipeline-alert-*` explains what went wrong. Fix the file the same way and the next run publishes.
-- **A league whose rules you changed** no longer matches the test values stored for it (the golden sample and your ESPN lineup values were worked out with the old rules). The gates `G-GOLDEN` and `G-ESPN` then report `WARN` "not applicable" for that league and the run still publishes. Leagues you did not change keep their tests. This is the behaviour you chose ([`/BLOCKERS.csv`](../../BLOCKERS.csv) Q-013).
+- **A league whose rules you changed** no longer matches the test values stored for it (the golden sample and your ESPN lineup values were worked out with the old rules). The gates `G-GOLDEN` and `G-ESPN` then report `WARN` "not applicable" for that league and the run still publishes. Leagues you did not change keep their tests. This is by design: a changed league is not blocked by tests written for its old rules.
 - **In the workbook:** right after the run publishes, the same workflow rebuilds `NFL-Analysis.xlsx` with the new scores and replaces the file at the stable download link (see [`../05-excel/README.md`](../05-excel/README.md)). Download it again to see the change; the workbook's `Leagues`, `Scoring` and `Bonus` sheets show the rules it was built with.
 
 ## Running the pipeline by hand

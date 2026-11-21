@@ -6,7 +6,7 @@ Scored NFL fantasy-football data and a finished Excel workbook built from it. A 
 
 Everything runs on GitHub. Nothing needs your computer to be on, and you need only Excel to use the result.
 
-**Status (2026-11-21).** The project moved here from a private repository on 2026-11-20, and the pipeline has published on GitHub since then. Version 3.001, the workbook built on GitHub, was released on 2026-11-21: the run started by its merge built the workbook and uploaded it to the download link, which works. It opens in desktop Excel with no repair message, in about a minute (`/BLOCKERS.csv` Q-024). Version 3.002, the same workbook in a file about five times smaller, replaced it at the link later that day after opening cleanly in Excel (`/BLOCKERS.csv` Q-025). [`08-releases/RELEASES.md`](08-releases/RELEASES.md) shows the releases, and [`PLAN.md`](PLAN.md) the roadmap.
+**Status (2026-11-21).** The pipeline publishes on GitHub and the workbook, version 3.002, is built there and replaced at the download link after every publish. It opens in desktop Excel with no repair message. See [`05-excel/README.md`](05-excel/README.md) for the version history.
 
 ## Start here
 
@@ -17,7 +17,6 @@ Everything runs on GitHub. Nothing needs your computer to be on, and you need on
 | Understand the automation, or see why data is late | [`03-pipeline/AUTOMATION.md`](03-pipeline/AUTOMATION.md) |
 | Read the data from another tool | [`04-data/README.md`](04-data/README.md) |
 | See every file format and command | [`CONTRACTS.md`](CONTRACTS.md) |
-| Answer the questions waiting on you | [`/BLOCKERS.csv`](../BLOCKERS.csv) (fill in the `Answer` column) |
 
 ## How the parts connect
 
@@ -41,16 +40,15 @@ nflpipe export     builds NFL-Analysis.xlsx (values only) from 04-data; the work
 
 ## Folders
 
+The numbering starts at 02 because the planning and review folders (01, 07 and 08) are kept privately by the maintainer.
+
 | Folder | Holds |
 |---|---|
-| `01-plan/` | `plan.json`, the single source of the plan, requirements, RAID log and roadmap; `PLAN.md` is rendered from it |
 | `02-config/` | The CSV files you edit to change the scoring |
 | `03-pipeline/` | The `nflpipe` Python package, its tests, and `AUTOMATION.md`, the guide to the workflows |
 | `04-data/` | What the pipeline publishes. Never edited by hand. |
-| `05-excel/` | Where to get the workbook, and `archive-2.x/`, the retired Power Query workbook |
-| `06-qa/` | QA reports, evidence from your ESPN league, and test fixtures |
-| `07-research/` | Design notes |
-| `08-releases/` | The release register, `RELEASES.md` |
+| `05-excel/` | Where to get the workbook, and its version history |
+| `06-qa/` | Test fixtures and ESPN evidence that the tests and checks read |
 
 The workbook design is specified in [`CONTRACTS.md`](CONTRACTS.md) section 13.
 

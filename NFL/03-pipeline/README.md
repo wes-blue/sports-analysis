@@ -39,7 +39,7 @@ NFL/
 | `watchdog.py` | The `watchdog` command: has a publish landed recently enough? |
 | `export_xlsx.py` | The `export` command: writes the values-only Excel workbook from `04-data` |
 
-The version is `pipeline_version` in `nflpipe/__init__.py` (now **1.2.1**). Following `/00-Governance/VERSIONING.md`, a change to scoring arithmetic or to a derived-metric rule raises the middle number and a breaking change the first. Every publish records it in `status.csv` and `run_log.csv`; a new version makes the next run rebuild every season.
+The version is `pipeline_version` in `nflpipe/__init__.py` (now **1.2.1**). By the project's versioning rule, a change to scoring arithmetic or to a derived-metric rule raises the middle number and a breaking change the first. Every publish records it in `status.csv` and `run_log.csv`; a new version makes the next run rebuild every season.
 
 ## How a run works
 
@@ -60,14 +60,14 @@ Identical inputs give byte-identical files. The files that hold time stamps (`st
 - **Team D/ST rows** (`player_id = DST_<TEAM>`), from `stats_team_week` and `games.csv`.
 - **Points allowed** in three versions:
   - `dst_points_allowed`: the opponent's full final score.
-  - `dst_points_allowed_excl_def` (new in 1.2.0, decision D-038): **ESPN's points allowed**, which the ESPN league's bands use. It is the opponent's final score minus the points the opponent's *defense* scored against this team's offense. Those points are interception and fumble returns for a touchdown (a touchdown on a scrimmage play by the team without the ball), safeties on scrimmage plays, and two-point tries returned by the defense, all found in play-by-play. Special-teams touchdowns, an offense recovering its own fumble in the end zone and the extra point after a defensive touchdown still count. The value is never below 0. It stays blank until the game has a final score and while play-by-play has no plays for the game. Play-by-play is needed because `stats_team_week` puts defensive fumble-return touchdowns and an offense's own end-zone recoveries in the same column. It reproduces the `PA` column of ESPN's game log for all ten 2026 weeks of the Arizona D/ST (`../06-qa/evidence/`).
+  - `dst_points_allowed_excl_def` (new in 1.2.0): **ESPN's points allowed**, which the ESPN league's bands use. It is the opponent's final score minus the points the opponent's *defense* scored against this team's offense. Those points are interception and fumble returns for a touchdown (a touchdown on a scrimmage play by the team without the ball), safeties on scrimmage plays, and two-point tries returned by the defense, all found in play-by-play. Special-teams touchdowns, an offense recovering its own fumble in the end zone and the extra point after a defensive touchdown still count. The value is never below 0. It stays blank until the game has a final score and while play-by-play has no plays for the game. Play-by-play is needed because `stats_team_week` puts defensive fumble-return touchdowns and an offense's own end-zone recoveries in the same column. It reproduces the `PA` column of ESPN's game log for all ten 2026 weeks of the Arizona D/ST (`../06-qa/evidence/`).
   - `dst_points_allowed_excl_def_st`: the older reference figure (weight 0; not ESPN's rule).
 
 All three are blank, never 0, until the game is final ("missing is never zero").
 
 ## Running it as a developer
 
-Python 3.11 or later; nothing to install for the pipeline itself (decision D-025). Run every command from this folder, `NFL/03-pipeline`, so that `python -m nflpipe` finds the package. Default folders are found from the package's location, so the commands work in any clone. A full run takes about half a minute once the downloads (about 290 MB) are cached in `../.work/cache/`; a later run downloads a file again only when nflverse has published a newer one.
+Python 3.11 or later; nothing to install for the pipeline itself . Run every command from this folder, `NFL/03-pipeline`, so that `python -m nflpipe` finds the package. Default folders are found from the package's location, so the commands work in any clone. A full run takes about half a minute once the downloads (about 290 MB) are cached in `../.work/cache/`; a later run downloads a file again only when nflverse has published a newer one.
 
 | Command | Does |
 |---|---|

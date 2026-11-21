@@ -59,7 +59,7 @@ Merging the pull request switched on the new workbook. **Step 1 is done:** the m
    - Under **System**, **Actions**: tick **Email** and choose **Only notify for failed workflows**.
    - Back on the repository page, click **Watch** (top right) and choose **All Activity**, or **Custom** with **Issues** ticked, so a new alert issue emails you.
    - GitHub sends the emails about failed *scheduled* runs to the person who last changed the schedule in the workflow files. If that is not you, the alert issues (step above) still reach you.
-6. **Done on 2026-11-21** (no repair message, about a minute to open, ESPN points matched; `/BLOCKERS.csv` Q-024). **Open the workbook in Excel and tell Claude what you see** (any message word for word, how long it took to open, whether `FF_ESPN_League` for a player and week you know matches ESPN). Excel may show a "protected view" bar: click **Enable Editing**. This is the one check only you can do.
+6. **Done on 2026-11-21** (no repair message, about a minute to open, ESPN points matched). **Open the workbook in Excel and look** at any message it shows word for word, how long it takes to open, and whether `FF_ESPN_League` for a player and week you know matches ESPN. Excel may show a "protected view" bar: click **Enable Editing**. This is the one check only you can do.
 7. **Run the watchdog once by hand** (section 5). It should end green with **HEALTHY**.
 
 Nothing else is needed. From now on the schedule runs by itself.
