@@ -210,7 +210,7 @@ Every workflow sets the working directory to `NFL/03-pipeline`. The pipeline nee
 
 ## 9 to 12. Retired sections
 
-Sections 9 to 12 described the retired 2.x Power Query workbook and the project's internal planning records. They are kept out of this repository, and their numbers are not reused so that references to section 13 stay valid. The current workbook is section 13.
+Sections 9 to 12 described the retired 2.x Power Query workbook and the project's internal planning records. The records are now in `NFL/maintainer/` and the Power Query files in `NFL/maintainer/archive-2.x/`; the numbers are not reused so that references to section 13 stay valid. The current workbook is section 13.
 
 ## 13. The generated workbook (design generation 3.x)
 

@@ -49,6 +49,7 @@ Folders are numbered in the order the data flows through the project.
 | `04-data/` | What the pipeline publishes. Never edited by hand. |
 | `05-excel/` | Where to get the workbook, and its version history |
 | `06-qa/` | Test fixtures and ESPN evidence that the tests and checks read |
+| `maintainer/` | How the project is run (plans, decisions, reviews). You can ignore it. |
 
 The workbook design is specified in [`CONTRACTS.md`](CONTRACTS.md) section 13.
 

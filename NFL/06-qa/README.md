@@ -1,6 +1,6 @@
 # NFL/06-qa: test fixtures and evidence
 
-This folder holds the files that the automatic tests and the pipeline's own checks read. Nothing here is meant to be read or edited by hand. The review reports are kept privately by the maintainer.
+This folder holds the files that the automatic tests and the pipeline's own checks read. Nothing here is meant to be read or edited by hand. The review reports are in `NFL/maintainer/qa/`.
 
 | Folder | What it holds | Read by |
 |---|---|---|

@@ -43,7 +43,7 @@ Edit the file in `NFL/02-config/` on GitHub. Saving it there reruns the pipeline
 |---|---|---|
 | **3.002** (current) | 2026-11-21 | The same cells as 3.001 in a file of about 8 MB (8,432,121 bytes) instead of about 38 MB. Opens in desktop Excel with no repair message, in about a minute. |
 | 3.001 | 2026-11-21 | The first workbook built on GitHub: values only, nothing to refresh. About 38 MB. |
-| 2.001 | 2026-11-20 | Power Query workbook that refreshed itself in Excel. Retired: re-scoring 180,000 rows in Excel was too slow. It is no longer published here. |
+| 2.001 | 2026-11-20 | Power Query workbook that refreshed itself in Excel. Retired: re-scoring 180,000 rows in Excel was too slow. It is no longer published here; its files are archived in `NFL/maintainer/archive-2.x/`. |
 
 Only the current version is at the download link; it is rebuilt after every publish, and the `About` sheet inside says which data it holds.
 

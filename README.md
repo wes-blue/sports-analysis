@@ -41,6 +41,7 @@ GitHub Actions downloads the statistics, scores them, runs the checks, publishes
 | `NFL/04-data/` | The published CSV files | No: this is the data |
 | `NFL/05-excel/` | How to get the workbook | No |
 | `NFL/06-qa/` | Test fixtures and evidence the checks read | Yes |
+| `NFL/maintainer/` | How the project is run (plans, decisions, reviews). You can ignore it. | Yes |
 | `.github/workflows/` | The scheduled workflows | Yes |
 | `LICENSE`, `DATA-LICENSE.md` | Licences and attribution | |
 
