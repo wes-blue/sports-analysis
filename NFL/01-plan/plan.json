@@ -139,7 +139,7 @@
       "source": "BLOCKERS.csv Q-020; D-041"
     },
     {
-      "finding": "A workbook of about 38 MB (measured 2026-11-21) rebuilt every week would add roughly a gigabyte a season to the repository's history if it were committed, so it is published as a GitHub Release asset replaced in place, at a stable public address (the 20 MB is the contract's estimate, UNVERIFIED until the first build).",
+      "finding": "A workbook of about 8 MB (3.002; 3.001 was about 38 MB, measured 2026-11-21) rebuilt every week would add hundreds of megabytes a season to the repository's history if it were committed, so it is published as a GitHub Release asset replaced in place, at a stable public address (the 20 MB is the contract's estimate, UNVERIFIED until the first build).",
       "source": "D-042; CONTRACTS.md §13.5"
     }
   ],
@@ -1293,7 +1293,7 @@
     },
     {
       "id": "CON-15",
-      "requirement": "The generated workbook is not committed to git: a file of about 38 MB rebuilt every week would add roughly a gigabyte a season to the repository's history. It is a release asset (D-042).",
+      "requirement": "The generated workbook is not committed to git: a file of about 8 MB (3.002; 3.001 was about 38 MB) rebuilt every week would add hundreds of megabytes a season to the repository's history. It is a release asset (D-042).",
       "type": "Constraint",
       "priority": "Must",
       "source": "D-042; CONTRACTS.md §13.5",
@@ -2484,7 +2484,7 @@
       "title": "Excel may handle a missing cell reference worse than the schema allows",
       "detail": "3.002 leaves out the r attribute of a cell that directly follows the previous written cell in PlayerGames and SeasonTotals. The ECMA-376 schema makes r optional and LibreOffice and openpyxl read it, but desktop Excel has not opened such a file; it could show a repair message, open slowly or place values wrongly (D-047).",
       "rating": "Medium",
-      "response": "The owner opens the 3.002 file in desktop Excel and reports any message and the time to open before 3.002 counts as released (roadmap 3.002 (g); Q-025); a full-file comparison with the 3.001 form is made first (C-36). If Excel objects, reverting to writing r on every cell is a one-line change in the exporter, which restores the 3.001 form that opened cleanly (D-046).",
+      "response": "The owner opens the 3.002 file in desktop Excel and reports any message and the time to open before 3.002 counts as released (roadmap 3.002 (g); Q-025); a full-file comparison with the 3.001 form is made first (C-36). If Excel objects, reverting to writing r on every cell is a small change in the exporter (the compact flag at its two call sites, the tests and the version), which restores the 3.001 form that opened cleanly (D-046).",
       "owner": "B1 Pipeline Engineer",
       "target_version": "3.002",
       "status": "Open"
@@ -2495,7 +2495,7 @@
       "title": "Q-025: Does the 3.002 workbook open cleanly in Excel, how long does it take, and does About say 3.002?",
       "detail": "BLOCKERS.csv Q-025. After the 3.002 merge and a green run, the owner downloads the workbook again, checks that About says 3.002, reports any repair message word for word and gives the time to open compared with about a minute for 3.001 (D-046).",
       "rating": "Medium",
-      "response": "Not yet opened in Excel. Meanwhile 3.001 stays valid in the owner's hands, and reverting to the 3.001 form (r on every cell) is a one-line change in the exporter (RAID-106).",
+      "response": "Not yet opened in Excel. Meanwhile 3.001 stays valid in the owner's hands, and reverting to the 3.001 form (r on every cell) is a small change in the exporter (the compact flag at its two call sites, the tests and the version) (RAID-106).",
       "owner": "User",
       "target_version": "3.002",
       "status": "Open"
