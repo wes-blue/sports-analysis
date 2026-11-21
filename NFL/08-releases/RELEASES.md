@@ -12,7 +12,7 @@ Stable download address: <https://github.com/wes-blue/sports-analysis/releases/d
 
 | Version | Date | Status | Scope | Gates | SHA-256 | Where |
 |---|---|---|---|---|---|---|
-| 3.001 | 2026-11-21 (approved); published by the first workflow run after the merge | **Approved for release.** Not yet published: the workflow publishes it within minutes of the merge. | Workbook built on GitHub: `python -m nflpipe export`, values only, newest games first with the league columns next to the player, uploaded after every publish (`../CONTRACTS.md` section 13) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ (QA: [`../06-qa/qa-disposition-3.001.md`](../06-qa/qa-disposition-3.001.md)) | Each rebuild has its own; the release notes name the data run it holds. A build from the data of 2026-11-20 (run `20261120T233201Z-gh44837469898`) is `66d6e26abc6d64c0…`, about 38 MB. | Release asset `NFL-Analysis.xlsx`, tag `nfl-workbook`: <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx> |
+| 3.001 | 2026-11-21 | **Released** (D-045). Published at 02:03 UTC by `nfl-pipeline-weekly` run [44853664413](https://github.com/wes-blue/sports-analysis/actions/runs/44853664413), started by the merge of pull request #3 (green in 36 seconds: pipeline SKIP, workbook built in 12 seconds, uploaded and renamed in 9). Not yet opened in Excel (`/BLOCKERS.csv` Q-024). | Workbook built on GitHub: `python -m nflpipe export`, values only, newest games first with the league columns next to the player, uploaded after every publish (`../CONTRACTS.md` section 13) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ (QA: [`../06-qa/qa-disposition-3.001.md`](../06-qa/qa-disposition-3.001.md)) | As first published, from data run `20261120T233201Z-gh44837469898` (data through 2026 week 11, REG): `66d6e26abc6d64c040ac8a413a2e1c89bb3d3bba955f4ded197d77d936fba2f2`, 40,018,688 bytes. The same bytes as the local builds on Python 3.11 and 3.13 (the runner used 3.12). Later rebuilds have their own; the release notes name the data run each holds. | Release asset `NFL-Analysis.xlsx`, tag `nfl-workbook` (a pre-release, never marked Latest): <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx> |
 
 ### 2.x: Power Query workbook (retired)
 
@@ -20,7 +20,7 @@ The 2.x line was the workbook fed by the pipeline in this repository, reading th
 
 | Version | Date | Status | Scope | Gates | SHA-256 | File |
 |---|---|---|---|---|---|---|
-| 2.001 | 2026-11-20 | **Superseded by 3.001** (decision D-043; the Power Query route is retired; 3.001 itself is not yet released). Released as generated, paste-ready. | Public repository, GitHub-only (see below) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ | `ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87` | [`NFL-Analysis-2.001.xlsx`](NFL-Analysis-2.001.xlsx), immutable and unchanged. A copy of it is [`../05-excel/archive-2.x/NFL-Analysis-2.001.xlsx`](../05-excel/archive-2.x/NFL-Analysis-2.001.xlsx). |
+| 2.001 | 2026-11-20 | **Superseded by 3.001** (decision D-043; the Power Query route is retired; 3.001 was released on 2026-11-21). Released as generated, paste-ready. | Public repository, GitHub-only (see below) | G1 ✔ G2 ✔ G3 ✔ G4 ✔ G5 ✔ | `ac72364839f46e35b68a2594ffcfcf50960081e12cdb08590da897eb7899da87` | [`NFL-Analysis-2.001.xlsx`](NFL-Analysis-2.001.xlsx), immutable and unchanged. A copy of it is [`../05-excel/archive-2.x/NFL-Analysis-2.001.xlsx`](../05-excel/archive-2.x/NFL-Analysis-2.001.xlsx). |
 
 ## 2.001: public repository, GitHub-only (released 2026-11-20)
 
