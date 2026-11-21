@@ -55,4 +55,21 @@ Text only: the config README wording (N-2), the plan's size wording (N-4), the c
 ## Not verifiable here
 
 1. Excel: whether it opens without a repair prompt, and how long it takes (Q-024).
-2. GitHub: the asset rename through the API, the CDN's answer, and the first real publish after the merge.
+2. GitHub: the asset rename through the API, the CDN's answer, and the first real publish after the merge. (Since checked on GitHub, apart from replacing an existing asset: see the next section.)
+
+## Verified on GitHub after the merge (2026-11-21)
+
+Checked by the orchestrator after the owner merged the pull request (commit `8d91b3f`); recorded as decision D-045.
+
+| Check | Result |
+|---|---|
+| The merge starts the weekly workflow (finding A2-01) | Run [44853664413](https://github.com/wes-blue/sports-analysis/actions/runs/44853664413), event push, started at 02:02:52 UTC; green in 36 seconds |
+| SKIP path builds a missing workbook | Pipeline SKIP (data current, no data commit); the workbook was built in 12 seconds |
+| Release created and asset published (A2-02) | Pre-release `nfl-workbook` created; file uploaded under the temporary name and renamed through the API with no warning; the run's own check of the public address passed |
+| Same bytes as tested | Asset 40,018,688 bytes, SHA-256 `66d6e26abc6d64c040ac8a413a2e1c89bb3d3bba955f4ded197d77d936fba2f2`, identical to the local builds on Python 3.11 and 3.13; the runner used 3.12.16 (A1-17) |
+| Stable address | Answered 206 to a ranged request; the downloaded file has the same SHA-256 |
+| `About` sheet against `NFL/04-data/status.csv` (C-33) | Equal: version 3.001, run `20261120T233201Z-gh44837469898`, generated 2026-11-20T23:32:09Z, data through 2026 week 11 REG, gates 13/0/0 |
+| File properties | Author and last modified by "NFL-Analysis pipeline"; no personal data |
+| Run artifact (A2-03) | `workbook-44853664413-1`, kept 7 days |
+
+Still not seen: the file opened in Excel (Q-024), replacing an existing asset (the next publish deletes the old file and renames the new one), and a red workbook step with its alert. They move to roadmap 3.002 (D-045).

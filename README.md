@@ -16,7 +16,7 @@ If the link answers "not found": the workbook is being replaced or has not been 
 
 | Sport | Folder | What it covers | Workbook | Status |
 |---|---|---|---|---|
-| NFL | [`NFL/`](NFL/README.md) | Weekly player stats for a rolling 10 seasons (regular season and playoffs), team defense and special teams (D/ST) rows, long-touchdown counts, and fantasy points for several scoring systems, including one ESPN league | `NFL-Analysis` (version 3.001 in preparation) | Moved here on 2026-11-20. Version 2.001 (Power Query) was released and is retired; [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the releases. |
+| NFL | [`NFL/`](NFL/README.md) | Weekly player stats for a rolling 10 seasons (regular season and playoffs), team defense and special teams (D/ST) rows, long-touchdown counts, and fantasy points for several scoring systems, including one ESPN league | `NFL-Analysis` 3.001 | Moved here on 2026-11-20. Version 3.001, the workbook built on GitHub, was released on 2026-11-21; version 2.001 (Power Query) is retired; [`NFL/08-releases/RELEASES.md`](NFL/08-releases/RELEASES.md) shows the releases. |
 
 NFL is the only sport for now. The structure allows more.
 
@@ -57,7 +57,7 @@ For example, `.../NFL/04-data/scored/scored_2025.csv` holds every player-game of
 
 ## It updates itself
 
-The NFL workflows in `.github/workflows/` run the pipeline and rebuild the workbook during the season on Tuesday, Wednesday and Thursday, on the 1st of every month, and whenever a scoring file in `NFL/02-config/` is changed on `main`. A run publishes only when every blocking check passes; otherwise the last good data stays in place. As of 2026-11-21 the pipeline has published once on GitHub; the workbook upload step is not yet running.
+The NFL workflows in `.github/workflows/` run the pipeline and rebuild the workbook during the season on Tuesday, Wednesday and Thursday, on the 1st of every month, and whenever a scoring file in `NFL/02-config/` is changed on `main`. A run publishes only when every blocking check passes; otherwise the last good data stays in place. The pipeline first published data on GitHub on 2026-11-20, and the first workbook was built and uploaded on 2026-11-21 by the run that the 3.001 merge started.
 
 When the data looks out of date:
 
