@@ -1989,10 +1989,10 @@
       "title": "Q-007 and Q-016: Does ESPN count a blocked field goal as a miss?",
       "detail": "BLOCKERS.csv Q-007 is Still open: the pasted text was the owner's own week 8 lineup, which does not include the Seattle kicker (D-039). The follow-up Q-016 asks for J. Myers' 2026 ESPN game log.",
       "rating": "Low",
-      "response": "Not a miss meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38).",
+      "response": "Outcome: answered 2026-11-22 (D-052): ESPN counts a blocked field goal as a miss (J. Myers, week 8 2026: blocked, and ESPN shows 1 of 2). Applying it (fg_blocked weight -1 for ESPN_League) is roadmap 3.004, pending the owner's go-ahead. Before the answer: Not a miss meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38).",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-62",
@@ -2000,10 +2000,10 @@
       "title": "Q-008 and Q-017: Long-TD stacking and return fumbles",
       "detail": "BLOCKERS.csv Q-008 is Still open: the pasted text was the owner's own lineup, which includes none of the players asked about (D-039). The follow-up Q-017 asks for the 2026 ESPN game log of any listed long-TD or return-fumble player.",
       "rating": "Low",
-      "response": "Stacking and -2 for a return fumble meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38).",
+      "response": "Outcome: answered 2026-11-22 (D-055): the long-touchdown bonuses stack (T. Allgeier, week 8 2026: 46.1 needs both); the lost-return-fumble rule stays on its default for lack of an example. Before the answer: Stacking and -2 for a return fumble meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38). Update 2026-11-22: the paste for Q-017 was ESPN.com's stats page (no fantasy points), so it cannot settle the long-TD rule; the owner was asked for the ESPN Fantasy game log with its FPTS column.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-63",
@@ -2198,10 +2198,10 @@
       "title": "Q-016: Paste the Seattle kicker J. Myers' 2026 ESPN game log",
       "detail": "BLOCKERS.csv Q-016, follow-up to Q-007 (RAID-61). One week with a blocked field goal decides whether ESPN counts a block as a miss.",
       "rating": "Low",
-      "response": "Default in force: a blocked field goal is not a miss (0 points). Settled in roadmap 3.004.",
+      "response": "Outcome: answered 2026-11-22 (D-052); the paste was ESPN.com's stats page, which showed the blocked kick as a missed attempt. Before the answer: Default in force: a blocked field goal is not a miss (0 points). Settled in roadmap 3.004.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-81",
@@ -2209,10 +2209,10 @@
       "title": "Q-017: Paste the 2026 ESPN game log of a long-TD or return-fumble player",
       "detail": "BLOCKERS.csv Q-017, follow-up to Q-008 (RAID-62). One player with a 50+ yard touchdown and one with a fumble lost on a return settle both rules.",
       "rating": "Low",
-      "response": "Default in force: a 50+ yard TD earns both bonuses; a lost return fumble costs 2 points. Settled in roadmap 3.004.",
+      "response": "Outcome: answered 2026-11-22 (D-055): the owner pasted Allgeier's ESPN Fantasy game log; all 10 weeks match. Before the answer: Default in force: a 50+ yard TD earns both bonuses; a lost return fumble costs 2 points. Settled in roadmap 3.004. Update 2026-11-22: the paste was ESPN.com's stats page, not the fantasy game log; asked again with directions.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-82",
@@ -2352,10 +2352,10 @@
       "title": "Q-019: ESPN's treatment of special-teams touchdowns, blocked-kick returns, safeties and own-fumble touchdowns for a team defense",
       "detail": "BLOCKERS.csv Q-019. The owner's Arizona game log proved that ESPN leaves out points scored by the opposing defense, but shows none of these four cases. One ESPN game log each (Jets, Colts, Titans, Cowboys D/ST) would settle them.",
       "rating": "Low",
-      "response": "Defaults in force (D-038): special-teams touchdowns and blocked-kick returns count as points allowed; a safety against the offense does not; a team's own end-zone fumble recovery is credited to its D/ST as the nflverse data reports it. In 2026 so far these affect 6 of 300 team-games.",
+      "response": "Outcome: answered 2026-11-22 (D-055): Colts and Jets D/ST game logs; points allowed match in all 21 games, special-teams touchdowns and the blocked-punt case count against the defense as assumed; rarer cases stay on defaults. Before the answer: Defaults in force (D-038): special-teams touchdowns and blocked-kick returns count as points allowed; a safety against the offense does not; a team's own end-zone fumble recovery is credited to its D/ST as the nflverse data reports it. In 2026 so far these affect 6 of 300 team-games. Update 2026-11-22: the paste for Q-019 was the Colts' season team statistics (no weekly points allowed or fantasy points); asked again for a D/ST fantasy game log.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-95",
@@ -2363,10 +2363,10 @@
       "title": "Q-021: Is CC BY 4.0, crediting nflverse, the licence the owner wants for the derived data?",
       "detail": "BLOCKERS.csv Q-021. DATA-LICENSE.md states that the derived files in NFL/04-data are shared under CC BY 4.0 with credit to nflverse, and that the code is under the MIT licence the owner chose.",
       "rating": "Low",
-      "response": "Default in force: CC BY 4.0 for the derived data. Nothing technical depends on the answer. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
+      "response": "Outcome: answered 2026-11-22 (D-053): remain compliant; CC BY 4.0 with credit, licence link and change note is compliant, so nothing changes. Before the answer: Default in force: CC BY 4.0 for the derived data. Nothing technical depends on the answer. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
       "target_version": "3.003",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-96",
@@ -2385,10 +2385,10 @@
       "title": "Q-022: Require approval before pull requests from outside contributors run workflows",
       "detail": "BLOCKERS.csv Q-022. The repository is public, so anyone can open a pull request, which runs the test workflow. The owner is asked to set Settings > Actions > General > fork pull request approval to 'Require approval for all external contributors'.",
       "rating": "Low",
-      "response": "Default in force: GitHub's default (approval for first-time contributors only). The workflows use no secrets and a read-only token on pull requests (CONTRACTS.md §8, Security). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
+      "response": "Outcome: answered 2026-11-22: the owner set 'Require approval for all external contributors'. Not verifiable from this session (an administrator-only setting). Before the answer: Default in force: GitHub's default (approval for first-time contributors only). The workflows use no secrets and a read-only token on pull requests (CONTRACTS.md §8, Security). Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
       "target_version": "3.003",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-98",
@@ -2396,10 +2396,10 @@
       "title": "Q-023: Keep the Power Query route available at all?",
       "detail": "BLOCKERS.csv Q-023. The Power Query workbooks (2.001 and the experimental copy) are retired in favour of the workbook the pipeline builds. The sources, generators and copies are archived in NFL/05-excel/archive-2.x.",
       "rating": "Low",
-      "response": "Default in force: retired and not maintained (D-043); the released 2.001 workbook stays in NFL/maintainer/releases. Nothing is blocked; answer B would mean keeping a second, slower route up to date. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
+      "response": "Outcome: answered 2026-11-22 (D-054): a Power Query option returns, loading finished data only (no scoring in Excel); design to be agreed with the owner. Before the answer: Default in force: retired and not maintained (D-043); the released 2.001 workbook stays in NFL/maintainer/releases. Nothing is blocked; answer B would mean keeping a second, slower route up to date. Moved to 3.002 by D-045 (renumbered 3.003 by D-047): the BLOCKERS.csv row is still open.",
       "owner": "User",
       "target_version": "3.003",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-99",
