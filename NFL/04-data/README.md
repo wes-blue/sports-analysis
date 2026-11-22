@@ -14,6 +14,8 @@ https://raw.githubusercontent.com/wes-blue/sports-analysis/main/NFL/04-data/<pat
 
 where `<path>` is the file's path inside this folder, for example `scored/scored_2025.csv` or `checks/gates.csv`. Any tool that reads a CSV file from a web address can use it.
 
+Want every season in one file, with the scores already joined to the statistics? The workbook's two main tables are published as release downloads, not in this folder: `NFL-PlayerGames.csv` and `NFL-SeasonTotals.csv`, at `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/<name>`. See [`../05-excel/README.md`](../05-excel/README.md).
+
 ## What each file is
 
 | File | What it holds | Contract |

@@ -4,6 +4,8 @@ Scored NFL fantasy-football data and a finished Excel workbook built from it. A 
 
 **Download the workbook:** <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx>. Open it in Excel; there is nothing to refresh. The link never changes, and the file behind it is replaced after every publish.
 
+**Or refresh from Excel:** the workbook's two main tables are also published as plain CSV files, [`NFL-PlayerGames.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv) and [`NFL-SeasonTotals.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv), replaced together with it. [`05-excel/README.md`](05-excel/README.md) shows how to load them in Excel with **Get Data, From Web**, so that **Refresh All** fetches the newest data.
+
 Everything runs on GitHub. Nothing needs your computer to be on, and you need only Excel to use the result.
 
 **As of 2026-11-21:** the pipeline publishes on GitHub and the workbook, version 3.002, is built there and replaced at the download link after every publish. It opens in desktop Excel with no repair message. See [`05-excel/README.md`](05-excel/README.md) for the version history.
@@ -12,7 +14,7 @@ Everything runs on GitHub. Nothing needs your computer to be on, and you need on
 
 | To | Read |
 |---|---|
-| Use the workbook | [`05-excel/README.md`](05-excel/README.md): the download link and what is in the workbook |
+| Use the workbook | [`05-excel/README.md`](05-excel/README.md): the download link, the two CSV files and how to refresh them in Excel, and what is in the workbook |
 | Change the scoring | [`02-config/README.md`](02-config/README.md): edit a file on GitHub; saving it on `main` publishes new scores and rebuilds the workbook |
 | Understand the automation, or see why data is late | [`03-pipeline/AUTOMATION.md`](03-pipeline/AUTOMATION.md) |
 | Read the data from another tool | [`04-data/README.md`](04-data/README.md) |
@@ -35,7 +37,8 @@ GitHub Actions     /.github/workflows/nfl-pipeline-*.yml
        v
 nflpipe export     builds NFL-Analysis.xlsx (values only) from 04-data; the workflow uploads it as a
                    release asset at https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx
-                   (not committed to git; the 05-excel/ folder only says where it is)
+                   (not committed to git; the 05-excel/ folder only says where it is), and next to it the
+                   workbook's PlayerGames and SeasonTotals sheets as NFL-PlayerGames.csv and NFL-SeasonTotals.csv
 ```
 
 ## Folders
