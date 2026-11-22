@@ -43,6 +43,7 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 
 | ID | About | Default in force |
 |---|---|---|
+| Q-026 | Raised 2026-11-22: the owner's Excel test of the corrected refresh workbook (TEST3, sent in chat with `owner-test-steps-v3.md`) | `PUBLISH_REFRESH_WORKBOOK` stays `"false"`; the CSV files and the guide are the Excel route (D-057) |
 | Q-023 | Answered 2026-11-22 (D-054): a Power Query option returns, loading finished data only | Option A chosen in chat (D-056) and built as 3.005; the refresh workbook waits for the owner's Excel test of TEST3 (D-057) |
 
 Answered since: Q-015 (merged 2026-11-20), Q-020 (the Power Query refresh was too slow; acted on in D-041 to D-043) and Q-024 (3.001 opens cleanly in Excel in about a minute; D-046) and Q-018 (one repository with a maintainer folder; D-051; D-050 was superseded).

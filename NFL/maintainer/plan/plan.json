@@ -2559,6 +2559,17 @@
       "owner": "Orchestrator",
       "target_version": "3.005",
       "status": "Open"
+    },
+    {
+      "id": "RAID-109",
+      "type": "Question",
+      "title": "Q-026: Does the corrected refresh workbook (TEST3) open in desktop Excel without a repair message, refresh both tables, and how long does it take?",
+      "detail": "BLOCKERS.csv Q-026. TEST3 is the real generator's output after the 3.005 fixes (hidden ExternalData names, table = query = FillTarget, 10-minute timeout), reading the 2026 data files in the repository instead of the release assets. The owner reports any repair message, the prompts, the filled columns and rows, the time of a first and a second Refresh All, and one FF_ESPN_League spot check.",
+      "rating": "Medium",
+      "response": "If it passes, the maintainer sets PUBLISH_REFRESH_WORKBOOK to \"true\" in both workflows and puts the refresh workbook back on the visitor pages (D-057). If Excel reports a repair, the switch stays off, the message is reproduced before any change, and the guide remains the Excel route (RAID-108).",
+      "owner": "User",
+      "target_version": "3.005",
+      "status": "Open"
     }
   ],
   "controls": [
