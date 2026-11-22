@@ -841,7 +841,7 @@ def _gate_espn_points(context: GateContext, rows: list[list]) -> GateResult:
                           "06-qa/fixtures/espn_actuals.csv")
     return GateResult("G-ESPN", name, "blocking", "PASS",
                       f"{exact + within} of {len(rows) - len(na)} ESPN values reproduced: {exact} exact, "
-                      f"{within} within tolerance (D/ST +/-1)" + (f", {len(na)} not applicable" if na else "")
+                      f"{within} within tolerance (D/ST: the row's tolerance, 1 or 2)" + (f", {len(na)} not applicable" if na else "")
                       + renamed_text(checked))
 
 
