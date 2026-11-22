@@ -1,7 +1,8 @@
 """``python -m nflpipe refresh-workbook``: write ``NFL-Analysis-Refresh.xlsx`` (CONTRACTS.md section 13.6).
 
 A small workbook that carries **no data and no scoring**: a Start sheet and two empty, query-backed tables
-(``tblPlayerGames`` on ``PlayerGames``, ``tblSeasonTotals`` on ``SeasonTotals``). Each table is bound to a Power Query
+(table ``PlayerGames`` on sheet ``PlayerGames``, table ``SeasonTotals`` on sheet ``SeasonTotals``: as Excel does, the table is
+named after its query). Each table is bound to a Power Query
 query (``pq/PlayerGames.m``, ``pq/SeasonTotals.m``) that downloads one of the two published CSV files and types its
 columns. In Excel the user clicks Data > Refresh All and the tables fill.
 
@@ -158,9 +159,9 @@ def table_xml(tid: int, name: str, headers) -> str:
             f'<tableStyleInfo name="TableStyleMedium2" showFirstColumn="0" showLastColumn="0" showRowStripes="1" showColumnStripes="0"/></table>')
 
 
-def query_table_xml(cid: int, headers) -> str:
+def query_table_xml(cid: int, headers, ext: str) -> str:
     f = "".join(f'<queryTableField id="{i + 1}" name={quoteattr(h)} tableColumnId="{i + 1}"/>' for i, h in enumerate(headers))
-    return (f'{XML_DECL}<queryTable xmlns="{NS_MAIN}" name="ExternalData_1" connectionId="{cid}" autoFormatId="16" applyNumberFormats="0" '
+    return (f'{XML_DECL}<queryTable xmlns="{NS_MAIN}" name="{ext}" connectionId="{cid}" autoFormatId="16" applyNumberFormats="0" '
             f'applyBorderFormats="0" applyFontFormats="0" applyPatternFormats="0" applyAlignmentFormats="0" applyWidthHeightFormats="0">'
             f'<queryTableRefresh nextId="{len(headers) + 1}"><queryTableFields count="{len(headers)}">{f}</queryTableFields></queryTableRefresh></queryTable>')
 
@@ -207,14 +208,17 @@ def build_parts(seeds: dict[str, list[str]] | None = None) -> dict[str, bytes | 
                ("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"),
                ("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml")]
     conns = []
+    defined = []
     for k, (name, _, headers, _types) in enumerate(spec, start=1):
         sheet = k + 1
         widths = [{"player_display_name": 26, "player_id": 13}.get(h, 12 if k == 1 else 14) for h in headers]
         parts[f"xl/worksheets/sheet{sheet}.xml"] = table_sheet(sst, headers, widths, 4 if k == 1 else 3)
         parts[f"xl/worksheets/_rels/sheet{sheet}.xml.rels"] = rels([("rId1", NS_REL + "/table", f"../tables/table{k}.xml")])
-        parts[f"xl/tables/table{k}.xml"] = table_xml(k, "tbl" + name, headers)
+        # The hidden, sheet-scoped name Excel writes for each query table: it binds the queryTable to its range.
+        defined.append(f'<definedName name="ExternalData_{k}" localSheetId="{sheet - 1}" hidden="1">{name}!$A$1:${col_letter(len(headers))}$2</definedName>')
+        parts[f"xl/tables/table{k}.xml"] = table_xml(k, name, headers)
         parts[f"xl/tables/_rels/table{k}.xml.rels"] = rels([("rId1", NS_REL + "/queryTable", f"../queryTables/queryTable{k}.xml")])
-        parts[f"xl/queryTables/queryTable{k}.xml"] = query_table_xml(k, headers)
+        parts[f"xl/queryTables/queryTable{k}.xml"] = query_table_xml(k, headers, f"ExternalData_{k}")
         conns.append(f'<connection id="{k}" keepAlive="1" name="Query - {name}" description="Connection to the \'{name}\' query in the workbook." '
                      f'type="5" refreshedVersion="8" background="1" saveData="1"><dbPr connection="Provider=Microsoft.Mashup.OleDb.1;Data Source=$Workbook$;'
                      f'Location={name};Extended Properties=&quot;&quot;" command="SELECT * FROM [{name}]"/></connection>')
@@ -231,7 +235,7 @@ def build_parts(seeds: dict[str, list[str]] | None = None) -> dict[str, bytes | 
         '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>')
     names = ["Start", "PlayerGames", "SeasonTotals"]
     parts["xl/workbook.xml"] = (f'{XML_DECL}<workbook xmlns="{NS_MAIN}" xmlns:r="{NS_REL}"><workbookPr/><bookViews><workbookView activeTab="0"/></bookViews><sheets>'
-        + "".join(f'<sheet name="{n}" sheetId="{i}" r:id="rId{i}"/>' for i, n in enumerate(names, start=1)) + '</sheets><calcPr calcId="191029"/></workbook>')
+        + "".join(f'<sheet name="{n}" sheetId="{i}" r:id="rId{i}"/>' for i, n in enumerate(names, start=1)) + '</sheets><definedNames>' + "".join(defined) + '</definedNames><calcPr calcId="191029"/></workbook>')
     parts["xl/_rels/workbook.xml.rels"] = rels([(f"rId{i}", NS_REL + "/worksheet", f"worksheets/sheet{i}.xml") for i in (1, 2, 3)]
         + [("rId4", NS_REL + "/styles", "styles.xml"), ("rId5", NS_REL + "/sharedStrings", "sharedStrings.xml"),
            ("rId6", NS_REL + "/connections", "connections.xml"), ("rId7", NS_REL + "/customXml", "../customXml/item1.xml")])

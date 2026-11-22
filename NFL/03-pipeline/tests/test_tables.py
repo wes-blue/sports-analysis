@@ -141,6 +141,18 @@ def test_format_no_bom_lf_quoting_and_roundtrip(tmp_path):
     assert equal_to_sheet(out, "PlayerGames", tables / PLAYER) == 4
 
 
+def test_a_carriage_return_inside_a_field_is_quoted_and_never_ends_a_record(tmp_path):
+    players = [one_player("A\rB", pid="00-1", week="1"), one_player("C\r\nD", pid="00-2", week="2")]
+    data = tiny_data(tmp_path / "d", players, [["1.5", "2"]] * 2)
+    out, tables = both(data, tmp_path)
+    raw = (tables / PLAYER).read_bytes()
+    assert b'"A\rB"' in raw and b'"C\r\nD"' in raw                  # quoted, so a reader sees one field
+    assert len(re.findall(rb"\r(?!\n|B)", raw)) == 0               # a CR is only ever inside a quoted field
+    header, rows = read_csv(tables / PLAYER)
+    assert len(rows) == 2 and {len(r) for r in rows} == {len(header)}
+    assert equal_to_sheet(out, "PlayerGames", tables / PLAYER) == 2
+
+
 def test_xml_illegal_characters_are_dropped_in_both(tmp_path):
     data = tiny_data(tmp_path / "d", [one_player("Bad\x01Name")], [["1", "1"]])
     out, tables = both(data, tmp_path)
@@ -214,7 +226,9 @@ def test_power_query_text_reads_only_the_release_asset(name):
     m = refresh_workbook.read_m(name + ".m")
     urls = re.findall(r"https?://[^\s\"')]+", m)
     assert urls == [PREFIX + M_FILES[name]]
-    assert re.findall(r'Web\.Contents\(\s*"([^"]+)"\s*\)', m) == urls          # no options: no headers, no Query
+    # the only option is the 10-minute timeout (the default, 100 s, is too short for the 38 MB PlayerGames file)
+    assert re.findall(r'Web\.Contents\(\s*"([^"]+)"\s*,\s*\[Timeout = #duration\(0, 0, 10, 0\)\]\s*\)', m) == urls
+    assert m.count("Web.Contents") == 1
     assert "Encoding = 65001" in m and "Table.PromoteHeaders" in m and "QuoteStyle.Csv" in m
     for banned in ("File.Contents", "Excel.CurrentWorkbook", "Sql.", "Odbc.", "OleDb", "Folder.", "Web.Page", "Json.Document",
                    "Headers =", "Query =", "RelativePath", "ApiKeyName", "Value.NativeQuery"):
@@ -265,6 +279,56 @@ def mashup_parts(z: zipfile.ZipFile):
     return blocks
 
 
+def fill_target(z, name):
+    mx = mashup_parts(z)[2]
+    mx = mx[8:8 + struct.unpack("<I", mx[4:8])[0]].decode("utf-8-sig")
+    item = re.search(r"<ItemPath>Section1/%s</ItemPath>.*?</Item>" % name, mx, re.S).group(0)
+    return re.search(r'Type="FillTarget" Value="s([^"]*)"', item).group(1)
+
+
+def test_refresh_workbook_hidden_names_bind_each_query_table_to_its_range(refresh):
+    z = zipfile.ZipFile(refresh)
+    wb = minidom.parseString(z.read("xl/workbook.xml")).documentElement
+    sheets = [s.getAttribute("name") for s in wb.getElementsByTagName("sheet")]
+    dn = {d.getAttribute("name"): d for d in wb.getElementsByTagName("definedName")}
+    assert sorted(dn) == ["ExternalData_1", "ExternalData_2"]                # unique, one per query table
+    qnames = []
+    for k, name in ((1, "PlayerGames"), (2, "SeasonTotals")):
+        d = dn[f"ExternalData_{k}"]
+        t = minidom.parseString(z.read(f"xl/tables/table{k}.xml")).documentElement
+        assert d.getAttribute("hidden") == "1"
+        assert sheets[int(d.getAttribute("localSheetId"))] == name           # zero-based sheet index
+        assert d.firstChild.data == f"{name}!$A$1:${re.match(r'A1:([A-Z]+)2', t.getAttribute('ref')).group(1)}$2"
+        qnames.append(minidom.parseString(z.read(f"xl/queryTables/queryTable{k}.xml")).documentElement.getAttribute("name"))
+    assert qnames == ["ExternalData_1", "ExternalData_2"]
+    ids = [minidom.parseString(z.read(f"xl/tables/table{k}.xml")).documentElement.getAttribute("id") for k in (1, 2)]
+    assert len(set(ids)) == 2
+
+
+# The refresh workbook is the same file for every data version, so its bytes may change only together with
+# TABLES_VERSION (CONTRACTS.md 13.6). This digest covers every part's name and uncompressed bytes (the zip's
+# compression is left out on purpose: it can differ between zlib builds, the content cannot).
+REFRESH_PINS = {"1": "c2f9f141dc7870fd3306a3ef222782d67ecb7991293ee452c697a3a10c2869c1"}
+
+
+def parts_digest(path: Path) -> str:
+    h = hashlib.sha256()
+    z = zipfile.ZipFile(path)
+    for n in z.namelist():
+        h.update(n.encode() + b"\0" + z.read(n) + b"\0")
+    return h.hexdigest()
+
+
+def test_refresh_workbook_changes_only_with_tables_version(refresh):
+    got = parts_digest(refresh)
+    want = REFRESH_PINS.get(export_xlsx.TABLES_VERSION)
+    assert want == got, (
+        f"The refresh workbook's content (the generator in nflpipe/refresh_workbook.py, or the text of nflpipe/pq/*.m) "
+        f"has changed (parts digest {got}) but TABLES_VERSION is still {export_xlsx.TABLES_VERSION!r}. Bump TABLES_VERSION in "
+        f"nflpipe/export_xlsx.py and pin the new digest for the new version in REFRESH_PINS (CONTRACTS.md 13.6): "
+        f"the published copy of this file is replaced only when the version changes.")
+
+
 def test_refresh_workbook_structure(refresh):
     z = zipfile.ZipFile(refresh)
     assert z.testzip() is None
@@ -296,9 +360,11 @@ def test_refresh_workbook_structure(refresh):
         q = minidom.parseString(z.read(f"xl/queryTables/queryTable{k}.xml")).documentElement
         tc = [c.getAttribute("name") for c in t.getElementsByTagName("tableColumn")]
         qf = [c.getAttribute("name") for c in q.getElementsByTagName("queryTableField")]
-        assert t.getAttribute("name") == "tbl" + name and t.getAttribute("tableType") == "queryTable"
+        assert t.getAttribute("name") == name == t.getAttribute("displayName") and t.getAttribute("tableType") == "queryTable"
         assert tc == qf and len(set(tc)) == len(tc)
         assert conn[q.getAttribute("connectionId")] == f"Query - {name}"
+        assert q.getAttribute("name") == f"ExternalData_{k}"
+        assert fill_target(z, name) == name                             # table name = query name = FillTarget
         cells = minidom.parseString(z.read(f"xl/worksheets/sheet{k + 1}.xml")).getElementsByTagName("row")[0].getElementsByTagName("c")
         assert len(cells) == len(tc)
         tables.append(name)

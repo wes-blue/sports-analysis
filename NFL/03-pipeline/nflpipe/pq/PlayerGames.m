@@ -2,7 +2,10 @@
 // No scoring happens here: the FF_ columns are already in the file. This query only downloads, reads and types.
 let
     Source = Csv.Document(
-        Web.Contents("https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv"),
+        Web.Contents(
+            "https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv",
+            [Timeout = #duration(0, 0, 10, 0)]
+        ),
         [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
     ),
     Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
