@@ -1,6 +1,6 @@
 # Memory: what a new session must know
 
-_Last updated: 2026-11-21, when the project's internal files moved into `NFL/maintainer/` (D-051)._
+_Last updated: 2026-11-22, after the owner's BLOCKERS.csv answers (D-052 to D-054)._
 
 Read this after `.claude/CLAUDE.md`. The decision log (`NFL/maintainer/governance/DECISIONS.md`), the NFL contract (`NFL/CONTRACTS.md`), the plan (`NFL/maintainer/plan/PLAN.md`) and `NFL/maintainer/BLOCKERS.csv` hold the detail; this file says where things stand and what is not written anywhere else.
 
@@ -24,7 +24,8 @@ Read this after `.claude/CLAUDE.md`. The decision log (`NFL/maintainer/governanc
 
 ## Next steps
 
-1. **3.002 is released** (D-049). Nothing open.
+1. **Answers of 2026-11-22** (owner uploaded `BLOCKERS.csv` to `main`): Q-016 settled (D-052), Q-021 compliant as is (D-053), Q-022 setting changed by the owner (not verifiable here), Q-023 Power Query option wanted (D-054); Q-017 and Q-019 still open (the pastes were ESPN.com stats pages, not fantasy game logs). Excel had reformatted the `Raised` dates; they were put back to YYYY-MM-DD. Q-015, Q-018, Q-020, Q-024 and Q-025 now hold the owner's '.' in `Answer`; their full answers are in the decision log (D-041, D-046, D-048, D-050/D-051).
+1a. **Waiting on the owner:** go-ahead for 3.004 (apply D-052, refresh the golden and ESPN test values), and the shape of the Power Query option (D-054).
 2. **If Excel ever reports a repair** on a later file, treat it as an exporter defect: get the message word for word and reproduce it before changing the file.
 3. **Watch the first replacement of the asset.** The next PUBLISH (or a `workbook_only` run) is the first to delete an existing asset and rename the new one. Check its run summary and the stable address afterwards (C-33, RAID-100, RAID-103).
 4. **3.003, automation proven (was 3.002, D-047):** a manual run of each workflow, the first scheduled weekly run (Tue 2026-11-24), the watchdog, the monthly run, a config edit made on GitHub that publishes and rebuilds the workbook, and an alert from a failed build or upload.
@@ -41,12 +42,10 @@ Q-001 to Q-006 and Q-009 to Q-014 are answered and acted on (D-033 to D-039). Q-
 
 | ID | About | Default in force |
 |---|---|---|
-| Q-016 | Paste the Seattle kicker J. Myers' 2026 ESPN game log (blocked field goals; follow-up to Q-007) | A blocked field goal is not a miss |
-| Q-017 | Paste the 2026 ESPN game log of a long-touchdown or return-fumble player (follow-up to Q-008) | A 50+ yard TD earns both bonuses; a lost return fumble costs 2 points |
-| Q-019 | ESPN game logs for the Jets, Colts, Titans or Cowboys D/ST (special-teams TDs, blocked-kick returns, safeties, own-fumble TDs) | Assumptions in D-038 |
-| Q-021 | Confirm CC BY 4.0 for the derived data | CC BY 4.0, crediting nflverse |
-| Q-022 | Require approval before outside pull requests run workflows | GitHub's default |
-| Q-023 | Keep the Power Query route available at all? | Retired and archived (D-043) |
+| Q-016 | Answered 2026-11-22 (D-052): ESPN counts a blocked field goal as a miss | **Waiting for the owner's go-ahead to apply it** (roadmap 3.004) |
+| Q-017 | Still open: the paste was ESPN.com's stats page; asked for the ESPN Fantasy game log (FPTS column) of a long-TD player | A 50+ yard TD earns both bonuses; a lost return fumble costs 2 points |
+| Q-019 | Still open: the paste was the Colts' team statistics; asked for a D/ST fantasy game log (Colts week 6 or Jets week 8) | Assumptions in D-038 |
+| Q-023 | Answered 2026-11-22 (D-054): a Power Query option returns, loading finished data only | **Its shape is put to the owner**; nothing built yet |
 
 Answered since: Q-015 (merged 2026-11-20), Q-020 (the Power Query refresh was too slow; acted on in D-041 to D-043) and Q-024 (3.001 opens cleanly in Excel in about a minute; D-046) and Q-018 (one repository with a maintainer folder; D-051; D-050 was superseded).
 
