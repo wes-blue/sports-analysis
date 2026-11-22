@@ -324,7 +324,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,1,REG,00-0033662,Cooper Rush,QB,DAL,2.56,2.56,2.56,2.56,2.56,2.56,2.56
 2022,1,REG,00-0033697,Michael Davis,CB,LAC,0,0,0,0,0,0,4
 2022,1,REG,00-0033699,Austin Ekeler,RB,LAC,7.2,11.2,7.2,9.2,11.2,9.2,14.2
-2022,1,REG,00-0033702,Younghoe Koo,K,ATL,0,0,0,0,0,19,19
+2022,1,REG,00-0033702,Younghoe Koo,K,ATL,0,0,0,0,0,19,18
 2022,1,REG,00-0033729,Cameron Johnston,P,HOU,0,0,0,0,0,0,0
 2022,1,REG,00-0033757,Robert Tonyan,TE,GB,3.6,6.6,3.6,5.1,6.6,5.1,7.6
 2022,1,REG,00-0033765,Dylan Cole,LB,TEN,0,0,0,0,0,0,2
@@ -1073,7 +1073,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,1,REG,DST_WAS,WAS D/ST,DST,WAS,,,0,0,0,0,123
 2022,2,REG,00-0019596,Tom Brady,QB,TB,9.4,9.4,9.4,9.4,9.4,9.4,9.4
 2022,2,REG,00-0022824,Andy Lee,P,ARI,0,0,0,0,0,0,0
-2022,2,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,9,9
+2022,2,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,9,8
 2022,2,REG,00-0023459,Aaron Rodgers,QB,GB,16.36,16.36,16.36,16.36,16.36,16.36,17.36
 2022,2,REG,00-0023853,Matt Prater,K,ARI,0,0,0,0,0,1,1
 2022,2,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,4,4
@@ -1398,7 +1398,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,2,REG,00-0033782,DeMarcus Walker,DE,TEN,0,0,0,0,0,0,6
 2022,2,REG,00-0033783,Ahkello Witherspoon,CB,PIT,0,0,0,0,0,0,4
 2022,2,REG,00-0033784,Eddie Jackson,FS,CHI,0,0,0,0,0,0,19
-2022,2,REG,00-0033787,Jake Elliott,K,PHI,0,0,0,0,0,6,6
+2022,2,REG,00-0033787,Jake Elliott,K,PHI,0,0,0,0,0,6,5
 2022,2,REG,00-0033831,Andrew Wylie,G,KC,0,0,0,0,0,0,0
 2022,2,REG,00-0033854,Dare Ogunbowale,RB,HOU,0,0,0,0,0,0,0
 2022,2,REG,00-0033856,Leonard Fournette,RB,TB,7.4,9.4,7.4,8.4,9.4,8.4,10.4
@@ -2173,7 +2173,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,3,REG,00-0026158,Joe Flacco,QB,NYJ,3.4,3.4,3.4,3.4,3.4,3.4,3.4
 2022,3,REG,00-0026190,Calais Campbell,DE,BAL,0,0,0,0,0,0,4
 2022,3,REG,00-0026498,Matthew Stafford,QB,LA,10.16,10.16,10.16,10.16,10.16,10.16,11.16
-2022,3,REG,00-0026858,Graham Gano,K,NYG,0,0,0,0,0,15,15
+2022,3,REG,00-0026858,Graham Gano,K,NYG,0,0,0,0,0,15,14
 2022,3,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,8,8
 2022,3,REG,00-0027103,Kevin Huber,P,CIN,0,0,0,0,0,0,0
 2022,3,REG,00-0027114,Thomas Morstead,P,MIA,0,0,0,0,0,0,0
@@ -2366,7 +2366,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,3,REG,00-0032464,Kalif Raymond,WR,DET,0.4,1.4,0.4,0.9,1.4,0.9,1.4
 2022,3,REG,00-0032466,George Fant,OT,NYJ,0,0,0,0,0,0,0
 2022,3,REG,00-0032521,Mike Hilton,CB,CIN,0,0,0,0,0,0,16
-2022,3,REG,00-0032569,Wil Lutz,K,NO,0,0,0,0,0,1,1
+2022,3,REG,00-0032569,Wil Lutz,K,NO,0,0,0,0,0,1,0
 2022,3,REG,00-0032580,Jonathan Jones,DB,NE,0,0,0,0,0,0,12
 2022,3,REG,00-0032602,J.D. McKissic,RB,WAS,4,10,4,7,10,7,13
 2022,3,REG,00-0032667,Roy Robertson-Harris,DE,JAX,0,0,0,0,0,0,2
@@ -2857,7 +2857,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,3,REG,00-0036123,Brandon Walton,OT,TB,0,0,0,0,0,0,0
 2022,3,REG,00-0036130,Nnamdi Madubuike,DT,BAL,0,0,0,0,0,0,9
 2022,3,REG,00-0036158,J.K. Dobbins,RB,BAL,4,6,4,5,6,5,7
-2022,3,REG,00-0036162,Tyler Bass,K,BUF,0,0,0,0,0,5,5
+2022,3,REG,00-0036162,Tyler Bass,K,BUF,0,0,0,0,0,5,4
 2022,3,REG,00-0036167,Tae Crowder,LB,NYG,0,0,0,0,0,0,8
 2022,3,REG,00-0036181,Teair Tart,DT,TEN,0,0,0,0,0,0,3
 2022,3,REG,00-0036182,Nick Westbrook-Ikhine,WR,TEN,4,7,4,5.5,7,5.5,10
@@ -3714,7 +3714,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,4,REG,00-0034789,Minkah Fitzpatrick,FS,PIT,0,0,0,0,0,0,20
 2022,4,REG,00-0034790,Derwin James,FS,LAC,0,0,0,0,0,0,16
 2022,4,REG,00-0034791,Nick Chubb,RB,CLE,18.7,20.7,18.7,19.7,20.7,19.7,28.7
-2022,4,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,9,10
+2022,4,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,9,9
 2022,4,REG,00-0034796,Lamar Jackson,QB,BAL,13.06,13.06,13.06,13.06,13.06,13.06,17.06
 2022,4,REG,00-0034797,Jerome Baker,OLB,MIA,0,0,0,0,0,0,12
 2022,4,REG,00-0034798,Durham Smythe,TE,MIA,0,0,0,0,0,0,0
@@ -4303,7 +4303,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,4,REG,DST_WAS,WAS D/ST,DST,WAS,,,0,0,0,0,91
 2022,5,REG,00-0019596,Tom Brady,QB,TB,19.74,19.74,19.74,19.74,19.74,19.74,20.74
 2022,5,REG,00-0022824,Andy Lee,P,ARI,0,0,0,0,0,0,0
-2022,5,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,7,7
+2022,5,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,7,6
 2022,5,REG,00-0023459,Aaron Rodgers,QB,GB,16.88,16.88,16.88,16.88,16.88,16.88,16.88
 2022,5,REG,00-0024243,Marcedes Lewis,TE,GB,6.2,7.2,6.2,6.7,7.2,6.7,8.2
 2022,5,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,18,18
@@ -4361,7 +4361,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,5,REG,00-0029692,Bryan Anger,P,DAL,0,0,0,0,0,0,0
 2022,5,REG,00-0029701,Ryan Tannehill,QB,TEN,11.54,11.54,11.54,11.54,11.54,11.54,11.54
 2022,5,REG,00-0029764,Cody Davis,DB,NE,0,0,0,0,0,0,4
-2022,5,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,11,11
+2022,5,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,11,10
 2022,5,REG,00-0029890,Mike Purcell,NT,DEN,0,0,0,0,0,0,4
 2022,5,REG,00-0029892,Kyle Juszczyk,FB,SF,2.7,4.7,2.7,3.7,4.7,3.7,5.7
 2022,5,REG,00-0029959,Carson Tinker,LS,SEA,0,0,0,0,0,0,0
@@ -4738,7 +4738,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,5,REG,00-0034431,Zaire Franklin,OLB,IND,0,0,0,0,0,0,17
 2022,5,REG,00-0034437,Logan Cooke,P,JAX,0,0,0,0,0,0,0
 2022,5,REG,00-0034440,Justin Jackson,RB,DET,1.4,1.4,1.4,1.4,1.4,1.4,2.4
-2022,5,REG,00-0034450,Greg Joseph,K,MIN,0,0,0,0,0,2,2
+2022,5,REG,00-0034450,Greg Joseph,K,MIN,0,0,0,0,0,2,1
 2022,5,REG,00-0034468,Chandon Sullivan,DB,MIN,0,0,0,0,0,0,4
 2022,5,REG,00-0034473,Dennis Gardeck,LB,ARI,0,0,0,0,0,0,2
 2022,5,REG,00-0034485,Jonathan Owens,SAF,HOU,0,0,0,0,0,0,8
@@ -4992,7 +4992,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,5,REG,00-0036157,Kristian Welch,LB,BAL,0,0,0,0,0,0,0
 2022,5,REG,00-0036158,J.K. Dobbins,RB,BAL,4.4,4.4,4.4,4.4,4.4,4.4,9.4
 2022,5,REG,00-0036159,Joshua Uche,LB,NE,0,0,0,0,0,0,2
-2022,5,REG,00-0036162,Tyler Bass,K,BUF,0,0,0,0,0,8,8
+2022,5,REG,00-0036162,Tyler Bass,K,BUF,0,0,0,0,0,8,7
 2022,5,REG,00-0036165,Isaiah Hodgins,WR,BUF,4.1,8.1,4.1,6.1,8.1,6.1,10.1
 2022,5,REG,00-0036166,Dane Jackson,CB,BUF,0,0,0,0,0,0,11
 2022,5,REG,00-0036167,Tae Crowder,LB,NYG,0,0,0,0,0,0,7
@@ -5410,7 +5410,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,6,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,2,2
 2022,6,REG,00-0023459,Aaron Rodgers,QB,GB,11.84,11.84,11.84,11.84,11.84,11.84,11.84
 2022,6,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,7,7
-2022,6,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,4,4
+2022,6,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,4,3
 2022,6,REG,00-0026027,J.J. Jansen,LS,CAR,0,0,0,0,0,0,0
 2022,6,REG,00-0026143,Matt Ryan,QB,IND,27.16,27.16,27.16,27.16,27.16,27.16,28.16
 2022,6,REG,00-0026166,Duane Brown,OT,NYJ,0,0,0,0,0,0,0
@@ -7268,7 +7268,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,7,REG,00-0038094,Jordan Stout,P,BAL,0,0,0,0,0,0,0
 2022,7,REG,00-0038095,Cordell Volson,G,CIN,0,0,0,0,0,0,0
 2022,7,REG,00-0038096,Joshua Paschal,DE,DET,0,0,0,0,0,0,4
-2022,7,REG,00-0038097,Cade York,K,CLE,0,0,0,0,0,9,9
+2022,7,REG,00-0038097,Cade York,K,CLE,0,0,0,0,0,9,8
 2022,7,REG,00-0038100,Percy Butler,SAF,WAS,0,0,0,0,0,0,2
 2022,7,REG,00-0038102,Kenny Pickett,QB,PIT,10.28,10.28,10.28,10.28,10.28,10.28,11.28
 2022,7,REG,00-0038103,Cole Strange,G,NE,0,0,0,0,0,0,0
@@ -7369,7 +7369,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,8,REG,00-0029542,Stephon Gilmore,CB,IND,0,0,0,0,0,0,8
 2022,8,REG,00-0029562,Lavonte David,OLB,TB,0,0,0,0,0,0,11
 2022,8,REG,00-0029585,Chandler Jones,DE,LV,0,0,0,0,0,0,2
-2022,8,REG,00-0029597,Justin Tucker,K,BAL,0,0,0,0,0,9,9
+2022,8,REG,00-0029597,Justin Tucker,K,BAL,0,0,0,0,0,9,8
 2022,8,REG,00-0029604,Kirk Cousins,QB,MIN,23.48,23.48,23.48,23.48,23.48,23.48,25.48
 2022,8,REG,00-0029606,Harrison Smith,FS,MIN,0,0,0,0,0,0,15
 2022,8,REG,00-0029607,Demario Davis,OLB,NO,0,0,0,0,0,0,4
@@ -7722,7 +7722,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,8,REG,00-0034435,Keion Crossen,DB,MIA,0,0,0,0,0,0,6
 2022,8,REG,00-0034437,Logan Cooke,P,JAX,0,0,0,0,0,0,0
 2022,8,REG,00-0034440,Justin Jackson,RB,DET,0,0,0,0,0,0,0
-2022,8,REG,00-0034450,Greg Joseph,K,MIN,0,0,0,0,0,3,4
+2022,8,REG,00-0034450,Greg Joseph,K,MIN,0,0,0,0,0,3,3
 2022,8,REG,00-0034468,Chandon Sullivan,DB,MIN,0,0,0,0,0,0,7
 2022,8,REG,00-0034485,Jonathan Owens,SAF,HOU,0,0,0,0,0,0,4
 2022,8,REG,00-0034487,Trent Sherfield,WR,MIA,2.5,4.5,2.5,3.5,4.5,3.5,6.5
@@ -8286,7 +8286,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,8,REG,00-0038093,Neil Farrell,DE,LV,0,0,0,0,0,0,4
 2022,8,REG,00-0038094,Jordan Stout,P,BAL,0,0,0,0,0,0,0
 2022,8,REG,00-0038096,Joshua Paschal,DE,DET,0,0,0,0,0,0,4
-2022,8,REG,00-0038097,Cade York,K,CLE,0,0,0,0,0,8,8
+2022,8,REG,00-0038097,Cade York,K,CLE,0,0,0,0,0,8,7
 2022,8,REG,00-0038098,Pierre Strong,RB,NE,0,0,0,0,0,0,0
 2022,8,REG,00-0038101,Akayleb Evans,CB,MIN,0,0,0,0,0,0,0
 2022,8,REG,00-0038102,Kenny Pickett,QB,PIT,7.34,7.34,7.34,7.34,7.34,7.34,11.34
@@ -8348,7 +8348,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,9,REG,00-0026190,Calais Campbell,DE,BAL,0,0,0,0,0,0,6.5
 2022,9,REG,00-0026293,Matthew Slater,WR,NE,0,0,0,0,0,0,0
 2022,9,REG,00-0026498,Matthew Stafford,QB,LA,10.5,10.5,10.5,10.5,10.5,10.5,12.5
-2022,9,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,12,12
+2022,9,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,12,11
 2022,9,REG,00-0027103,Kevin Huber,P,CIN,0,0,0,0,0,0,0
 2022,9,REG,00-0027114,Thomas Morstead,P,MIA,0,0,0,0,0,0,0
 2022,9,REG,00-0027647,Devin McCourty,FS,NE,0,0,0,0,0,0,10
@@ -10268,7 +10268,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,11,REG,00-0029701,Ryan Tannehill,QB,TEN,19.02,19.02,19.02,19.02,19.02,19.02,20.02
 2022,11,REG,00-0029714,Andrew DePaola,LS,MIN,0,0,0,0,0,0,0
 2022,11,REG,00-0029747,Chris Banjo,DB,ARI,0,0,0,0,0,0,4
-2022,11,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,14,14
+2022,11,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,14,13
 2022,11,REG,00-0029890,Mike Purcell,NT,DEN,0,0,0,0,0,0,4
 2022,11,REG,00-0029892,Kyle Juszczyk,FB,SF,0.4,0.4,0.4,0.4,0.4,0.4,1.4
 2022,11,REG,00-0030035,Adam Thielen,WR,MIN,2.5,4.5,2.5,3.5,4.5,3.5,6.5
@@ -11139,7 +11139,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,11,REG,00-0038091,JT Woods,SAF,LAC,0,0,0,0,0,0,2
 2022,11,REG,00-0038093,Neil Farrell,DE,LV,0,0,0,0,0,0,4
 2022,11,REG,00-0038094,Jordan Stout,P,BAL,0,0,0,0,0,0,0
-2022,11,REG,00-0038097,Cade York,K,CLE,0,0,0,0,0,5,5
+2022,11,REG,00-0038097,Cade York,K,CLE,0,0,0,0,0,5,4
 2022,11,REG,00-0038098,Pierre Strong,RB,NE,0,0,0,0,0,0,0
 2022,11,REG,00-0038102,Kenny Pickett,QB,PIT,16,16,16,16,16,16,17
 2022,11,REG,00-0038104,Tyquan Thornton,WR,NE,0.5,1.5,0.5,1,1.5,1,1.5
@@ -11754,7 +11754,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,12,REG,00-0035341,Trenton Irwin,WR,CIN,1.6,2.6,1.6,2.1,2.6,2.1,3.6
 2022,12,REG,00-0035345,Chris Myarick,TE,NYG,2.3,3.3,2.3,2.8,3.3,2.8,4.3
 2022,12,REG,00-0035352,Tyrel Dodson,LB,BUF,0,0,0,0,0,0,2
-2022,12,REG,00-0035358,Chase McLaughlin,K,IND,0,0,0,0,0,7,7
+2022,12,REG,00-0035358,Chase McLaughlin,K,IND,0,0,0,0,0,7,6
 2022,12,REG,00-0035378,Andrew Wingard,SAF,JAX,0,0,0,0,0,0,7
 2022,12,REG,00-0035386,T.J. Edwards,LB,PHI,0,0,0,0,0,0,14
 2022,12,REG,00-0035399,Stanley Morgan,WR,CIN,0,0,0,0,0,0,0
@@ -12345,7 +12345,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,13,REG,00-0031079,Pat O'Donnell,P,GB,0,0,0,0,0,0,0
 2022,13,REG,00-0031095,Charles Leno Jr.,OT,WAS,0,0,0,0,0,0,0
 2022,13,REG,00-0031177,Brent Urban,DE,BAL,0,0,0,0,0,0,2
-2022,13,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,7,8
+2022,13,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,7,7
 2022,13,REG,00-0031256,Anthony Barr,OLB,DAL,0,0,0,0,0,0,6
 2022,13,REG,00-0031260,Logan Thomas,TE,WAS,2,5,2,3.5,5,3.5,6
 2022,13,REG,00-0031270,Shelby Harris,DE,SEA,0,0,0,0,0,0,3
@@ -12605,7 +12605,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,13,REG,00-0034115,Jeff Wilson,RB,MIA,0.3,0.3,0.3,0.3,0.3,0.3,0.3
 2022,13,REG,00-0034159,Will Dissly,TE,SEA,2.2,4.2,2.2,3.2,4.2,3.2,5.2
 2022,13,REG,00-0034160,Michael Dickson,P,SEA,0,0,0,0,0,0,0
-2022,13,REG,00-0034161,Daniel Carlson,K,LV,0,0,0,0,0,11,11
+2022,13,REG,00-0034161,Daniel Carlson,K,LV,0,0,0,0,0,11,10
 2022,13,REG,00-0034162,J.K. Scott,P,LAC,0,0,0,0,0,0,0
 2022,13,REG,00-0034163,Jacob Martin,DE,DEN,0,0,0,0,0,0,2
 2022,13,REG,00-0034171,Jason Cabinda,FB,DET,0.4,0.4,0.4,0.4,0.4,0.4,1.4
@@ -13378,7 +13378,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,14,REG,00-0031054,DaQuan Jones,DT,BUF,0,0,0,0,0,0,4
 2022,14,REG,00-0031067,Cameron Fleming,OT,DEN,0,0,0,0,0,0,0
 2022,14,REG,00-0031097,Terrance Mitchell,CB,TEN,0,0,0,0,0,0,8
-2022,14,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,2,2
+2022,14,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,2,1
 2022,14,REG,00-0031142,Matt Feiler,G,LAC,0,0,0,0,0,0,0
 2022,14,REG,00-0031253,K'Waun Williams,DB,DEN,0,0,0,0,0,0,7
 2022,14,REG,00-0031256,Anthony Barr,OLB,DAL,0,0,0,0,0,0,2
@@ -14252,7 +14252,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,15,REG,00-0029542,Stephon Gilmore,CB,IND,0,0,0,0,0,0,17
 2022,15,REG,00-0029562,Lavonte David,OLB,TB,0,0,0,0,0,0,16
 2022,15,REG,00-0029585,Chandler Jones,DE,LV,0,0,0,0,0,0,14
-2022,15,REG,00-0029597,Justin Tucker,K,BAL,0,0,0,0,0,4,4
+2022,15,REG,00-0029597,Justin Tucker,K,BAL,0,0,0,0,0,4,3
 2022,15,REG,00-0029604,Kirk Cousins,QB,MIN,32.4,32.4,32.4,32.4,32.4,32.4,35.4
 2022,15,REG,00-0029606,Harrison Smith,FS,MIN,0,0,0,0,0,0,6
 2022,15,REG,00-0029607,Demario Davis,OLB,NO,0,0,0,0,0,0,14
@@ -15342,7 +15342,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,16,REG,00-0029562,Lavonte David,OLB,TB,0,0,0,0,0,0,22
 2022,16,REG,00-0029567,Nick Foles,QB,IND,-0.24,-0.24,-0.24,-0.24,-0.24,-0.24,-0.24
 2022,16,REG,00-0029585,Chandler Jones,DE,LV,0,0,0,0,0,0,6
-2022,16,REG,00-0029597,Justin Tucker,K,BAL,0,0,0,0,0,9,9
+2022,16,REG,00-0029597,Justin Tucker,K,BAL,0,0,0,0,0,9,8
 2022,16,REG,00-0029604,Kirk Cousins,QB,MIN,24.16,24.16,24.16,24.16,24.16,24.16,25.16
 2022,16,REG,00-0029606,Harrison Smith,FS,MIN,0,0,0,0,0,0,6
 2022,16,REG,00-0029607,Demario Davis,OLB,NO,0,0,0,0,0,0,10
@@ -16414,7 +16414,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,17,REG,00-0026293,Matthew Slater,WR,NE,0,0,0,0,0,0,0
 2022,17,REG,00-0026544,Chase Daniel,QB,LAC,1.08,1.08,1.08,1.08,1.08,1.08,1.08
 2022,17,REG,00-0026858,Graham Gano,K,NYG,0,0,0,0,0,8,8
-2022,17,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,2,3
+2022,17,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,2,2
 2022,17,REG,00-0027114,Thomas Morstead,P,MIA,0,0,0,0,0,0,0
 2022,17,REG,00-0027224,Jon Weeks,LS,HOU,0,0,0,0,0,0,0
 2022,17,REG,00-0027647,Devin McCourty,FS,NE,0,0,0,0,0,0,4
@@ -16648,7 +16648,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,17,REG,00-0033290,Jermaine Eluemunor,G,LV,0,0,0,0,0,0,0
 2022,17,REG,00-0033293,Aaron Jones,RB,GB,11.3,13.3,11.3,12.3,13.3,12.3,19.3
 2022,17,REG,00-0033294,Chuck Clark,SAF,BAL,0,0,0,0,0,0,14
-2022,17,REG,00-0033303,Harrison Butker,K,KC,0,0,0,0,0,3,3
+2022,17,REG,00-0033303,Harrison Butker,K,KC,0,0,0,0,0,3,2
 2022,17,REG,00-0033307,Kendrick Bourne,WR,NE,1.8,2.8,1.8,2.3,2.8,2.3,3.8
 2022,17,REG,00-0033308,Matt Breida,RB,NYG,6.7,7.7,6.7,7.2,7.7,7.2,10.7
 2022,17,REG,00-0033319,Nick Mullens,QB,MIN,6.28,6.28,6.28,6.28,6.28,6.28,6.28
@@ -17605,7 +17605,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2022,18,REG,00-0032464,Kalif Raymond,WR,DET,6.6,10.6,6.6,8.6,10.6,8.6,12.6
 2022,18,REG,00-0032497,Reid Ferguson,LS,BUF,0,0,0,0,0,0,0
 2022,18,REG,00-0032521,Mike Hilton,CB,CIN,0,0,0,0,0,0,10
-2022,18,REG,00-0032569,Wil Lutz,K,NO,0,0,0,0,0,0,0
+2022,18,REG,00-0032569,Wil Lutz,K,NO,0,0,0,0,0,0,-1
 2022,18,REG,00-0032580,Jonathan Jones,DB,NE,0,0,0,0,0,0,11
 2022,18,REG,00-0032655,Romeo Okwara,DE,DET,0,0,0,0,0,0,2
 2022,18,REG,00-0032667,Roy Robertson-Harris,DE,JAX,0,0,0,0,0,0,6

@@ -1,14 +1,14 @@
 gate_id,gate,severity,result,detail,checked_utc
-G-CONFIG,Config is valid,blocking,PASS,"5 active leagues, 82 metrics, 24 bands",2026-11-20T23:32:01Z
-G-GRAIN,One row per player-game,blocking,PASS,"180301 rows in 10 seasons, all keys unique",2026-11-20T23:32:01Z
-G-RECON,Control leagues match nflverse,blocking,PASS,"Standard vs fantasy_points: 175011 of 175011 rows (100%), max diff 0; PPR vs fantasy_points_ppr: 175011 of 175011 rows (100%), max diff 0",2026-11-20T23:32:01Z
-G-GOLDEN,Golden sample reproduced,blocking,PASS,all 125 golden values reproduced exactly,2026-11-20T23:32:01Z
-G-ESPN,ESPN actuals reproduced,blocking,PASS,"25 of 25 ESPN values reproduced: 23 exact, 2 within tolerance (D/ST +/-1); ESPN D/ST stat columns: all 70 equal (TD/INT/FR/SCK/SFTY/BLK/PA)",2026-11-20T23:32:01Z
-G-DST,Every team-game has a D/ST row,blocking,PASS,"5290 D/ST rows, checked against stats_team for 1 rebuilt season(s) and against games.csv; defensive scores in play-by-play agree with stats_team for 1 rebuilt season(s)",2026-11-20T23:32:01Z
-G-SHRINK,No season shrank,blocking,PASS,"1 rebuilt season/type(s) compared with the last publish, none lost more than 1%",2026-11-20T23:32:01Z
-G-INDEX,Index files agree with the data,blocking,PASS,seasons.csv counts match 19 season/type(s); scored keys and order match player_week; season types REG/POST only; 27 season files kept from the last publish match its manifest,2026-11-20T23:32:01Z
-G-ROWS,Completed seasons match the row-count baseline,advisory,PASS,18 completed season/type(s) match the baseline (in-progress seasons are not compared),2026-11-20T23:32:01Z
-G-LONGTD,Completed-season long-TD totals match,advisory,PASS,9 completed season(s) match the long-TD baseline exactly,2026-11-20T23:32:01Z
-G-RESTATE,Back-corrections in finished seasons,advisory,PASS,no previously complete season was rebuilt in this run,2026-11-20T23:32:01Z
-G-WINDOW,Season window asks only for published seasons,advisory,PASS,"window 2017-2026 (10 season(s)), all published (newest published season 2026)",2026-11-20T23:32:01Z
-G-OVERLAP,No double-counted metrics; valid position gates,advisory,PASS,"no league weights a total and its parts; Applies_To codes DB, DL, DST, K, LB all exist in the data",2026-11-20T23:32:01Z
+G-CONFIG,Config is valid,blocking,PASS,"5 active leagues, 82 metrics, 24 bands",2026-11-22T02:09:50Z
+G-GRAIN,One row per player-game,blocking,PASS,"180301 rows in 10 seasons, all keys unique",2026-11-22T02:09:50Z
+G-RECON,Control leagues match nflverse,blocking,PASS,"Standard vs fantasy_points: 175011 of 175011 rows (100%), max diff 0; PPR vs fantasy_points_ppr: 175011 of 175011 rows (100%), max diff 0",2026-11-22T02:09:50Z
+G-GOLDEN,Golden sample reproduced,blocking,PASS,all 125 golden values reproduced exactly,2026-11-22T02:09:50Z
+G-ESPN,ESPN actuals reproduced,blocking,PASS,"65 of 65 ESPN values reproduced: 58 exact, 7 within tolerance (D/ST: the row's tolerance, 1 or 2); ESPN D/ST stat columns: all 217 equal (TD/INT/FR/SCK/SFTY/BLK/PA)",2026-11-22T02:09:50Z
+G-DST,Every team-game has a D/ST row,blocking,PASS,"5290 D/ST rows, checked against stats_team for 10 rebuilt season(s) and against games.csv; defensive scores in play-by-play agree with stats_team for 10 rebuilt season(s)",2026-11-22T02:09:50Z
+G-SHRINK,No season shrank,blocking,PASS,"19 rebuilt season/type(s) compared with the last publish, none lost more than 1%",2026-11-22T02:09:50Z
+G-INDEX,Index files agree with the data,blocking,PASS,seasons.csv counts match 19 season/type(s); scored keys and order match player_week; season types REG/POST only,2026-11-22T02:09:50Z
+G-ROWS,Completed seasons match the row-count baseline,advisory,PASS,18 completed season/type(s) match the baseline (in-progress seasons are not compared),2026-11-22T02:09:50Z
+G-LONGTD,Completed-season long-TD totals match,advisory,PASS,9 completed season(s) match the long-TD baseline exactly,2026-11-22T02:09:50Z
+G-RESTATE,Back-corrections in finished seasons,advisory,PASS,no values changed in 9 previously complete season(s),2026-11-22T02:09:50Z
+G-WINDOW,Season window asks only for published seasons,advisory,PASS,"window 2017-2026 (10 season(s)), all published (newest published season 2026)",2026-11-22T02:09:50Z
+G-OVERLAP,No double-counted metrics; valid position gates,advisory,PASS,"no league weights a total and its parts; Applies_To codes DB, DL, DST, K, LB all exist in the data",2026-11-22T02:09:50Z

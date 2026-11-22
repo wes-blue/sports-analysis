@@ -2170,7 +2170,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,3,REG,00-0023534,Dustin Colquitt,P,KC,0,0,0,0,0,0,0
 2019,3,REG,00-0023564,Darren Sproles,RB,PHI,0.4,0.4,0.4,0.4,0.4,0.4,0.4
 2019,3,REG,00-0023682,Ryan Fitzpatrick,QB,MIA,1.16,1.16,1.16,1.16,1.16,1.16,1.16
-2019,3,REG,00-0023853,Matt Prater,K,DET,0,0,0,0,0,9,9
+2019,3,REG,00-0023853,Matt Prater,K,DET,0,0,0,0,0,9,8
 2019,3,REG,00-0023894,Donald Penn,OT,WAS,0,0,0,0,0,0,0
 2019,3,REG,00-0024221,Vernon Davis,TE,WAS,3,5,3,4,5,4,7
 2019,3,REG,00-0024239,Johnathan Joseph,CB,HOU,0,0,0,0,0,0,20
@@ -4203,7 +4203,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,5,REG,00-0022531,Jason Peters,OT,PHI,0,0,0,0,0,0,0
 2019,5,REG,00-0022921,Larry Fitzgerald,WR,ARI,5.8,11.8,5.8,8.8,11.8,8.8,14.8
 2019,5,REG,00-0022942,Philip Rivers,QB,LAC,4.14,4.14,4.14,4.14,4.14,4.14,4.14
-2019,5,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,6,6
+2019,5,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,6,5
 2019,5,REG,00-0023259,Lorenzo Alexander,OLB,BUF,0,0,0,0,0,0,12
 2019,5,REG,00-0023448,Thomas Davis,OLB,LAC,0,0,0,0,0,0,6
 2019,5,REG,00-0023459,Aaron Rodgers,QB,GB,9.42,9.42,9.42,9.42,9.42,9.42,9.42
@@ -4493,7 +4493,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,5,REG,00-0031175,Cassius Marsh,LB,ARI,0,0,0,0,0,0,4
 2019,5,REG,00-0031181,Ricardo Allen,FS,ATL,0,0,0,0,0,0,12
 2019,5,REG,00-0031185,Jon Halapio,C,NYG,0,0,0,0,0,0,0
-2019,5,REG,00-0031203,Cairo Santos,K,TEN,0,0,0,0,0,-2,-2
+2019,5,REG,00-0031203,Cairo Santos,K,TEN,0,0,0,0,0,-2,-3
 2019,5,REG,00-0031218,Malcolm Butler,CB,TEN,0,0,0,0,0,0,8
 2019,5,REG,00-0031235,Odell Beckham Jr.,WR,CLE,5,7,5,6,7,6,7
 2019,5,REG,00-0031236,Brandin Cooks,WR,LA,5.6,6.6,5.6,6.1,6.6,6.1,8.6
@@ -5089,7 +5089,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,5,REG,00-0035172,Shakial Taylor,CB,IND,0,0,0,0,0,0,3
 2019,5,REG,00-0035181,Darrius Shepherd,WR,GB,0,0,0,0,0,0,0
 2019,5,REG,00-0035190,AJ Cole,P,LV,0,0,0,0,0,0,0
-2019,5,REG,00-0035192,Joey Slye,K,CAR,0,0,0,0,0,2,3
+2019,5,REG,00-0035192,Joey Slye,K,CAR,0,0,0,0,0,2,2
 2019,5,REG,00-0035215,Deonte Harty,WR,NO,0,0,0,0,0,0,0
 2019,5,REG,00-0035216,Diontae Johnson,WR,PIT,2.7,7.7,2.7,5.2,7.7,5.2,8.7
 2019,5,REG,00-0035228,Kyler Murray,QB,ARI,25.42,25.42,25.42,25.42,25.42,25.42,29.42
@@ -5127,7 +5127,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,5,REG,00-0035304,Cullen Gillaspia,RB,HOU,0,0,0,0,0,0,0
 2019,5,REG,00-0035306,Darryl Johnson,OLB,BUF,0,0,0,0,0,0,10
 2019,5,REG,00-0035308,Tommy Sweeney,TE,BUF,0,0,0,0,0,0,0
-2019,5,REG,00-0035358,Chase McLaughlin,K,LAC,0,0,0,0,0,8,8
+2019,5,REG,00-0035358,Chase McLaughlin,K,LAC,0,0,0,0,0,8,7
 2019,5,REG,00-0035378,Andrew Wingard,SAF,JAX,0,0,0,0,0,0,4
 2019,5,REG,00-0035399,Stanley Morgan,WR,CIN,0.6,1.6,0.6,1.1,1.6,1.1,1.6
 2019,5,REG,00-0035401,Damion Willis,WR,CIN,3.8,7.8,3.8,5.8,7.8,5.8,8.8
@@ -7106,7 +7106,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,8,REG,00-0023259,Lorenzo Alexander,OLB,BUF,0,0,0,0,0,0,5
 2019,8,REG,00-0023448,Thomas Davis,OLB,LAC,0,0,0,0,0,0,19
 2019,8,REG,00-0023459,Aaron Rodgers,QB,GB,27.1,27.1,27.1,27.1,27.1,27.1,31.1
-2019,8,REG,00-0023482,Mike Nugent,K,NE,0,0,0,0,0,8,8
+2019,8,REG,00-0023482,Mike Nugent,K,NE,0,0,0,0,0,8,7
 2019,8,REG,00-0023500,Frank Gore,RB,BUF,3.4,3.4,3.4,3.4,3.4,3.4,4.4
 2019,8,REG,00-0023516,Richie Incognito,G,LV,0,0,0,0,0,0,0
 2019,8,REG,00-0023534,Dustin Colquitt,P,KC,0,0,0,0,0,0,0
@@ -9532,7 +9532,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,10,REG,00-0033293,Aaron Jones,RB,GB,27.3,27.3,27.3,27.3,27.3,27.3,32.3
 2019,10,REG,00-0033294,Chuck Clark,SAF,BAL,0,0,0,0,0,0,15
 2019,10,REG,00-0033297,D.J. Jones,DT,SF,0,0,0,0,0,0,4
-2019,10,REG,00-0033303,Harrison Butker,K,KC,0,0,0,0,0,15,16
+2019,10,REG,00-0033303,Harrison Butker,K,KC,0,0,0,0,0,15,15
 2019,10,REG,00-0033307,Kendrick Bourne,WR,SF,12.2,16.2,12.2,14.2,16.2,14.2,19.2
 2019,10,REG,00-0033308,Matt Breida,RB,SF,2.5,4.5,2.5,3.5,4.5,3.5,4.5
 2019,10,REG,00-0033336,Eric Wilson,LB,MIN,0,0,0,0,0,0,2
@@ -11822,7 +11822,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,12,REG,DST_TB,TB D/ST,DST,TB,,,0,0,0,0,99
 2019,12,REG,DST_TEN,TEN D/ST,DST,TEN,,,0,0,0,0,152
 2019,12,REG,DST_WAS,WAS D/ST,DST,WAS,,,0,0,0,0,231
-2019,13,REG,00-0016919,Adam Vinatieri,K,IND,0,0,0,0,0,4,4
+2019,13,REG,00-0016919,Adam Vinatieri,K,IND,0,0,0,0,0,4,2
 2019,13,REG,00-0019596,Tom Brady,QB,NE,24.34,24.34,24.34,24.34,24.34,24.34,26.34
 2019,13,REG,00-0020531,Drew Brees,QB,NO,11.26,11.26,11.26,11.26,11.26,11.26,11.26
 2019,13,REG,00-0022127,Jason Witten,TE,DAL,12.2,18.2,12.2,15.2,18.2,15.2,21.2
@@ -11831,7 +11831,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,13,REG,00-0022921,Larry Fitzgerald,WR,ARI,5.6,11.6,5.6,8.6,11.6,8.6,15.6
 2019,13,REG,00-0022942,Philip Rivers,QB,LAC,16.6,16.6,16.6,16.6,16.6,16.6,16.6
 2019,13,REG,00-0022943,Benjamin Watson,TE,NE,2.3,3.3,2.3,2.8,3.3,2.8,4.3
-2019,13,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,5,5
+2019,13,REG,00-0023252,Robbie Gould,K,SF,0,0,0,0,0,5,4
 2019,13,REG,00-0023259,Lorenzo Alexander,OLB,BUF,0,0,0,0,0,0,2
 2019,13,REG,00-0023448,Thomas Davis,OLB,LAC,0,0,0,0,0,0,12
 2019,13,REG,00-0023459,Aaron Rodgers,QB,GB,28.12,28.12,28.12,28.12,28.12,28.12,29.12
@@ -12009,7 +12009,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,13,REG,00-0030085,Kenny Stills,WR,HOU,12.1,15.1,12.1,13.6,15.1,13.6,17.1
 2019,13,REG,00-0030090,Micah Hyde,S,BUF,0,0,0,0,0,0,19
 2019,13,REG,00-0030092,Sam Martin,P,DET,0,0,0,0,0,0,0
-2019,13,REG,00-0030098,Dustin Hopkins,K,WAS,0,0,0,0,0,12,12
+2019,13,REG,00-0030098,Dustin Hopkins,K,WAS,0,0,0,0,0,12,11
 2019,13,REG,00-0030108,Ryan Griffin,TE,NYJ,3,8,3,5.5,8,5.5,8
 2019,13,REG,00-0030114,Jordan Poyer,FS,BUF,0,0,0,0,0,0,9
 2019,13,REG,00-0030140,Tress Way,P,WAS,0,0,0,0,0,0,0
@@ -12022,7 +12022,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,13,REG,00-0030279,Keenan Allen,WR,LAC,12.8,18.8,12.8,15.8,18.8,15.8,21.8
 2019,13,REG,00-0030288,Rex Burkhead,RB,NE,1.5,1.5,1.5,1.5,1.5,1.5,2.5
 2019,13,REG,00-0030300,Jaron Brown,WR,SEA,0.6,1.6,0.6,1.1,1.6,1.1,1.6
-2019,13,REG,00-0030332,Brett Maher,K,DAL,0,0,0,0,0,0,0
+2019,13,REG,00-0030332,Brett Maher,K,DAL,0,0,0,0,0,0,-1
 2019,13,REG,00-0030380,Benson Mayowa,OLB,LV,0,0,0,0,0,0,0
 2019,13,REG,00-0030383,Duron Harmon,S,NE,0,0,0,0,0,0,2
 2019,13,REG,00-0030386,William Gholston,DT,TB,0,0,0,0,0,0,7
@@ -12917,7 +12917,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,14,REG,00-0025415,Joe Staley,OT,SF,0,0,0,0,0,0,0
 2019,14,REG,00-0025424,Eric Weddle,FS,LA,0,0,0,0,0,0,16
 2019,14,REG,00-0025472,Brandon Mebane,DT,LAC,0,0,0,0,0,0,2
-2019,14,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,4,4
+2019,14,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,4,3
 2019,14,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,8,8
 2019,14,REG,00-0025825,Brett Kern,P,TEN,0,0,0,0,0,0,0
 2019,14,REG,00-0025944,Steven Hauschka,K,BUF,0,0,0,0,0,11,11
@@ -13037,7 +13037,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,14,REG,00-0029604,Kirk Cousins,QB,MIN,13.58,13.58,13.58,13.58,13.58,13.58,13.58
 2019,14,REG,00-0029606,Harrison Smith,FS,MIN,0,0,0,0,0,0,11
 2019,14,REG,00-0029607,Demario Davis,OLB,NO,0,0,0,0,0,0,16
-2019,14,REG,00-0029621,Greg Zuerlein,K,LA,0,0,0,0,0,4,4
+2019,14,REG,00-0029621,Greg Zuerlein,K,LA,0,0,0,0,0,4,3
 2019,14,REG,00-0029627,Jack Crawford,DT,ATL,0,0,0,0,0,0,2
 2019,14,REG,00-0029630,Michael Brockers,DT,LA,0,0,0,0,0,0,2
 2019,14,REG,00-0029632,Mohamed Sanu,WR,NE,1.3,2.3,1.3,1.8,2.3,1.8,3.3
@@ -14006,7 +14006,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,15,REG,00-0026564,Steve McLendon,NT,NYJ,0,0,0,0,0,0,8
 2019,15,REG,00-0026618,Michael Bennett,DE,DAL,0,0,0,0,0,0,2
 2019,15,REG,00-0026814,Demar Dotson,OT,TB,0,0,0,0,0,0,0
-2019,15,REG,00-0026968,Ryan Succop,K,TEN,0,0,0,0,0,3,3
+2019,15,REG,00-0026968,Ryan Succop,K,TEN,0,0,0,0,0,3,2
 2019,15,REG,00-0026990,Malcolm Jenkins,S,PHI,0,0,0,0,0,0,8
 2019,15,REG,00-0027002,Clay Matthews,OLB,LA,0,0,0,0,0,0,13
 2019,15,REG,00-0027010,Patrick Chung,S,NE,0,0,0,0,0,0,4
@@ -14519,7 +14519,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,15,REG,00-0033129,Carl Nassib,LB,TB,0,0,0,0,0,0,4
 2019,15,REG,00-0033131,Maliek Collins,DT,DAL,0,0,0,0,0,0,0
 2019,15,REG,00-0033132,Kevin Byard,FS,TEN,0,0,0,0,0,0,2
-2019,15,REG,00-0033138,Sam Ficken,K,NYJ,0,0,0,0,0,0,1
+2019,15,REG,00-0033138,Sam Ficken,K,NYJ,0,0,0,0,0,0,0
 2019,15,REG,00-0033156,Joey Bosa,DE,LAC,0,0,0,0,0,0,11
 2019,15,REG,00-0033164,Troymaine Pope,RB,LAC,0,0,0,0,0,0,0
 2019,15,REG,00-0033234,Chris Odom,DE,WAS,0,0,0,0,0,0,4
@@ -15689,7 +15689,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,16,REG,00-0033857,JuJu Smith-Schuster,WR,PIT,2.2,4.2,2.2,3.2,4.2,3.2,6.2
 2019,16,REG,00-0033858,Jonnu Smith,TE,TEN,12.3,15.3,12.3,13.8,15.3,13.8,18.3
 2019,16,REG,00-0033860,Davon Godchaux,DT,MIA,0,0,0,0,0,0,12.5
-2019,16,REG,00-0033862,Zane Gonzalez,K,ARI,0,0,0,0,0,10,10
+2019,16,REG,00-0033862,Zane Gonzalez,K,ARI,0,0,0,0,0,10,9
 2019,16,REG,00-0033869,Mitchell Trubisky,QB,CHI,8.28,8.28,8.28,8.28,8.28,8.28,9.28
 2019,16,REG,00-0033870,Solomon Thomas,DE,SF,0,0,0,0,0,0,3
 2019,16,REG,00-0033871,Corey Davis,WR,TEN,4,7,4,5.5,7,5.5,10
@@ -15975,7 +15975,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,16,REG,00-0035262,Drue Tranquill,LB,LAC,0,0,0,0,0,0,14
 2019,16,REG,00-0035265,John Cominsky,DE,ATL,0,0,0,0,0,0,2.5
 2019,16,REG,00-0035268,Ryquell Armstead,RB,JAX,0.2,0.2,0.2,0.2,0.2,0.2,0.2
-2019,16,REG,00-0035269,Matt Gay,K,TB,0,0,0,0,0,11,11
+2019,16,REG,00-0035269,Matt Gay,K,TB,0,0,0,0,0,11,10
 2019,16,REG,00-0035272,Andrew Van Ginkel,OLB,MIA,0,0,0,0,0,0,9
 2019,16,REG,00-0035273,Qadree Ollison,RB,ATL,6.3,6.3,6.3,6.3,6.3,6.3,7.3
 2019,16,REG,00-0035279,Charles Omenihu,DE,HOU,0,0,0,0,0,0,1
@@ -17256,7 +17256,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2019,18,POST,00-0031360,Kyle Van Noy,MLB,NE,0,0,0,0,0,0,13
 2019,18,POST,00-0031364,Jadeveon Clowney,DE,SEA,0,0,0,0,0,0,13
 2019,18,POST,00-0031372,Bradley Roby,CB,HOU,0,0,0,0,0,0,16
-2019,18,POST,00-0031492,Jason Myers,K,SEA,0,0,0,0,0,6,6
+2019,18,POST,00-0031492,Jason Myers,K,SEA,0,0,0,0,0,6,5
 2019,18,POST,00-0031546,Trae Waynes,CB,MIN,0,0,0,0,0,0,4
 2019,18,POST,00-0031548,Kevin Johnson,CB,BUF,0,0,0,0,0,0,16
 2019,18,POST,00-0031553,Benardrick McKinney,ILB,HOU,0,0,0,0,0,0,16

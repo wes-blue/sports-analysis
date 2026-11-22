@@ -14,7 +14,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,1,REG,00-0023853,Matt Prater,K,DET,0,0,0,0,0,11,11
 2020,1,REG,00-0024239,Johnathan Joseph,CB,TEN,0,0,0,0,0,0,4
 2020,1,REG,00-0024270,Andrew Whitworth,OT,LA,0,0,0,0,0,0,0
-2020,1,REG,00-0024333,Stephen Gostkowski,K,TEN,0,0,0,0,0,1,2
+2020,1,REG,00-0024333,Stephen Gostkowski,K,TEN,0,0,0,0,0,1,1
 2020,1,REG,00-0024417,Sam Koch,P,BAL,0,0,0,0,0,0,0
 2020,1,REG,00-0025394,Adrian Peterson,RB,DET,11.4,14.4,11.4,12.9,14.4,12.9,19.4
 2020,1,REG,00-0025396,Ted Ginn,WR,CHI,0,0,0,0,0,0,0
@@ -30,7 +30,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,1,REG,00-0026516,Britton Colquitt,P,MIN,0,0,0,0,0,0,0
 2020,1,REG,00-0026564,Steve McLendon,NT,NYJ,0,0,0,0,0,0,2
 2020,1,REG,00-0026858,Graham Gano,K,NYG,0,0,0,0,0,4,4
-2020,1,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,5,5
+2020,1,REG,00-0026968,Ryan Succop,K,TB,0,0,0,0,0,5,4
 2020,1,REG,00-0026990,Malcolm Jenkins,S,NO,0,0,0,0,0,0,13
 2020,1,REG,00-0027029,LeSean McCoy,RB,TB,0.2,1.2,0.2,0.7,1.2,0.7,1.2
 2020,1,REG,00-0027061,Jared Cook,TE,NO,8,13,8,10.5,13,10.5,16
@@ -5193,7 +5193,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,6,REG,00-0024239,Johnathan Joseph,CB,TEN,0,0,0,0,0,0,2
 2020,6,REG,00-0024243,Marcedes Lewis,TE,GB,0,0,0,0,0,0,0
 2020,6,REG,00-0024270,Andrew Whitworth,OT,LA,0,0,0,0,0,0,0
-2020,6,REG,00-0024333,Stephen Gostkowski,K,TEN,0,0,0,0,0,3,3
+2020,6,REG,00-0024333,Stephen Gostkowski,K,TEN,0,0,0,0,0,3,2
 2020,6,REG,00-0024417,Sam Koch,P,BAL,0,0,0,0,0,0,0
 2020,6,REG,00-0025394,Adrian Peterson,RB,DET,11.8,12.8,11.8,12.3,12.8,12.3,16.8
 2020,6,REG,00-0025396,Ted Ginn,WR,CHI,0,0,0,0,0,0,0
@@ -7060,7 +7060,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,7,REG,00-0036426,Alton Robinson,LB,SEA,0,0,0,0,0,0,2
 2020,7,REG,00-0036427,Tyler Johnson,WR,TB,6.4,8.4,6.4,7.4,8.4,7.4,9.4
 2020,7,REG,00-0036435,Raymond Calais,RB,LA,0,0,0,0,0,0,0
-2020,7,REG,00-0036436,Sam Sloman,K,LA,0,0,0,0,0,6,6
+2020,7,REG,00-0036436,Sam Sloman,K,LA,0,0,0,0,0,6,5
 2020,7,REG,00-0036439,Tyrie Cleveland,WR,DEN,0,0,0,0,0,0,0
 2020,7,REG,00-0036441,"Kenneth Murray, Jr.",LB,LAC,0,0,0,0,0,0,11
 2020,7,REG,00-0036442,Joe Burrow,QB,CIN,33.64,33.64,33.64,33.64,33.64,33.64,38.64
@@ -7302,7 +7302,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,8,REG,00-0031376,Jerick McKinnon,RB,SF,9.9,13.9,9.9,11.9,13.9,11.9,17.9
 2020,8,REG,00-0031381,Davante Adams,WR,GB,23.3,30.3,23.3,26.8,30.3,26.8,36.3
 2020,8,REG,00-0031382,Jarvis Landry,WR,CLE,5.2,9.2,5.2,7.2,9.2,7.2,11.2
-2020,8,REG,00-0031385,Sergio Castillo,K,NYJ,0,0,0,0,0,12,12
+2020,8,REG,00-0031385,Sergio Castillo,K,NYJ,0,0,0,0,0,12,11
 2020,8,REG,00-0031387,Eric Ebron,TE,PIT,10.8,14.8,10.8,12.8,14.8,12.8,17.8
 2020,8,REG,00-0031388,Aaron Donald,DL,LA,0,0,0,0,0,0,11
 2020,8,REG,00-0031389,Lamarcus Joyner,S,LV,0,0,0,0,0,0,7
@@ -10076,7 +10076,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,11,REG,00-0030665,Daniel Sorensen,DB,KC,0,0,0,0,0,0,11
 2020,11,REG,00-0030710,Trey Burton,TE,IND,8.5,10.5,8.5,9.5,10.5,9.5,11.5
 2020,11,REG,00-0030757,Mike Pennel,DT,KC,0,0,0,0,0,0,2
-2020,11,REG,00-0030850,Cody Parkey,K,CLE,0,0,0,0,0,9,9
+2020,11,REG,00-0030850,Cody Parkey,K,CLE,0,0,0,0,0,9,8
 2020,11,REG,00-0030883,Josh Mauro,DE,ARI,0,0,0,0,0,0,8
 2020,11,REG,00-0030968,Keith Smith,FB,ATL,0.4,1.4,0.4,0.9,1.4,0.9,1.4
 2020,11,REG,00-0031015,Phillip Gaines,CB,HOU,0,0,0,0,0,0,2
@@ -11675,7 +11675,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,12,REG,00-0035181,Darrius Shepherd,WR,GB,0,0,0,0,0,0,0
 2020,12,REG,00-0035184,Devine Ozigbo,RB,JAX,0,0,0,0,0,0,0
 2020,12,REG,00-0035190,AJ Cole,P,LV,0,0,0,0,0,0,0
-2020,12,REG,00-0035192,Joey Slye,K,CAR,0,0,0,0,0,9,9
+2020,12,REG,00-0035192,Joey Slye,K,CAR,0,0,0,0,0,9,8
 2020,12,REG,00-0035208,Olamide Zaccheaus,WR,ATL,1.1,2.1,1.1,1.6,2.1,1.6,3.1
 2020,12,REG,00-0035210,Herb Miller,CB,TB,0,0,0,0,0,0,2
 2020,12,REG,00-0035216,Diontae Johnson,WR,PIT,4.6,12.6,4.6,8.6,12.6,8.6,17.6
@@ -12503,7 +12503,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,13,REG,00-0034011,Dan Arnold,TE,ARI,18.1,20.1,18.1,19.1,20.1,19.1,24.1
 2020,13,REG,00-0034071,Danny Johnson,DB,WAS,0,0,0,0,0,0,0
 2020,13,REG,00-0034073,Ross Dwelley,TE,SF,2.9,4.9,2.9,3.9,4.9,3.9,6.9
-2020,13,REG,00-0034084,Mike Badgley,K,LAC,0,0,0,0,0,-1,-1
+2020,13,REG,00-0034084,Mike Badgley,K,LAC,0,0,0,0,0,-1,-2
 2020,13,REG,00-0034088,Robert Jackson,DB,CLE,0,0,0,0,0,0,0
 2020,13,REG,00-0034091,George Odum,DB,IND,0,0,0,0,0,0,2
 2020,13,REG,00-0034104,Cam Sims,WR,WAS,9.2,14.2,9.2,11.7,14.2,11.7,17.2
@@ -13344,7 +13344,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,14,REG,00-0032803,Jalen Mills,CB,PHI,0,0,0,0,0,0,4
 2020,14,REG,00-0032813,Elijhaa Penny,FB,NYG,0,0,0,0,0,0,0
 2020,14,REG,00-0032848,Kevin Peterson,CB,ARI,0,0,0,0,0,0,2
-2020,14,REG,00-0032870,Aldrick Rosas,K,JAX,0,0,0,0,0,6,6
+2020,14,REG,00-0032870,Aldrick Rosas,K,JAX,0,0,0,0,0,6,5
 2020,14,REG,00-0032871,Antwaun Woods,DT,DAL,0,0,0,0,0,0,6
 2020,14,REG,00-0032881,Tommylee Lewis,WR,NO,0,0,0,0,0,0,0
 2020,14,REG,00-0032888,Karl Joseph,FS,CLE,0,0,0,0,0,0,14
@@ -15542,7 +15542,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,16,REG,00-0033125,Joe Schobert,MLB,JAX,0,0,0,0,0,0,21
 2020,16,REG,00-0033129,Carl Nassib,LB,LV,0,0,0,0,0,0,6
 2020,16,REG,00-0033132,Kevin Byard,FS,TEN,0,0,0,0,0,0,14
-2020,16,REG,00-0033138,Sam Ficken,K,NYJ,0,0,0,0,0,5,5
+2020,16,REG,00-0033138,Sam Ficken,K,NYJ,0,0,0,0,0,5,4
 2020,16,REG,00-0033217,Mo Alie-Cox,TE,IND,2,3,2,2.5,3,2.5,4
 2020,16,REG,00-0033221,Daniel Brunskill,OT,SF,0,0,0,0,0,0,0
 2020,16,REG,00-0033246,Johnny Mundt,TE,LA,0,0,0,0,0,0,0
@@ -16218,7 +16218,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,17,REG,00-0022942,Philip Rivers,QB,IND,10.36,10.36,10.36,10.36,10.36,10.36,10.36
 2020,17,REG,00-0023436,Alex Smith,QB,WAS,10.48,10.48,10.48,10.48,10.48,10.48,10.48
 2020,17,REG,00-0023459,Aaron Rodgers,QB,GB,26,26,26,26,26,26,28
-2020,17,REG,00-0023482,Mike Nugent,K,ARI,0,0,0,0,0,1,1
+2020,17,REG,00-0023482,Mike Nugent,K,ARI,0,0,0,0,0,1,0
 2020,17,REG,00-0023853,Matt Prater,K,DET,0,0,0,0,0,6,7
 2020,17,REG,00-0024243,Marcedes Lewis,TE,GB,0.9,1.9,0.9,1.4,1.9,1.4,1.9
 2020,17,REG,00-0024338,Domata Peko Sr.,NT,ARI,0,0,0,0,0,0,4
@@ -16318,7 +16318,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2020,17,REG,00-0029693,Olivier Vernon,DE,CLE,0,0,0,0,0,0,7
 2020,17,REG,00-0029701,Ryan Tannehill,QB,TEN,28.44,28.44,28.44,28.44,28.44,28.44,33.44
 2020,17,REG,00-0029714,Andrew DePaola,LS,MIN,0,0,0,0,0,0,0
-2020,17,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,10,10
+2020,17,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,10,8
 2020,17,REG,00-0029892,Kyle Juszczyk,FB,SF,0.4,1.4,0.4,0.9,1.4,0.9,1.4
 2020,17,REG,00-0029955,LaRoy Reynolds,LB,ATL,0,0,0,0,0,0,2
 2020,17,REG,00-0030035,Adam Thielen,WR,MIN,5.7,9.7,5.7,7.7,9.7,7.7,12.7

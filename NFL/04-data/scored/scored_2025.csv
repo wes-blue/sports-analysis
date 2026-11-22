@@ -703,10 +703,10 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,1,REG,00-0038557,Dorian Williams,LB,BUF,0,0,0,0,0,0,10
 2025,1,REG,00-0038559,Michael Wilson,WR,ARI,0.5,1.5,0.5,1,1.5,1,2.5
 2025,1,REG,00-0038560,Jordan Battle,SAF,CIN,0,0,0,0,0,0,25
-2025,1,REG,00-0038562,Jake Moody,K,SF,0,0,0,0,0,4,4
+2025,1,REG,00-0038562,Jake Moody,K,SF,0,0,0,0,0,4,3
 2025,1,REG,00-0038563,Tre Tucker,WR,LV,11.4,13.4,11.4,12.4,13.4,12.4,15.4
 2025,1,REG,00-0038565,Mekhi Blackmon,DB,IND,0,0,0,0,0,0,6
-2025,1,REG,00-0038567,Chad Ryland,K,ARI,0,0,0,0,0,11,11
+2025,1,REG,00-0038567,Chad Ryland,K,ARI,0,0,0,0,0,11,10
 2025,1,REG,00-0038570,Ventrell Miller,LB,JAX,0,0,0,0,0,0,5
 2025,1,REG,00-0038573,Derius Davis,WR,LAC,0.3,0.3,0.3,0.3,0.3,0.3,0.3
 2025,1,REG,00-0038574,Isaiah McGuire,DE,CLE,0,0,0,0,0,0,15
@@ -2264,7 +2264,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,3,REG,00-0029606,Harrison Smith,FS,MIN,0,0,0,0,0,0,1
 2025,3,REG,00-0029607,Demario Davis,OLB,NO,0,0,0,0,0,0,21
 2025,3,REG,00-0029692,Bryan Anger,P,DAL,0,0,0,0,0,0,0
-2025,3,REG,00-0029822,Brandon McManus,K,GB,0,0,0,0,0,4,4
+2025,3,REG,00-0029822,Brandon McManus,K,GB,0,0,0,0,0,4,3
 2025,3,REG,00-0029892,Kyle Juszczyk,FB,SF,6.1,7.1,6.1,6.6,7.1,6.6,8.1
 2025,3,REG,00-0030035,Adam Thielen,WR,MIN,0,0,0,0,0,0,0
 2025,3,REG,00-0030061,Zach Ertz,TE,WAS,3.8,6.8,3.8,5.3,6.8,5.3,7.8
@@ -2505,7 +2505,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,3,REG,00-0035156,Jack Fox,P,DET,0,0,0,0,0,0,0
 2025,3,REG,00-0035166,Azeez Al-Shaair,LB,HOU,0,0,0,0,0,0,16
 2025,3,REG,00-0035190,AJ Cole,P,LV,0,0,0,0,0,0,0
-2025,3,REG,00-0035192,Joey Slye,K,TEN,0,0,0,0,0,10,10
+2025,3,REG,00-0035192,Joey Slye,K,TEN,0,0,0,0,0,10,9
 2025,3,REG,00-0035208,Olamide Zaccheaus,WR,CHI,3.6,6.6,3.6,5.1,6.6,5.1,8.6
 2025,3,REG,00-0035228,Kyler Murray,QB,ARI,14.06,14.06,14.06,14.06,14.06,14.06,16.06
 2025,3,REG,00-0035229,T.J. Hockenson,TE,MIN,10.9,15.9,10.9,13.4,15.9,13.4,19.9
@@ -2531,7 +2531,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,3,REG,00-0035316,Kaden Elliss,LB,ATL,0,0,0,0,0,0,20
 2025,3,REG,00-0035352,Tyrel Dodson,LB,MIA,0,0,0,0,0,0,25
 2025,3,REG,00-0035357,Cam Lewis,CB,BUF,0,0,0,0,0,0,2
-2025,3,REG,00-0035358,Chase McLaughlin,K,TB,0,0,0,0,0,21,21
+2025,3,REG,00-0035358,Chase McLaughlin,K,TB,0,0,0,0,0,21,20
 2025,3,REG,00-0035359,David Sills,WR,ATL,0.9,1.9,0.9,1.4,1.9,1.4,1.9
 2025,3,REG,00-0035378,Andrew Wingard,SAF,JAX,0,0,0,0,0,0,12
 2025,3,REG,00-0035402,Carl Granderson,DE,NO,0,0,0,0,0,0,4
@@ -3121,7 +3121,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,3,REG,00-0039741,Payton Wilson,LB,PIT,0,0,0,0,0,0,16
 2025,3,REG,00-0039745,Tory Taylor,P,CHI,0,0,0,0,0,0,0
 2025,3,REG,00-0039749,Tyler Davis,DE,LA,0,0,0,0,0,0,4
-2025,3,REG,00-0039750,Joshua Karty,K,LA,0,0,0,0,0,17,17
+2025,3,REG,00-0039750,Joshua Karty,K,LA,0,0,0,0,0,17,15
 2025,3,REG,00-0039751,Jordan Whittington,WR,LA,1.4,3.4,1.4,2.4,3.4,2.4,3.4
 2025,3,REG,00-0039770,Charles Woods,CB,NE,0,0,0,0,0,0,2
 2025,3,REG,00-0039774,Omar Speights,LB,LA,0,0,0,0,0,0,8
@@ -3410,7 +3410,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,4,REG,00-0030565,Geno Smith,QB,LV,9.78,9.78,9.78,9.78,9.78,9.78,10.78
 2025,4,REG,00-0030757,Mike Pennel,DT,CIN,0,0,0,0,0,0,6
 2025,4,REG,00-0031054,DaQuan Jones,DT,BUF,0,0,0,0,0,0,7
-2025,4,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,6,6
+2025,4,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,6,5
 2025,4,REG,00-0031177,Brent Urban,DE,BAL,0,0,0,0,0,0,2
 2025,4,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,19,19
 2025,4,REG,00-0031236,Brandin Cooks,WR,NO,2.2,5.2,2.2,3.7,5.2,3.7,6.2
@@ -3544,7 +3544,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,4,REG,00-0033952,Grover Stewart,DT,IND,0,0,0,0,0,0,8
 2025,4,REG,00-0033955,Jeremy McNichols,RB,WAS,0.3,1.3,0.3,0.8,1.3,0.8,1.3
 2025,4,REG,00-0034160,Michael Dickson,P,SEA,0,0,0,0,0,0,0
-2025,4,REG,00-0034161,Daniel Carlson,K,LV,0,0,0,0,0,6,6
+2025,4,REG,00-0034161,Daniel Carlson,K,LV,0,0,0,0,0,6,5
 2025,4,REG,00-0034162,J.K. Scott,P,LAC,0,0,0,0,0,0,0
 2025,4,REG,00-0034163,Jacob Martin,DE,WAS,0,0,0,0,0,0,4
 2025,4,REG,00-0034173,Eddy Pineiro,K,SF,0,0,0,0,0,7,7
@@ -6053,7 +6053,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,6,REG,00-0037475,Stone Smartt,TE,NYJ,0,0,0,0,0,0,0
 2025,6,REG,00-0037487,Deven Thompkins,WR,ATL,0,0,0,0,0,0,0
 2025,6,REG,00-0037512,Isaiah Pola-Mao,SAF,LV,0,0,0,0,0,0,6
-2025,6,REG,00-0037542,John Parker Romo,K,ATL,0,0,0,0,0,6,6
+2025,6,REG,00-0037542,John Parker Romo,K,ATL,0,0,0,0,0,6,5
 2025,6,REG,00-0037545,Rashid Shaheed,WR,NO,2.8,6.8,2.8,4.8,6.8,4.8,7.8
 2025,6,REG,00-0037547,Daniel Whelan,P,GB,0,0,0,0,0,0,0
 2025,6,REG,00-0037549,Darrell Baker Jr.,CB,TEN,0,0,0,0,0,0,2
@@ -6152,7 +6152,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,6,REG,00-0038558,Darnell Washington,TE,PIT,6.2,9.2,6.2,7.7,9.2,7.7,12.2
 2025,6,REG,00-0038559,Michael Wilson,WR,ARI,4.4,8.4,4.4,6.4,8.4,6.4,10.4
 2025,6,REG,00-0038560,Jordan Battle,SAF,CIN,0,0,0,0,0,0,14
-2025,6,REG,00-0038562,Jake Moody,K,CHI,0,0,0,0,0,16,16
+2025,6,REG,00-0038562,Jake Moody,K,CHI,0,0,0,0,0,16,15
 2025,6,REG,00-0038563,Tre Tucker,WR,LV,7,12,7,9.5,12,9.5,16
 2025,6,REG,00-0038564,Cameron Latu,TE,PHI,0,0,0,0,0,0,0
 2025,6,REG,00-0038565,Mekhi Blackmon,DB,IND,0,0,0,0,0,0,14
@@ -6588,7 +6588,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,7,REG,00-0031381,Davante Adams,WR,LA,21.5,26.5,21.5,24,26.5,24,31.5
 2025,7,REG,00-0031408,Mike Evans,WR,TB,0,0,0,0,0,0,0
 2025,7,REG,00-0031411,DeMarcus Lawrence,LB,SEA,0,0,0,0,0,0,7
-2025,7,REG,00-0031492,Jason Myers,K,SEA,0,0,0,0,0,10,10
+2025,7,REG,00-0031492,Jason Myers,K,SEA,0,0,0,0,0,10,9
 2025,7,REG,00-0031565,Danielle Hunter,DE,HOU,0,0,0,0,0,0,8
 2025,7,REG,00-0031588,Stefon Diggs,WR,NE,6.9,13.9,6.9,10.4,13.9,10.4,16.9
 2025,7,REG,00-0031608,Quandre Diggs,S,TEN,0,0,0,0,0,0,14
@@ -8557,7 +8557,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,9,REG,00-0031079,Pat O'Donnell,P,ARI,0,0,0,0,0,0,0
 2025,9,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,10,10
 2025,9,REG,00-0031177,Brent Urban,DE,BAL,0,0,0,0,0,0,2.5
-2025,9,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,11,11
+2025,9,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,11,10
 2025,9,REG,00-0031236,Brandin Cooks,WR,NO,1.6,3.6,1.6,2.6,3.6,2.6,4.6
 2025,9,REG,00-0031254,Denico Autry,DT,HOU,0,0,0,0,0,0,2
 2025,9,REG,00-0031279,Jake Matthews,OT,ATL,0,0,0,0,0,0,0
@@ -8592,7 +8592,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,9,REG,00-0032442,Elandon Roberts,OLB,LV,0,0,0,0,0,0,12
 2025,9,REG,00-0032445,Ted Karras,G,CIN,0,0,0,0,0,0,0
 2025,9,REG,00-0032464,Kalif Raymond,WR,DET,0,0,0,0,0,0,0
-2025,9,REG,00-0032569,Wil Lutz,K,DEN,0,0,0,0,0,4,4
+2025,9,REG,00-0032569,Wil Lutz,K,DEN,0,0,0,0,0,4,3
 2025,9,REG,00-0032580,Jonathan Jones,DB,WAS,0,0,0,0,0,0,6
 2025,9,REG,00-0032667,Roy Robertson-Harris,DE,NYG,0,0,0,0,0,0,0
 2025,9,REG,00-0032726,Ka'imi Fairbairn,K,HOU,0,0,0,0,0,17,17
@@ -9218,7 +9218,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,9,REG,00-0039165,Zach Charbonnet,RB,SEA,4.6,5.6,4.6,5.1,5.6,5.1,7.6
 2025,9,REG,00-0039167,Joey Porter Jr.,CB,PIT,0,0,0,0,0,0,23
 2025,9,REG,00-0039169,Devon Witherspoon,CB,SEA,0,0,0,0,0,0,14
-2025,9,REG,00-0039172,Jake Bates,K,DET,0,0,0,0,0,7,7
+2025,9,REG,00-0039172,Jake Bates,K,DET,0,0,0,0,0,7,6
 2025,9,REG,00-0039232,Nate Wiggins,CB,BAL,0,0,0,0,0,0,12
 2025,9,REG,00-0039234,T.J. Tampa,CB,BAL,0,0,0,0,0,0,2
 2025,9,REG,00-0039299,George Holani,RB,SEA,0.9,0.9,0.9,0.9,0.9,0.9,0.9
@@ -10394,7 +10394,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,10,REG,00-0040259,Gage Larvadain,WR,CLE,0,0,0,0,0,0,0
 2025,10,REG,00-0040261,Easton Mascarenas-Arnold,LB,CLE,0,0,0,0,0,0,2
 2025,10,REG,00-0040263,Donovan McMillon,SAF,CLE,0,0,0,0,0,0,2
-2025,10,REG,00-0040279,Ryan Fitzgerald,K,CAR,0,0,0,0,0,1,1
+2025,10,REG,00-0040279,Ryan Fitzgerald,K,CAR,0,0,0,0,0,1,0
 2025,10,REG,00-0040289,Bam Martin-Scott,LB,CAR,0,0,0,0,0,0,2
 2025,10,REG,00-0040296,Corey Thornton,CB,CAR,0,0,0,0,0,0,2
 2025,10,REG,00-0040318,Ale Kaho,LB,WAS,0,0,0,0,0,0,4
@@ -13781,7 +13781,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,14,REG,00-0033857,JuJu Smith-Schuster,WR,KC,0.5,1.5,0.5,1,1.5,1,2.5
 2025,14,REG,00-0033858,Jonnu Smith,TE,PIT,0,0,0,0,0,0,0
 2025,14,REG,00-0033860,Davon Godchaux,DT,NO,0,0,0,0,0,0,9
-2025,14,REG,00-0033862,Zane Gonzalez,K,ATL,0,0,0,0,0,10,10
+2025,14,REG,00-0033862,Zane Gonzalez,K,ATL,0,0,0,0,0,10,9
 2025,14,REG,00-0033863,Dan Skipper,OT,DET,0,0,0,0,0,0,0
 2025,14,REG,00-0033868,Myles Garrett,DE,CLE,0,0,0,0,0,0,13
 2025,14,REG,00-0033872,Jamal Adams,LB,LV,0,0,0,0,0,0,2
@@ -14387,7 +14387,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,14,REG,00-0039165,Zach Charbonnet,RB,SEA,6.6,8.6,6.6,7.6,8.6,7.6,10.6
 2025,14,REG,00-0039167,Joey Porter Jr.,CB,PIT,0,0,0,0,0,0,9
 2025,14,REG,00-0039169,Devon Witherspoon,CB,SEA,0,0,0,0,0,0,20
-2025,14,REG,00-0039172,Jake Bates,K,DET,0,0,0,0,0,16,16
+2025,14,REG,00-0039172,Jake Bates,K,DET,0,0,0,0,0,16,15
 2025,14,REG,00-0039178,Austin Ajiake,LB,IND,0,0,0,0,0,0,2
 2025,14,REG,00-0039229,Charlie Smyth,K,NO,0,0,0,0,0,5,5
 2025,14,REG,00-0039232,Nate Wiggins,CB,BAL,0,0,0,0,0,0,12
@@ -14732,7 +14732,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,15,REG,00-0032464,Kalif Raymond,WR,DET,2,3,2,2.5,3,2.5,4
 2025,15,REG,00-0032569,Wil Lutz,K,DEN,0,0,0,0,0,4,4
 2025,15,REG,00-0032667,Roy Robertson-Harris,DE,NYG,0,0,0,0,0,0,6
-2025,15,REG,00-0032726,Ka'imi Fairbairn,K,HOU,0,0,0,0,0,18,18
+2025,15,REG,00-0032726,Ka'imi Fairbairn,K,HOU,0,0,0,0,0,18,17
 2025,15,REG,00-0032759,Sheldon Rankins,DT,HOU,0,0,0,0,0,0,6
 2025,15,REG,00-0032762,Chris Jones,DE,KC,0,0,0,0,0,0,0
 2025,15,REG,00-0032764,Derrick Henry,RB,BAL,10,10,10,10,10,10,15
@@ -17002,7 +17002,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,17,REG,00-0033857,JuJu Smith-Schuster,WR,KC,1.6,4.6,1.6,3.1,4.6,3.1,5.6
 2025,17,REG,00-0033858,Jonnu Smith,TE,PIT,2.7,7.7,2.7,5.2,7.7,5.2,8.7
 2025,17,REG,00-0033860,Davon Godchaux,DT,NO,0,0,0,0,0,0,4
-2025,17,REG,00-0033862,Zane Gonzalez,K,ATL,0,0,0,0,0,13,13
+2025,17,REG,00-0033862,Zane Gonzalez,K,ATL,0,0,0,0,0,13,12
 2025,17,REG,00-0033868,Myles Garrett,DE,CLE,0,0,0,0,0,0,2
 2025,17,REG,00-0033870,Solomon Thomas,DE,DAL,0,0,0,0,0,0,3
 2025,17,REG,00-0033872,Jamal Adams,LB,LV,0,0,0,0,0,0,6
@@ -17136,7 +17136,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,17,REG,00-0035316,Kaden Elliss,LB,ATL,0,0,0,0,0,0,7
 2025,17,REG,00-0035352,Tyrel Dodson,LB,MIA,0,0,0,0,0,0,12
 2025,17,REG,00-0035357,Cam Lewis,CB,BUF,0,0,0,0,0,0,10
-2025,17,REG,00-0035358,Chase McLaughlin,K,TB,0,0,0,0,0,5,5
+2025,17,REG,00-0035358,Chase McLaughlin,K,TB,0,0,0,0,0,5,4
 2025,17,REG,00-0035359,David Sills,WR,ATL,3.7,6.7,3.7,5.2,6.7,5.2,8.7
 2025,17,REG,00-0035363,Joe Giles-Harris,LB,CIN,0,0,0,0,0,0,14
 2025,17,REG,00-0035378,Andrew Wingard,SAF,JAX,0,0,0,0,0,0,11
@@ -18218,7 +18218,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,18,REG,00-0035316,Kaden Elliss,LB,ATL,0,0,0,0,0,0,13
 2025,18,REG,00-0035352,Tyrel Dodson,LB,MIA,0,0,0,0,0,0,16
 2025,18,REG,00-0035357,Cam Lewis,CB,BUF,0,0,0,0,0,0,6
-2025,18,REG,00-0035358,Chase McLaughlin,K,TB,0,0,0,0,0,11,11
+2025,18,REG,00-0035358,Chase McLaughlin,K,TB,0,0,0,0,0,11,10
 2025,18,REG,00-0035359,David Sills,WR,ATL,1.1,2.1,1.1,1.6,2.1,1.6,2.1
 2025,18,REG,00-0035363,Joe Giles-Harris,LB,CIN,0,0,0,0,0,0,8
 2025,18,REG,00-0035378,Andrew Wingard,SAF,JAX,0,0,0,0,0,0,1
@@ -18923,7 +18923,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,18,REG,00-0040195,Denzel Burke,CB,ARI,0,0,0,0,0,0,12
 2025,18,REG,00-0040198,Ollie Gordon II,RB,MIA,1.1,2.1,1.1,1.6,2.1,1.6,4.1
 2025,18,REG,00-0040199,JJ Pegues,DT,LV,0,0,0,0,0,0,6
-2025,18,REG,00-0040200,Andy Borregales,K,NE,0,0,0,0,0,10,10
+2025,18,REG,00-0040200,Andy Borregales,K,NE,0,0,0,0,0,10,9
 2025,18,REG,00-0040206,Riley Leonard,QB,IND,22.6,22.6,22.6,22.6,22.6,22.6,25.6
 2025,18,REG,00-0040212,Branson Taylor,OT,LAC,0,0,0,0,0,0,0
 2025,18,REG,00-0040213,Rayuan Lane III,SAF,JAX,0,0,0,0,0,0,5
@@ -19769,7 +19769,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2025,21,POST,00-0031898,Alex Singleton,LB,DEN,0,0,0,0,0,0,24
 2025,21,POST,00-0031933,Leonard Williams,DE,SEA,0,0,0,0,0,0,2
 2025,21,POST,00-0032387,Jarran Reed,DT,SEA,0,0,0,0,0,0,2
-2025,21,POST,00-0032569,Wil Lutz,K,DEN,0,0,0,0,0,0,0
+2025,21,POST,00-0032569,Wil Lutz,K,DEN,0,0,0,0,0,0,-1
 2025,21,POST,00-0033090,Hunter Henry,TE,NE,1.2,3.2,1.2,2.2,3.2,2.2,3.2
 2025,21,POST,00-0033110,Tyler Higbee,TE,LA,1.2,2.2,1.2,1.7,2.2,1.7,3.2
 2025,21,POST,00-0033297,D.J. Jones,DT,DEN,0,0,0,0,0,0,15.5

@@ -1564,7 +1564,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,2,REG,00-0033752,Storm Norton,OT,LAC,0,0,0,0,0,0,0
 2021,2,REG,00-0033757,Robert Tonyan,TE,GB,11.2,14.2,11.2,12.7,14.2,12.7,17.2
 2021,2,REG,00-0033784,Eddie Jackson,FS,CHI,0,0,0,0,0,0,10
-2021,2,REG,00-0033787,Jake Elliott,K,PHI,0,0,0,0,0,4,4
+2021,2,REG,00-0033787,Jake Elliott,K,PHI,0,0,0,0,0,4,3
 2021,2,REG,00-0033790,Jordan Evans,OLB,CIN,0,0,0,0,0,0,4
 2021,2,REG,00-0033791,Brandon Wilson,DB,CIN,0,0,0,0,0,0,0
 2021,2,REG,00-0033792,Rudy Ford,FS,JAX,0,0,0,0,0,0,6
@@ -1573,7 +1573,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,2,REG,00-0033857,JuJu Smith-Schuster,WR,PIT,10.4,16.4,10.4,13.4,16.4,13.4,19.4
 2021,2,REG,00-0033858,Jonnu Smith,TE,NE,2.8,6.8,2.8,4.8,6.8,4.8,7.8
 2021,2,REG,00-0033860,Davon Godchaux,DT,NE,0,0,0,0,0,0,4
-2021,2,REG,00-0033862,Zane Gonzalez,K,CAR,0,0,0,0,0,8,9
+2021,2,REG,00-0033862,Zane Gonzalez,K,CAR,0,0,0,0,0,8,8
 2021,2,REG,00-0033868,Myles Garrett,DE,CLE,0,0,0,0,0,0,6
 2021,2,REG,00-0033869,Mitchell Trubisky,QB,BUF,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2,-0.2
 2021,2,REG,00-0033870,Solomon Thomas,DE,LV,0,0,0,0,0,0,8
@@ -1807,7 +1807,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,2,REG,00-0035156,Jack Fox,P,DET,0,0,0,0,0,0,0
 2021,2,REG,00-0035166,Azeez Al-Shaair,LB,SF,0,0,0,0,0,0,10
 2021,2,REG,00-0035190,AJ Cole,P,LV,0,0,0,0,0,0,0
-2021,2,REG,00-0035192,Joey Slye,K,HOU,0,0,0,0,0,3,3
+2021,2,REG,00-0035192,Joey Slye,K,HOU,0,0,0,0,0,3,2
 2021,2,REG,00-0035208,Olamide Zaccheaus,WR,ATL,2.2,4.2,2.2,3.2,4.2,3.2,6.2
 2021,2,REG,00-0035215,Deonte Harty,WR,NO,1,2,1,1.5,2,1.5,2
 2021,2,REG,00-0035216,Diontae Johnson,WR,PIT,10.5,19.5,10.5,15,19.5,15,25.5
@@ -5173,7 +5173,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,5,REG,00-0035795,James Pierre,CB,PIT,0,0,0,0,0,0,16
 2021,5,REG,00-0035823,Ben Ellefson,TE,MIN,0,0,0,0,0,0,0
 2021,5,REG,00-0035831,James Robinson,RB,JAX,20.7,21.7,20.7,21.2,21.7,21.2,29.7
-2021,5,REG,00-0035849,Rodrigo Blankenship,K,IND,0,0,0,0,0,6,7
+2021,5,REG,00-0035849,Rodrigo Blankenship,K,IND,0,0,0,0,0,6,6
 2021,5,REG,00-0035859,Blake Gillikin,P,NO,0,0,0,0,0,0,0
 2021,5,REG,00-0035864,Kendall Hinton,WR,DEN,8.5,10.5,8.5,9.5,10.5,9.5,12.5
 2021,5,REG,00-0035889,Tommy Townsend,P,KC,0,0,0,0,0,0,0
@@ -6431,7 +6431,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,7,REG,00-0024243,Marcedes Lewis,TE,GB,3.1,6.1,3.1,4.6,6.1,4.6,8.1
 2021,7,REG,00-0024417,Sam Koch,P,BAL,0,0,0,0,0,0,0
 2021,7,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,13,14
-2021,7,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,6,6
+2021,7,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,6,5
 2021,7,REG,00-0025825,Brett Kern,P,TEN,0,0,0,0,0,0,0
 2021,7,REG,00-0026035,Danny Amendola,WR,HOU,1.7,4.7,1.7,3.2,4.7,3.2,5.7
 2021,7,REG,00-0026143,Matt Ryan,QB,ATL,17.44,17.44,17.44,17.44,17.44,17.44,19.44
@@ -6935,7 +6935,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,7,REG,00-0034779,Ronnie Harrison,LB,CLE,0,0,0,0,0,0,10
 2021,7,REG,00-0034780,Isaac Yiadom,CB,GB,0,0,0,0,0,0,2
 2021,7,REG,00-0034787,Chris Board,LB,BAL,0,0,0,0,0,0,2
-2021,7,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,4,4
+2021,7,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,4,3
 2021,7,REG,00-0034796,Lamar Jackson,QB,BAL,23.08,23.08,23.08,23.08,23.08,23.08,28.08
 2021,7,REG,00-0034797,Jerome Baker,OLB,MIA,0,0,0,0,0,0,2
 2021,7,REG,00-0034798,Durham Smythe,TE,MIA,3.7,6.7,3.7,5.2,6.7,5.2,8.7
@@ -6967,7 +6967,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,7,REG,00-0034869,Sam Darnold,QB,CAR,2.48,2.48,2.48,2.48,2.48,2.48,2.48
 2021,7,REG,00-0034874,Roquan Smith,ILB,CHI,0,0,0,0,0,0,24
 2021,7,REG,00-0034902,Sam Eguavoen,LB,MIA,0,0,0,0,0,0,2
-2021,7,REG,00-0034913,Chris Blewitt,K,WAS,0,0,0,0,0,5,5
+2021,7,REG,00-0034913,Chris Blewitt,K,WAS,0,0,0,0,0,5,4
 2021,7,REG,00-0034941,Mitch Wishnowsky,P,SF,0,0,0,0,0,0,0
 2021,7,REG,00-0034954,Malik Reed,LB,DEN,0,0,0,0,0,0,8
 2021,7,REG,00-0034960,Jakobi Meyers,WR,NE,4.4,9.4,4.4,6.9,9.4,6.9,12.4
@@ -7034,7 +7034,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,7,REG,00-0035341,Trenton Irwin,WR,CIN,0,0,0,0,0,0,0
 2021,7,REG,00-0035346,Nik Needham,DB,MIA,0,0,0,0,0,0,6
 2021,7,REG,00-0035350,Preston Williams,WR,MIA,0.5,1.5,0.5,1,1.5,1,1.5
-2021,7,REG,00-0035358,Chase McLaughlin,K,CLE,0,0,0,0,0,7,7
+2021,7,REG,00-0035358,Chase McLaughlin,K,CLE,0,0,0,0,0,7,6
 2021,7,REG,00-0035359,David Sills,WR,NYG,0,0,0,0,0,0,0
 2021,7,REG,00-0035386,T.J. Edwards,LB,PHI,0,0,0,0,0,0,10
 2021,7,REG,00-0035393,Anthony Chesley,CB,IND,0,0,0,0,0,0,2
@@ -7921,7 +7921,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,8,REG,00-0034789,Minkah Fitzpatrick,FS,PIT,0,0,0,0,0,0,9
 2021,8,REG,00-0034790,Derwin James,FS,LAC,0,0,0,0,0,0,28
 2021,8,REG,00-0034791,Nick Chubb,RB,CLE,6.9,7.9,6.9,7.4,7.9,7.4,11.9
-2021,8,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,5,5
+2021,8,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,5,4
 2021,8,REG,00-0034799,Kalen Ballage,RB,PIT,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3
 2021,8,REG,00-0034800,B.J. Hill,DE,CIN,0,0,0,0,0,0,2
 2021,8,REG,00-0034801,Josh Woods,LB,DET,0,0,0,0,0,0,2
@@ -7954,7 +7954,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,8,REG,00-0034899,John Wolford,QB,LA,0.2,0.2,0.2,0.2,0.2,0.2,0.2
 2021,8,REG,00-0034902,Sam Eguavoen,LB,MIA,0,0,0,0,0,0,2
 2021,8,REG,00-0034903,Tevaughn Campbell,DB,LAC,0,0,0,0,0,0,2
-2021,8,REG,00-0034913,Chris Blewitt,K,WAS,0,0,0,0,0,6,6
+2021,8,REG,00-0034913,Chris Blewitt,K,WAS,0,0,0,0,0,6,4
 2021,8,REG,00-0034954,Malik Reed,LB,DEN,0,0,0,0,0,0,11
 2021,8,REG,00-0034960,Jakobi Meyers,WR,NE,5.6,9.6,5.6,7.6,9.6,7.6,12.6
 2021,8,REG,00-0034967,Rashan Gary,LB,GB,0,0,0,0,0,0,2
@@ -8388,7 +8388,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,9,REG,00-0024417,Sam Koch,P,BAL,0,0,0,0,0,0,0
 2021,9,REG,00-0025394,Adrian Peterson,RB,TEN,8.6,9.6,8.6,9.1,9.6,9.1,10.6
 2021,9,REG,00-0025565,Nick Folk,K,NE,0,0,0,0,0,5,5
-2021,9,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,0,0
+2021,9,REG,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,0,-1
 2021,9,REG,00-0025825,Brett Kern,P,TEN,0,0,0,0,0,0,0
 2021,9,REG,00-0026035,Danny Amendola,WR,HOU,4.9,7.9,4.9,6.4,7.9,6.4,8.9
 2021,9,REG,00-0026143,Matt Ryan,QB,ATL,28.52,28.52,28.52,28.52,28.52,28.52,31.52
@@ -9442,7 +9442,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,10,REG,00-0029764,Cody Davis,DB,NE,0,0,0,0,0,0,2
 2021,10,REG,00-0029794,Daren Bates,LB,ATL,0,0,0,0,0,0,6
 2021,10,REG,00-0029799,Lerentee McCray,DE,JAX,0,0,0,0,0,0,0
-2021,10,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,7,7
+2021,10,REG,00-0029822,Brandon McManus,K,DEN,0,0,0,0,0,7,6
 2021,10,REG,00-0029892,Kyle Juszczyk,FB,SF,0.6,1.6,0.6,1.1,1.6,1.1,1.6
 2021,10,REG,00-0029895,Ryan Jensen,C,TB,0,0,0,0,0,0,0
 2021,10,REG,00-0030010,Brandon Copeland,OLB,ATL,0,0,0,0,0,0,8
@@ -14479,7 +14479,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,15,REG,00-0031079,Pat O'Donnell,P,CHI,0,0,0,0,0,0,0
 2021,15,REG,00-0031101,Shaquil Barrett,LB,TB,0,0,0,0,0,0,0
 2021,15,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,14,14
-2021,15,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,3,3
+2021,15,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,3,2
 2021,15,REG,00-0031235,Odell Beckham Jr.,WR,LA,0.7,1.7,0.7,1.2,1.7,1.2,2.7
 2021,15,REG,00-0031236,Brandin Cooks,WR,HOU,22.2,29.2,22.2,25.7,29.2,25.7,35.2
 2021,15,REG,00-0031237,Teddy Bridgewater,QB,DEN,4.92,4.92,4.92,4.92,4.92,4.92,7.92
@@ -17080,7 +17080,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,17,REG,00-0034789,Minkah Fitzpatrick,FS,PIT,0,0,0,0,0,0,7
 2021,17,REG,00-0034790,Derwin James,FS,LAC,0,0,0,0,0,0,11
 2021,17,REG,00-0034791,Nick Chubb,RB,CLE,5.8,5.8,5.8,5.8,5.8,5.8,8.8
-2021,17,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,3,3
+2021,17,REG,00-0034794,Jason Sanders,K,MIA,0,0,0,0,0,3,2
 2021,17,REG,00-0034797,Jerome Baker,OLB,MIA,0,0,0,0,0,0,14
 2021,17,REG,00-0034798,Durham Smythe,TE,MIA,3.7,6.7,3.7,5.2,6.7,5.2,8.7
 2021,17,REG,00-0034800,B.J. Hill,DE,CIN,0,0,0,0,0,0,8
@@ -19085,7 +19085,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2021,20,POST,00-0023459,Aaron Rodgers,QB,GB,9,9,9,9,9,9,9
 2021,20,POST,00-0024243,Marcedes Lewis,TE,GB,-2,-1,-2,-1.5,-1,-1.5,-1
 2021,20,POST,00-0025424,Eric Weddle,FS,LA,0,0,0,0,0,0,6
-2021,20,POST,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,4,4
+2021,20,POST,00-0025580,Mason Crosby,K,GB,0,0,0,0,0,4,3
 2021,20,POST,00-0025825,Brett Kern,P,TEN,0,0,0,0,0,0,0
 2021,20,POST,00-0026498,Matthew Stafford,QB,LA,29.24,29.24,29.24,29.24,29.24,29.24,34.24
 2021,20,POST,00-0026564,Steve McLendon,NT,TB,0,0,0,0,0,0,1

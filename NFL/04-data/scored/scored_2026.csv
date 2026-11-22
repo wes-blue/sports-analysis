@@ -1173,7 +1173,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,2,REG,00-0031040,Khalil Mack,OLB,LAC,0,0,0,0,0,0,8
 2026,2,REG,00-0031054,DaQuan Jones,DE,NE,0,0,0,0,0,0,2
 2026,2,REG,00-0031136,Chris Boswell,K,PIT,0,0,0,0,0,4,4
-2026,2,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,5,5
+2026,2,REG,00-0031203,Cairo Santos,K,CHI,0,0,0,0,0,5,4
 2026,2,REG,00-0031270,Shelby Harris,DE,NYG,0,0,0,0,0,0,2
 2026,2,REG,00-0031279,Jake Matthews,OT,ATL,0,0,0,0,0,0,0
 2026,2,REG,00-0031330,Morgan Moses,OT,NE,0,0,0,0,0,0,0
@@ -1988,7 +1988,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,2,REG,00-0040045,Alijah Clark,DB,DAL,0,0,0,0,0,0,2
 2026,2,REG,00-0040066,Jackson Woodard,LB,MIA,0,0,0,0,0,0,6
 2026,2,REG,00-0040072,Jeffrey Bassa,LB,KC,0,0,0,0,0,0,2
-2026,2,REG,00-0040074,Tyler Loop,K,BAL,0,0,0,0,0,6,6
+2026,2,REG,00-0040074,Tyler Loop,K,BAL,0,0,0,0,0,6,5
 2026,2,REG,00-0040075,LaJohntay Wester,WR,BAL,1.4,2.4,1.4,1.9,2.4,1.9,3.4
 2026,2,REG,00-0040078,Brashard Smith,RB,KC,0,0,0,0,0,0,0
 2026,2,REG,00-0040089,Kevin Knowles,DB,TB,0,0,0,0,0,0,2
@@ -2807,7 +2807,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,3,REG,00-0037615,Nakobe Dean,LB,LV,0,0,0,0,0,0,27
 2026,3,REG,00-0037663,Jermaine Johnson II,DE,TEN,0,0,0,0,0,0,8
 2026,3,REG,00-0037665,Sam Williams,DE,CLE,0,0,0,0,0,0,4
-2026,3,REG,00-0037692,Brandon Aubrey,K,DAL,0,0,0,0,0,11,11
+2026,3,REG,00-0037692,Brandon Aubrey,K,DAL,0,0,0,0,0,11,10
 2026,3,REG,00-0037711,Jeremiah Pharms Jr.,DT,NE,0,0,0,0,0,0,2
 2026,3,REG,00-0037740,Garrett Wilson,WR,NYJ,16.7,26.7,16.7,21.7,26.7,21.7,33.7
 2026,3,REG,00-0037741,Jahan Dotson,WR,ATL,1.1,2.1,1.1,1.6,2.1,1.6,3.1
@@ -3289,7 +3289,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,3,REG,00-0040889,Hezekiah Masses,CB,LV,0,0,0,0,0,0,15
 2026,3,REG,00-0040894,Malik Benson,WR,LV,0,0,0,0,0,0,0
 2026,3,REG,00-0040898,Ryan Eckley,P,BAL,0,0,0,0,0,0,0
-2026,3,REG,00-0040899,Trey Smack,K,GB,0,0,0,0,0,2,2
+2026,3,REG,00-0040899,Trey Smack,K,GB,0,0,0,0,0,2,1
 2026,3,REG,00-0040928,Kapena Gushiken,CB,IND,0,0,0,0,0,0,2
 2026,3,REG,00-0040948,J. Michael Sturdivant,WR,GB,2.2,5.2,2.2,3.7,5.2,3.7,7.2
 2026,3,REG,00-0040957,Xavier Nwankpa,SAF,KC,0,0,0,0,0,0,2
@@ -3559,7 +3559,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,4,REG,00-0034161,Daniel Carlson,K,NO,0,0,0,0,0,5,5
 2026,4,REG,00-0034162,J.K. Scott,P,LAC,0,0,0,0,0,0,0
 2026,4,REG,00-0034163,Jacob Martin,DE,TEN,0,0,0,0,0,0,4.5
-2026,4,REG,00-0034173,Eddy Pineiro,K,SF,0,0,0,0,0,6,6
+2026,4,REG,00-0034173,Eddy Pineiro,K,SF,0,0,0,0,0,6,5
 2026,4,REG,00-0034234,Poona Ford,DT,LA,0,0,0,0,0,0,3
 2026,4,REG,00-0034272,Marquez Valdes-Scantling,WR,LAC,0,0,0,0,0,0,0
 2026,4,REG,00-0034275,Foley Fatukasi,DT,LV,0,0,0,0,0,0,6
@@ -3930,7 +3930,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,4,REG,00-0037663,Jermaine Johnson II,DE,TEN,0,0,0,0,0,0,11
 2026,4,REG,00-0037665,Sam Williams,DE,CLE,0,0,0,0,0,0,7
 2026,4,REG,00-0037666,Jalen Tolbert,WR,MIA,0,0,0,0,0,0,0
-2026,4,REG,00-0037692,Brandon Aubrey,K,DAL,0,0,0,0,0,11,11
+2026,4,REG,00-0037692,Brandon Aubrey,K,DAL,0,0,0,0,0,11,10
 2026,4,REG,00-0037740,Garrett Wilson,WR,NYJ,2.7,5.7,2.7,4.2,5.7,4.2,6.7
 2026,4,REG,00-0037741,Jahan Dotson,WR,ATL,11.4,13.4,11.4,12.4,13.4,12.4,15.4
 2026,4,REG,00-0037742,Treylon Burks,WR,WAS,10.7,11.7,10.7,11.2,11.7,11.2,13.7
@@ -5261,7 +5261,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,5,REG,00-0039459,Theo Benedet,OT,CHI,0,0,0,0,0,0,0
 2026,5,REG,00-0039465,Reddy Steward,DB,DAL,0,0,0,0,0,0,10
 2026,5,REG,00-0039489,Hayden Rucci,TE,LAC,6.7,7.7,6.7,7.2,7.7,7.2,8.7
-2026,5,REG,00-0039498,Harrison Mevis,K,LA,0,0,0,0,0,3,3
+2026,5,REG,00-0039498,Harrison Mevis,K,LA,0,0,0,0,0,3,2
 2026,5,REG,00-0039515,Winston Reid,LB,CLE,0,0,0,0,0,0,2
 2026,5,REG,00-0039530,Brevyn Spann-Ford,TE,DAL,0,0,0,0,0,0,0
 2026,5,REG,00-0039576,Spencer Shrader,K,IND,0,0,0,0,0,21,21
@@ -7281,7 +7281,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,7,REG,00-0039388,Jaylan Ford,LB,NO,0,0,0,0,0,0,2
 2026,7,REG,00-0039401,Khristian Boyd,DT,NO,0,0,0,0,0,0,2
 2026,7,REG,00-0039402,Jaden Crumedy,DT,HOU,0,0,0,0,0,0,4
-2026,7,REG,00-0039404,Will Reichard,K,MIN,0,0,0,0,0,13,13
+2026,7,REG,00-0039404,Will Reichard,K,MIN,0,0,0,0,0,13,12
 2026,7,REG,00-0039407,Dylan Laube,RB,LV,0,0,0,0,0,0,0
 2026,7,REG,00-0039408,Christian Mahogany,G,DET,0,0,0,0,0,0,0
 2026,7,REG,00-0039410,Ryan Flournoy,WR,DAL,7,11,7,9,11,9,14
@@ -7524,7 +7524,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,7,REG,00-0040890,Cyrus Allen,WR,KC,1.8,2.8,1.8,2.3,2.8,2.3,3.8
 2026,7,REG,00-0040894,Malik Benson,WR,LV,0,0,0,0,0,0,0
 2026,7,REG,00-0040898,Ryan Eckley,P,BAL,0,0,0,0,0,0,0
-2026,7,REG,00-0040899,Trey Smack,K,GB,0,0,0,0,0,5,5
+2026,7,REG,00-0040899,Trey Smack,K,GB,0,0,0,0,0,5,4
 2026,7,REG,00-0040908,Keyshawn James-Newby,LB,PHI,0,0,0,0,0,0,2
 2026,7,REG,00-0040923,Maximus Pulley,SAF,LA,0,0,0,0,0,0,4
 2026,7,REG,00-0040928,Kapena Gushiken,CB,IND,0,0,0,0,0,0,2
@@ -7679,7 +7679,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,8,REG,00-0031360,Kyle Van Noy,MLB,MIN,0,0,0,0,0,0,2
 2026,8,REG,00-0031388,Aaron Donald,DE,LA,0,0,0,0,0,0,5
 2026,8,REG,00-0031411,DeMarcus Lawrence,LB,SEA,0,0,0,0,0,0,10
-2026,8,REG,00-0031492,Jason Myers,K,SEA,0,0,0,0,0,2,3
+2026,8,REG,00-0031492,Jason Myers,K,SEA,0,0,0,0,0,2,2
 2026,8,REG,00-0031583,Grady Jarrett,DT,CHI,0,0,0,0,0,0,2
 2026,8,REG,00-0031588,Stefon Diggs,WR,WAS,9.8,12.8,9.8,11.3,12.8,11.3,15.8
 2026,8,REG,00-0031610,Darren Waller,TE,CAR,1.1,2.1,1.1,1.6,2.1,1.6,2.1
@@ -10776,7 +10776,7 @@ season,week,season_type,player_id,player_display_name,position,team,fantasy_poin
 2026,11,REG,00-0039164,Anthony Richardson,QB,IND,0.2,0.2,0.2,0.2,0.2,0.2,0.2
 2026,11,REG,00-0039178,Austin Ajiake,LB,IND,0,0,0,0,0,0,12
 2026,11,REG,00-0039343,Kamari Lassiter,CB,HOU,0,0,0,0,0,0,4
-2026,11,REG,00-0039576,Spencer Shrader,K,IND,0,0,0,0,0,2,2
+2026,11,REG,00-0039576,Spencer Shrader,K,IND,0,0,0,0,0,2,1
 2026,11,REG,00-0039816,Anthony Gould,WR,IND,4.8,6.8,4.8,5.8,6.8,5.8,8.8
 2026,11,REG,00-0039838,Calen Bullock,SAF,HOU,0,0,0,0,0,0,3
 2026,11,REG,00-0040128,Tyler Warren,TE,IND,2.2,3.2,2.2,2.7,3.2,2.7,4.2
