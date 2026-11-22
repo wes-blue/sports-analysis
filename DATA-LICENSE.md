@@ -43,10 +43,10 @@ This project is not affiliated with, sponsored by or endorsed by nflverse, the N
 
 ## How this relates to the code licence
 
-The repository's [`LICENSE`](LICENSE) is the MIT licence. It covers the software and its documentation written here: the pipeline code and tests, the Power Query code, the workbook generators, the GitHub Actions workflows and the documents.
+The repository's [`LICENSE`](LICENSE) is the MIT licence. It covers the software and its documentation written here: the pipeline code and tests, the workbook generators, the GitHub Actions workflows and the documents.
 
-The MIT licence does **not** cover nflverse's data, or the data derived from it. That data stays under CC BY 4.0 as described above, wherever it appears: in `NFL/04-data/`, in test fixtures, or loaded into a workbook by a refresh.
+The MIT licence does **not** cover nflverse's data, or the data derived from it. That data stays under CC BY 4.0 as described above, wherever it appears: in `NFL/04-data/`, in test fixtures, or placed in a workbook.
 
 ## Content that is not from nflverse
 
-`NFL/06-qa/fixtures/espn_actuals.csv` and the files in `NFL/06-qa/evidence/` hold a small number of fantasy-point totals reported by ESPN for the owner's ESPN league. They are used only to test that the scoring rules match ESPN's. They are not nflverse data, and the CC BY 4.0 statement above does not apply to them.
+`NFL/06-qa/fixtures/espn_actuals.csv` and the files in `NFL/06-qa/evidence/` hold a small number of fantasy-point totals reported by ESPN for one ESPN league. They are used only to test that the scoring rules match ESPN's. They are not nflverse data, and the CC BY 4.0 statement above does not apply to them.

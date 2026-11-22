@@ -154,20 +154,21 @@ def test_scoped_to_the_nfl_folder(wf):
     """A future NBA/ folder and its nba-pipeline-*.yml files never start, or get confused with, these."""
     name, text, doc = wf
     assert doc["defaults"]["run"]["working-directory"] == WORKDIR
+    # No absolute local path (Linux or macOS home folder, Windows drive path) in a public workflow file.
+    assert not re.search(r"/home/|/Users/|(?<![\w])[A-Za-z]:[\\/]", text), f"{name} contains an absolute local path"
     for event in ("push", "pull_request"):
         spec = triggers(doc).get(event)
         if isinstance(spec, dict):
             for p in spec.get("paths", []):
                 assert p.lstrip("!").startswith(("NFL/", ".github/workflows/nfl-pipeline-")), f"{name}: {p}"
             for other in ("NBA/02-config/leagues.csv", "NBA/03-pipeline/nbapipe/run.py",
-                          ".github/workflows/nba-pipeline-weekly.yml", "README.md", "00-Governance/MEMORY.md"):
+                          ".github/workflows/nba-pipeline-weekly.yml", "README.md", "docs/notes.md"):
                 assert not path_filter_matches(spec.get("paths", []), other), f"{name} {event} fires for {other}"
     groups = [doc.get("concurrency", {}).get("group", "")] + [j.get("concurrency", {}).get("group", "") for j in doc["jobs"].values()]
     assert all(g == "" or g.startswith("nfl-") for g in groups)
     env = doc.get("env", {})
     if "ALERT_LABEL" in env:
         assert env["ALERT_LABEL"].startswith("nfl-pipeline-alert-")
-    assert "Personal/" not in text and "20-Projects" not in text, "path from the old private repository"
 
 
 @pytest.mark.parametrize("name", SCHEDULED)

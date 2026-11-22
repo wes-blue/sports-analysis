@@ -1,11 +1,10 @@
 """Derived metrics: long-touchdown counts and team D/ST rows (CONTRACTS.md section 3).
 
-Ported without changing the arithmetic from the verified 1.x code (the Excel-era project, kept in
-the owner's private repository and not published here):
-* long TDs: ``build_long_td_static.py`` and ``LongTD.pq``;
-* team D/ST: ``engine105.py`` and ``Team_DST.pq`` (reconciled to ESPN, decision D-021),
-  including the ``.pq``'s schedule team-code mapping (OAK -> LV, SD -> LAC, STL -> LA),
-  which the Python mirror lacked and which matters for 2017-2019 Raiders games.
+Ported without changing the arithmetic from the earlier, Excel-based version of this project,
+whose results were verified against ESPN:
+* long TDs: the same counting rules as the earlier version's static long-touchdown table;
+* team D/ST: the earlier version's D/ST rules (reconciled to ESPN), including its schedule
+  team-code mapping (OAK -> LV, SD -> LAC, STL -> LA), which matters for 2017-2019 Raiders games.
 
 New in pipeline 1.2.0 (decision D-038): ``dst_points_allowed_excl_def``, ESPN's points allowed,
 which leaves out the points the opponent's defense scored against the D/ST's own offense. The
@@ -99,7 +98,7 @@ def scan_pbp(pbp_path: Path, season_types: tuple[str, ...]) -> PbpScan:
     yards_gained. Pass TD: the passer gets pass_td_*, the scorer (td_player_id, so laterals
     are credited correctly) gets rec_td_*. Rush TD: the scorer gets rush_td_*. Counts are
     cumulative (a 55-yard TD adds 1 to _40 and _50). Plays without a player id are skipped
-    (as LongTD.pq does).
+    (as the earlier version did).
 
     Defensive scores: see ``DefensiveScores``. Verified against stats_team for 2017-2026: the
     interception-return touchdowns equal ``def_tds`` and the safeties equal ``def_safeties`` in
@@ -190,14 +189,14 @@ def team_dst_rows(team_path: Path, games: list[dict[str, str]], season_types: tu
                   pbp: PbpScan | None = None) -> list[dict]:
     """One D/ST row per team-game of a stats_team_week file, shaped like a player row.
 
-    Counting stats treat a blank as 0 (as engine105 and Team_DST.pq do). Points allowed is
+    Counting stats treat a blank as 0 (as the earlier version did). Points allowed is
     the opponent's full final score from games.csv and stays None until the game is final.
     ``dst_points_allowed_excl_def`` (ESPN's points allowed, D-038) is that score minus the
     points the opponent's defense scored (``DefensiveScores.points``), never below 0; it is
     None until the game is final, and also when no play-by-play is given or the play-by-play
     has no plays for the game yet (missing is never zero).
     Yards allowed is the opponent's passing + rushing yards plus sack yards lost (net); it is
-    None when the opponent's row or its passing yards are missing (Team_DST.pq rule).
+    None when the opponent's row or its passing yards are missing (the earlier version's rule).
     """
     teams = [t for t in iter_columns(team_path, ["season", "week", "season_type", "game_id", "team", "opponent_team"]
                                      + TEAM_STAT_COLUMNS)

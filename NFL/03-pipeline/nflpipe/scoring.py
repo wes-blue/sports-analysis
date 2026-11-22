@@ -1,5 +1,5 @@
-"""League scoring (CONTRACTS.md section 4), ported unchanged from the verified 1.x engine
-(``engine105.py``, the Python mirror of ``Stats_Scored.pq``; 1.x code, not published here).
+"""League scoring (CONTRACTS.md section 4), ported unchanged from the verified scoring engine of
+the earlier, Excel-based version of this project.
 
 For one row and one league:
 1. linear part: sum of weight x value over the league's non-zero weights, in
@@ -9,7 +9,7 @@ For one row and one league:
 3. round the sum to 9 decimals, which removes binary floating-point noise, then round half
    away from zero to RoundDecimals (CONTRACTS.md 4; pipeline 1.1.0, QA finding m-02).
 The order of the additions is the engine's, so the floating-point sum is identical. The first
-rounding step is new in 1.1.0: engine105 rounded ``Decimal(repr(x))`` directly, so a sum that is
+rounding step is new in 1.1.0: the earlier engine rounded ``Decimal(repr(x))`` directly, so a sum that is
 exactly 13.5 but stored as 13.499999999999998 rounded down at 0 decimals. No published value
 changes at 2 decimals.
 """
@@ -59,7 +59,7 @@ class LeagueRules:
 def build_rules(config: Config) -> list[LeagueRules]:
     """Scoring rules for every Active league, in leagues.csv order.
 
-    As in engine105, zero weights are dropped and the gate of a weight comes from the
+    As in the earlier engine, zero weights are dropped and the gate of a weight comes from the
     metric's Applies_To; a metric listed twice keeps its first position (G-CONFIG fails
     such a config anyway).
     """
