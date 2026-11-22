@@ -1,6 +1,6 @@
 # Memory: what a new session must know
 
-_Last updated: 2026-11-22, after the owner's BLOCKERS.csv answers (D-052 to D-054)._
+_Last updated: 2026-11-22, when 3.004 was released (D-056)._
 
 Read this after `.claude/CLAUDE.md`. The decision log (`NFL/maintainer/governance/DECISIONS.md`), the NFL contract (`NFL/CONTRACTS.md`), the plan (`NFL/maintainer/plan/PLAN.md`) and `NFL/maintainer/BLOCKERS.csv` hold the detail; this file says where things stand and what is not written anywhere else.
 
@@ -25,8 +25,8 @@ Read this after `.claude/CLAUDE.md`. The decision log (`NFL/maintainer/governanc
 ## Next steps
 
 1. **Answers of 2026-11-22** (owner uploaded `BLOCKERS.csv` to `main`): Q-016 settled (D-052), Q-021 compliant as is (D-053), Q-022 setting changed by the owner (not verifiable here), Q-023 Power Query option wanted (D-054); Q-017 and Q-019 still open (the pastes were ESPN.com stats pages, not fantasy game logs). Excel had reformatted the `Raised` dates; they were put back to YYYY-MM-DD. Q-015, Q-018, Q-020, Q-024 and Q-025 now hold the owner's '.' in `Answer`; their full answers are in the decision log (D-041, D-046, D-048, D-050/D-051).
-1a. **3.004 (owner said yes, 2026-11-22):** blocked field goal -1 for ESPN_League; Q-017 and Q-019 answered from the owner's ESPN Fantasy game logs (D-055); built, reviewed (`qa/review-3.004.md`) and attacked (`qa/adversarial-3.004.md`); 7 D/ST rows at the edge of the ESPN tolerance widened to 2. Merging it re-scores all seasons (44 s locally) and rebuilds the workbook. J. Myers' ESPN Fantasy game log (pasted 2026-11-22) confirms the rule: week 8 = 2.0, all 10 weeks match; G-ESPN checks it (65 of 65).
-1b. **Power Query option A (D-054, owner chose A):** design and prototype in `NFL/.work/pq/` (two CSV release assets, 38.6 MB and 1.8 MB, plus a 20 KB generated refresh workbook and a guide). A test copy reading existing public files went to the owner for an Excel test; build it after 3.004 merges.
+1a. **3.004 released 2026-11-22 (D-056):** blocked field goal -1 for ESPN_League, confirmed by J. Myers' ESPN fantasy score (week 8 = 2.0); four ESPN Fantasy game logs in the ESPN check (65 of 65). The merge run re-scored every season (13 of 13 gates) and changed exactly 179 kicker scores (-183). The workbook was rebuilt (design still 3.002).
+1b. **In progress: 3.005, Power Query option A (D-054, D-056):** design and prototype in `NFL/.work/pq/` (two CSV release assets, 38.6 MB and 1.8 MB, plus a 20 KB generated refresh workbook and a guide). A test copy reading existing public files went to the owner for an Excel test; build it after 3.004 merges.
 2. **If Excel ever reports a repair** on a later file, treat it as an exporter defect: get the message word for word and reproduce it before changing the file.
 3. **Watch the first replacement of the asset.** The next PUBLISH (or a `workbook_only` run) is the first to delete an existing asset and rename the new one. Check its run summary and the stable address afterwards (C-33, RAID-100, RAID-103).
 4. **3.003, automation proven (was 3.002, D-047):** a manual run of each workflow, the first scheduled weekly run (Tue 2026-11-24), the watchdog, the monthly run, a config edit made on GitHub that publishes and rebuilds the workbook, and an alert from a failed build or upload.
