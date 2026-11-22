@@ -1,8 +1,13 @@
 # NFL-Analysis workbook (Excel)
 
-The NFL workbook is built for you on GitHub. You download it and open it; there is nothing to refresh, install or paste.
+The NFL workbook is built for you on GitHub, from public nflverse statistics. The same data is also published as two plain CSV files.
 
-## Get the workbook
+## Two ways to use it
+
+1. **Download the finished workbook.** Nothing to install or refresh. This is the easiest way and the one that works on every device.
+2. **Refresh from Excel.** Download two CSV files, or a small workbook that fetches them for you, and press Refresh in desktop Excel whenever you want the newest data.
+
+### 1. Download the finished workbook
 
 **[Download NFL-Analysis.xlsx](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx)**
 
@@ -14,9 +19,96 @@ The link stays the same: every rebuild replaces the file behind it. The file is 
 
 **If the link answers "not found".** The workbook is being replaced or has not been built yet. Wait two minutes and try again. If it still answers "not found", open the repository's **Actions** tab, choose **nfl-pipeline-weekly**, click **Run workflow**, tick **workbook_only** and run it; the link works when that run is green. [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md) has the details.
 
+### 2. Refresh from Excel
+
+The same two tables as the workbook's `PlayerGames` and `SeasonTotals` sheets are published as plain files. They are scored already, so Excel only downloads and reads them. It does not calculate any points.
+
+| File | What it holds | Size | Link |
+|---|---|---|---|
+| `NFL-PlayerGames.csv` | One row per player per game, newest first (about 180,000 rows, 98 columns today) | about 38 MB | [download](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv) |
+| `NFL-SeasonTotals.csv` | One row per player per season and season type (about 24,000 rows, 17 columns today) | about 2 MB | [download](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv) |
+| `NFL-Analysis-Refresh.xlsx` | A small workbook with no data in it. Its two queries read the two files above. | about 20 KB | [download](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis-Refresh.xlsx) |
+
+The columns are the ones in the finished workbook, so a league you add is a new `FF_<League>` column in both files.
+
+**The quick way: the refresh workbook.** Download [`NFL-Analysis-Refresh.xlsx`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis-Refresh.xlsx) and open it in desktop Excel. Click **Enable Editing** and then **Enable Content** (Excel shows both because the file came from the Internet), read the `Start` sheet, then choose **Data**, **Refresh All**. If Excel asks how to connect, choose **Anonymous**; if it asks about privacy levels, choose **Public**. If Excel reports a problem with this file, use the steps below instead: they build the same two queries yourself.
+
+**The steps that always work: Get Data, From Web.** Do these in a new, empty workbook in desktop Excel (Microsoft 365, Excel 2019 or newer; on a Mac, a current Microsoft 365 build).
+
+1. On the **Data** tab, choose **Get Data**, then **From Other Sources**, then **From Web**.
+2. Paste the link `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv` and click **OK**.
+3. If Excel asks how to connect, choose **Anonymous** and click **Connect**. (The files are public. If it offers to apply the setting to a level, keep `https://github.com/`. Excel may ask once more for a second address that starts with `objects.githubusercontent.com`: choose **Anonymous** there too.)
+4. If Excel asks about **privacy levels**, choose **Public** for this address.
+5. In the preview window, click **Transform Data** (not Load). The Power Query window opens. On its **Home** tab, click **Advanced Editor**.
+6. Select everything in the box, delete it, paste the `PlayerGames` code below, and click **Done**. If a yellow bar asks for credentials, click **Edit Credentials**, then **Anonymous**, then **Connect**.
+7. On the **Home** tab, click **Close & Load**. Then do the same, from step 1, for `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv` with the `SeasonTotals` code. To get new data later, choose **Data**, **Refresh All**.
+
+`PlayerGames`:
+
+```
+let
+    Source = Csv.Document(
+        Web.Contents("https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv"),
+        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+    ),
+    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+    AllColumns = Table.ColumnNames(Promoted),
+    WholeColumns = List.Intersect({AllColumns, {"season", "week"}}),
+    TextColumns = List.Intersect({AllColumns, {"season_type", "player_display_name", "position", "team", "opponent_team", "player_id", "position_group", "player_name", "headshot_url", "game_id", "fg_made_list", "fg_missed_list", "fg_blocked_list"}}),
+    NumberColumns = List.Difference(AllColumns, WholeColumns & TextColumns),
+    BlankToNull = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, AllColumns),
+    Typed = Table.TransformColumnTypes(
+        BlankToNull,
+        List.Transform(WholeColumns, each {_, Int64.Type})
+            & List.Transform(TextColumns, each {_, type text})
+            & List.Transform(NumberColumns, each {_, type number}),
+        "en-US"
+    )
+in
+    Typed
+```
+
+`SeasonTotals`:
+
+```
+let
+    Source = Csv.Document(
+        Web.Contents("https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv"),
+        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+    ),
+    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+    AllColumns = Table.ColumnNames(Promoted),
+    WholeColumns = List.Intersect({AllColumns, {"season", "games"}}),
+    TextColumns = List.Intersect({AllColumns, {"season_type", "player_display_name", "position", "team", "player_id"}}),
+    NumberColumns = List.Difference(AllColumns, WholeColumns & TextColumns),
+    BlankToNull = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, AllColumns),
+    Typed = Table.TransformColumnTypes(
+        BlankToNull,
+        List.Transform(WholeColumns, each {_, Int64.Type})
+            & List.Transform(TextColumns, each {_, type text})
+            & List.Transform(NumberColumns, each {_, type number}),
+        "en-US"
+    )
+in
+    Typed
+```
+
+The code names the columns that are whole numbers or text and treats every other column as a number, so a new statistic or league column needs no change. `en-US` makes the decimal point a full stop whatever your computer's regional settings are.
+
+**Good to know.**
+
+- A refresh takes about a minute or two: Excel downloads about 40 MB and writes about 17 million cells.
+- **Excel for the web cannot refresh these queries.** Use desktop Excel.
+- **On a phone or tablet, use the finished workbook** (way 1). It opens there, and there is nothing to refresh.
+- Refreshing reads the newest published files, which are the same data the finished workbook holds. The data is rebuilt after every publish (see "How often it is rebuilt").
+
+**Other tools.** The two CSV files are plain text: UTF-8 (no byte-order mark), comma-separated, one header row, a full stop as the decimal mark, an empty field for "no value". Read the link straight into R (`read.csv(url)`), Python (`pandas.read_csv(url)`) or any tool that reads CSV. In Excel, load them with **Data**, **From Text/CSV** and keep the file origin on **65001: Unicode (UTF-8)**; do not double-click the file, because Excel then guesses the encoding (accents such as in a player's name can come out garbled). Google Sheets cannot open `NFL-PlayerGames.csv`: it has about 17 million cells, more than a Google Sheet holds. `NFL-SeasonTotals.csv` fits.
+
+**Data credit.** The data comes from [nflverse](https://github.com/nflverse), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), and has been modified (scored for fantasy-football leagues and combined). See [`/DATA-LICENSE.md`](../../DATA-LICENSE.md).
+
 ## What is in the workbook
 
-The workbook holds values only: no Power Query, no formulas, no connections and no macros. It has these sheets, in this order (the full specification is [`../CONTRACTS.md`](../CONTRACTS.md) section 13):
+The finished workbook holds values only: no queries, no formulas, no connections and no macros. It has these sheets, in this order (the full specification is [`../CONTRACTS.md`](../CONTRACTS.md) section 13):
 
 | Sheet | What it holds |
 |---|---|
@@ -31,7 +123,7 @@ Every table has a header row, a filter and a frozen header, so you can sort and 
 
 ## How often it is rebuilt
 
-After every successful data publish by the pipeline: in season on Tuesday, Wednesday and Thursday, on the 1st of every month, and whenever a scoring file is changed on GitHub (details in [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md)). The file you downloaded is a snapshot; the `About` sheet says which data it holds. Download it again to get newer data.
+After every successful data publish by the pipeline: in season on Tuesday, Wednesday and Thursday, on the 1st of every month, and whenever a scoring file is changed on GitHub (details in [`../03-pipeline/AUTOMATION.md`](../03-pipeline/AUTOMATION.md)). The file you downloaded is a snapshot; the `About` sheet says which data it holds. Download it again to get newer data, or refresh from Excel (way 2).
 
 ## Changing scoring
 

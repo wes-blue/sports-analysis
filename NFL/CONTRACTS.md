@@ -230,7 +230,7 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 
 ### 13.1 Command
 
-`python -m nflpipe export [--data-dir DIR] [--out FILE]`, run from `03-pipeline/`. Defaults: `--data-dir ../04-data`, `--out ../.work/workbook/NFL-Analysis.xlsx`.
+`python -m nflpipe export [--data-dir DIR] [--out FILE] [--tables-dir DIR]`, run from `03-pipeline/`. Defaults: `--data-dir ../04-data`, `--out ../.work/workbook/NFL-Analysis.xlsx`; `--tables-dir` has no default (off).
 
 - Reads **only** the published files in `--data-dir` (§5). It never downloads anything and never changes `04-data`.
 - Refuses (exit 1) when `status.csv` `data_contract_version` is missing or is not the version the exporter understands (today `1`), naming both values.
@@ -238,6 +238,8 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 - **Standard library only** (by design): the file is written with `zipfile` and XML text. Test code may use `openpyxl` to read it back.
 - **Deterministic:** the same `04-data` gives byte-identical output with the same Python build (verified across Python 3.11 and 3.13 here; a different zlib library could in principle compress differently, which changes the bytes but never a value). Time stamps inside the file come from `status.csv` `generated_utc`, never from the clock; zip entries use a fixed date and a fixed order.
 - Runs in well under 5 minutes on a GitHub runner for the full window.
+- **`--tables-dir DIR`** (from tables version `1`, §13.6): the same run also writes `DIR/NFL-PlayerGames.csv` and `DIR/NFL-SeasonTotals.csv`, the values of the `PlayerGames` and `SeasonTotals` sheets. Both files and the workbook come from one pass over one row generator, so they cannot differ. Without the option no CSV is written and the workbook's bytes are the same. Each file is written under a temporary name and renamed into place after the workbook is complete; on error (exit `1`) no partial file is left in `DIR` and an earlier file there is kept.
+- **`python -m nflpipe refresh-workbook [--out FILE]`** writes the small Power Query workbook of §13.6 (default `--out ../.work/workbook/NFL-Analysis-Refresh.xlsx`). It reads no data. Exit codes: `0` written; `1` error (message names the cause; no partial file at `--out`; the file is written under a temporary name and renamed). Deterministic: the same code gives the same bytes.
 
 ### 13.2 Sheets, in this order
 
@@ -282,3 +284,28 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 - The release notes say which data the file holds (data through, run id, gates).
 - The 2.x Power Query workbooks are retired and no longer published in this repository.
 
+### 13.6 The published tables and the refresh workbook
+
+**Why.** Some people want to refresh in Excel instead of downloading a new workbook. Re-scoring in Excel is too slow (§13), so Excel refreshes only the finished tables the pipeline already scored: two plain CSV files, and a small workbook whose Power Query queries load them.
+
+**The two tables** (written by `export --tables-dir`, §13.1):
+
+| File | Same values as | Columns |
+|---|---|---|
+| `NFL-PlayerGames.csv` | the `PlayerGames` sheet (§13.2) | the sheet's columns, in its order: `season, week, season_type, player_display_name, position, team, opponent_team`, one `FF_<League>` per Active league, `player_id, position_group, fantasy_points, fantasy_points_ppr`, then every metric column |
+| `NFL-SeasonTotals.csv` | the `SeasonTotals` sheet (§13.2) | `season, season_type, player_display_name, position, team, games`, then `FF_<League>_total` and `FF_<League>_avg` per Active league, `player_id` |
+
+- The header row is the sheet's header row, and rows are in the sheet's order (§13.2). The columns follow the config (leagues) and the data (metrics), so a reader must pick columns by name.
+- A field holds exactly the text the sheet cell shows: numbers as in `04-data` or the rounded sums (`.` decimal mark, no thousands separator, no scientific notation added), a blank cell as an empty field, text unchanged. The same characters XML 1.0 forbids are removed as in the workbook (§13.3). Every error that stops the workbook (non-finite numbers, text over 32,767 UTF-16 code units, unmatched scored rows) stops the CSV export too.
+- **Encoding:** UTF-8 **without** a byte order mark, LF line ends, RFC 4180 quoting (a field is quoted only when it holds a comma, a double quote or a line break; a double quote inside is doubled). No gzip.
+- Text is data: a field is never prefixed or escaped for spreadsheets. To read the files in Excel use Data > From Text/CSV (file origin UTF-8) or the refresh workbook, not a double click.
+- **`TABLES_VERSION`** (`"1"`) is a constant in `nflpipe/export_xlsx.py`, on its own line after `WORKBOOK_VERSION`. It changes only when the column design of the two files changes, not when the data or the leagues change.
+- Publication (the same release as the workbook, §13.5): asset names `NFL-PlayerGames.csv` and `NFL-SeasonTotals.csv`, addresses `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/<name>`. Like the workbook they are release assets, not files in git.
+
+**The refresh workbook** (`python -m nflpipe refresh-workbook`): file `NFL-Analysis-Refresh.xlsx`.
+- Sheets `Start` (what to click: Data > Refresh All; connect as Anonymous; answer Public to a privacy question; the data source and licence line), `PlayerGames` (table `tblPlayerGames`) and `SeasonTotals` (table `tblSeasonTotals`). Each table is query-backed (Power Query connection `Query - <name>`) and holds only a header row and an empty row: **the file carries no data and does no scoring**. The seed header names only columns that every build has; Excel lays the table out to the query's real columns on refresh.
+- The queries are the text of `nflpipe/pq/PlayerGames.m` and `nflpipe/pq/SeasonTotals.m`. Each reads exactly one address, the release asset above, with `Web.Contents` (no options, no credentials, no query string) and `Csv.Document` (`Delimiter = ","`, `Encoding = 65001`, `QuoteStyle.Csv`); promotes the headers; turns blank into null; and types the columns **by name rules**: `season` and `week` (`games` in SeasonTotals) are whole numbers, the identity text columns are text, every other column is a number (`en-US` culture).
+- The Power Query package (DataMashup, MS-QDEFF) is written by the generator; its package skeleton (`Package.xml`, content types, permission list: firewall on, public workbook group) is embedded as constants, and the permission-bindings block is empty (Excel asks its privacy question once). Nothing is read from the archived 2.x files.
+- Deterministic bytes (fixed time stamp and zip order, ids derived from names); author and last modified by `NFL-Analysis pipeline`; no path, user name or machine name in any part.
+- It is the same file for every data version, so it is rebuilt and republished only when `TABLES_VERSION` changes.
+- **Not verified here:** that desktop Excel opens it without a repair message and refreshes it. Only Excel can confirm that; the tests check the package structure, and LibreOffice (which ignores the queries) opens the sheets.

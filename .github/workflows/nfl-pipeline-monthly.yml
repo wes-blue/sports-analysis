@@ -51,6 +51,9 @@ env:
   ALERT_LABEL: nfl-pipeline-alert-monthly
   WORKBOOK_TAG: nfl-workbook
   WORKBOOK_ASSET: NFL-Analysis.xlsx
+  TABLE_PLAYERS_ASSET: NFL-PlayerGames.csv
+  TABLE_SEASONS_ASSET: NFL-SeasonTotals.csv
+  REFRESH_ASSET: NFL-Analysis-Refresh.xlsx
   HEARTBEAT_CRON: "37 11 16 * *"
   HEARTBEAT_AFTER_DAYS: "21"
   GUIDE_URL: https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md
@@ -225,14 +228,19 @@ jobs:
           echo "::error::could not push NFL/04-data after 3 attempts"
           exit 1
 
-      # ---- The finished workbook (CONTRACTS.md section 13.5). Not committed to git: a release asset. ----
+      # ---- The finished workbook and tables (CONTRACTS.md section 13.5). Not committed to git: release assets. ----
+      # Four assets on the release: NFL-Analysis.xlsx (the finished workbook), NFL-PlayerGames.csv and
+      # NFL-SeasonTotals.csv (the same two tables as plain files), NFL-Analysis-Refresh.xlsx (a data-free
+      # workbook that refreshes from the two CSV files in Excel). One build, one swap, one key.
       # Runs after a PUBLISH and its data commit, after a SKIP (cheap: reads only, when the release already
-      # holds a workbook built from the published data and the current workbook design), or when asked by
-      # hand (workbook_only). Never on a dry run or off main. A failure turns the run red and the alert
-      # issue opens; the data commit above stays.
-      # The asset is replaced without ever deleting the live file first: the new file is uploaded under the
-      # temporary name NFL-Analysis.next.xlsx, checked, and only then does the old file go and the new one
-      # take its name. Whatever fails, the link keeps serving the old workbook, or the new one.
+      # holds all four assets built from the published data, the current workbook design and the current
+      # tables design), or when asked by hand (workbook_only, which also rebuilds the tables). Never on a
+      # dry run or off main. A failure in any asset turns the run red and the alert issue opens; the data
+      # commit above stays.
+      # No asset is deleted before every new one is on the release: each new file is uploaded under a
+      # temporary name (NFL-Analysis.next.xlsx, NFL-PlayerGames.next.csv, ...), all of them are checked, and
+      # only then do the delete and rename pairs run back to back. Whatever fails earlier, the links keep
+      # serving the old files.
       - name: Decide whether to build the workbook
         id: wbcheck
         if: (steps.outcome.outputs.outcome == 'PUBLISH' || steps.outcome.outputs.outcome == 'SKIP' || steps.outcome.outputs.outcome == 'WORKBOOK') && steps.outcome.outputs.dry_run != 'true' && github.ref == 'refs/heads/main'
@@ -279,15 +287,17 @@ jobs:
           run_id="$(awk -F, '$1=="run_id"{print $2; exit}' "$status" 2>/dev/null)"
           version="$(awk -F, '$1=="pipeline_version"{print $2; exit}' "$status" 2>/dev/null)"
           [[ -n "$run_id" && -n "$version" ]] || stop "NFL/04-data/status.csv has no run_id or pipeline_version"
-          # The workbook design version is read from the exporter's source, not imported.
+          # The workbook design version and the tables design version are read from the exporter's source, not imported.
           design="$(sed -n 's/^WORKBOOK_VERSION = "\([0-9A-Za-z._-]*\)".*/\1/p' nflpipe/export_xlsx.py 2>/dev/null | head -n 1)"
           [[ -n "$design" ]] || stop "could not read WORKBOOK_VERSION from nflpipe/export_xlsx.py"
-          for v in "$run_id" "$version" "$design"; do
-            [[ "$v" =~ ^[0-9A-Za-z._-]+$ ]] || stop "run_id, pipeline_version or the workbook design version has unexpected characters"
+          tables="$(sed -n 's/^TABLES_VERSION = "\([0-9A-Za-z._-]*\)".*/\1/p' nflpipe/export_xlsx.py 2>/dev/null | head -n 1)"
+          [[ -n "$tables" ]] || stop "could not read TABLES_VERSION from nflpipe/export_xlsx.py"
+          for v in "$run_id" "$version" "$design" "$tables"; do
+            [[ "$v" =~ ^[0-9A-Za-z._-]+$ ]] || stop "run_id, pipeline_version, the workbook design version or the tables design version has unexpected characters"
           done
-          # A new key whenever the data, the pipeline or the workbook's design changes.
-          key="${run_id}|${version}|${design}"
-          have_release=false; have_asset=false; current=false
+          # A new key whenever the data, the pipeline, the workbook's design or the tables' design changes.
+          key="${run_id}|${version}|${design}|${tables}"
+          have_release=false; have_asset=false; current=false; missing=""
           rel_expr='.[] | select(.tag_name=="'"$WORKBOOK_TAG"'") | "\(.id) \(.draft)"'
           rows="$(retry gh api --paginate "repos/${GH_REPO}/releases?per_page=100" --jq "$rel_expr")" \
             || stop "could not list the releases: $(oneline "$err")"
@@ -302,7 +312,11 @@ jobs:
             # Only a finished asset counts: GitHub can leave an empty one (state "starter") after a failed upload.
             names="$(retry gh api "repos/${GH_REPO}/releases/${rid}" --jq '.assets[] | select(.state=="uploaded" and .size>0) | .name')" \
               || stop "could not read the assets of the release: $(oneline "$err")"
-            if grep -qxF "$WORKBOOK_ASSET" <<< "$names"; then
+            # All four must be there; the first run after the tables were added finds the workbook only.
+            for a in "$WORKBOOK_ASSET" "$TABLE_PLAYERS_ASSET" "$TABLE_SEASONS_ASSET" "$REFRESH_ASSET"; do
+              grep -qxF "$a" <<< "$names" || missing="${missing:+${missing}, }${a}"
+            done
+            if [[ -z "$missing" ]]; then
               have_asset=true
               body="$(retry gh api "repos/${GH_REPO}/releases/${rid}" --jq '.body // ""')" \
                 || stop "could not read the release notes: $(oneline "$err")"
@@ -316,11 +330,11 @@ jobs:
           elif [[ "$have_release" != "true" ]]; then
             build=true;  reason="there is no ${WORKBOOK_TAG} release yet"
           elif [[ "$have_asset" != "true" ]]; then
-            build=true;  reason="the release has no finished ${WORKBOOK_ASSET} (an upload did not finish)"
+            build=true;  reason="the release has no finished ${missing} (an upload did not finish, or the asset is new)"
           elif [[ "$current" != "true" ]]; then
-            build=true;  reason="the workbook on the release was not built from the published data and the current workbook design (key ${key})"
+            build=true;  reason="the files on the release were not built from the published data and the current workbook and tables designs (key ${key})"
           else
-            build=false; reason="the workbook on the release already holds the published data (run ${run_id}, design ${design})"
+            build=false; reason="the four files on the release already hold the published data (run ${run_id}, workbook design ${design}, tables design ${tables})"
           fi
           out "build=$build" "release_exists=$have_release" "key=$key"
           echo "- workbook: build=${build}; ${reason}" >> "$GITHUB_STEP_SUMMARY"
@@ -333,48 +347,76 @@ jobs:
         env:
           WORKBOOK_DIR: ../.work/workbook
           WORKBOOK_MIN_BYTES: "1000000"   # the real file is about 8 MB (3.001: about 38 MB); anything this small is a broken export
+          PLAYERS_MIN_BYTES: "1000000"    # the real CSV is about 38 MB
+          PLAYERS_MIN_LINES: "1000"       # and has about 180,000 lines
+          SEASONS_MIN_BYTES: "100000"     # the real CSV is about 1.8 MB
+          SEASONS_MIN_LINES: "100"        # and has about 24,000 lines
+          REFRESH_MIN_BYTES: "5000"       # the real file is about 20 KB (no data)
           ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
           EXPORT_LOG: ${{ runner.temp }}/nflpipe-export.log
         run: |
           set +e
           file="$WORKBOOK_DIR/$WORKBOOK_ASSET"
+          players="$WORKBOOK_DIR/$TABLE_PLAYERS_ASSET"
+          seasons="$WORKBOOK_DIR/$TABLE_SEASONS_ASSET"
+          refresh="$WORKBOOK_DIR/$REFRESH_ASSET"
           stop() {
-            rm -f "$file"
+            rm -f "$file" "$players" "$seasons" "$refresh"
             echo "::error title=Workbook::$1"
             { echo "workbook: $1"; [[ -f "$EXPORT_LOG" ]] && tail -n 10 "$EXPORT_LOG" | sed 's/```/'"'''"'/g'; } 2>/dev/null | cut -c1-300 >> "$ALERT_DETAILS"
             echo "- workbook: FAILED to build. $1" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           }
           rm -rf "$WORKBOOK_DIR"; mkdir -p "$WORKBOOK_DIR"
-          python -m nflpipe export --data-dir ../04-data --out "$file" 2>&1 | tee "$EXPORT_LOG"
+          # One pass writes the workbook and the two table files, so they cannot differ.
+          python -m nflpipe export --data-dir ../04-data --out "$file" --tables-dir "$WORKBOOK_DIR" 2>&1 | tee "$EXPORT_LOG"
           rc=${PIPESTATUS[0]}
-          [[ "$rc" -eq 0 ]] || stop "python -m nflpipe export exited ${rc}; the workbook was not built and nothing was uploaded"
+          [[ "$rc" -eq 0 ]] || stop "python -m nflpipe export exited ${rc}; the workbook and the tables were not built and nothing was uploaded"
+          python -m nflpipe refresh-workbook --out "$refresh" 2>&1 | tee -a "$EXPORT_LOG"
+          rc=${PIPESTATUS[0]}
+          [[ "$rc" -eq 0 ]] || stop "python -m nflpipe refresh-workbook exited ${rc}; the refresh workbook was not built and nothing was uploaded"
           # Sanity checks before anything is uploaded: a zip whose every member reads back (testzip checks
           # the checksums) and that holds a workbook, and a size that cannot be a truncated file.
-          if ! python -I - "$file" <<'PY'
+          readable_xlsx() {
+            python -I - "$1" <<'PY'
           import sys, zipfile
           with zipfile.ZipFile(sys.argv[1]) as z:
               if z.testzip() is not None or "xl/workbook.xml" not in z.namelist():
                   sys.exit(1)
           PY
-          then
-            stop "the exported file is not a readable Excel workbook; nothing was uploaded"
-          fi
+          }
+          readable_xlsx "$file" || stop "the exported file is not a readable Excel workbook; nothing was uploaded"
           size="$(stat -c %s "$file")"
           [[ "$size" -ge "$WORKBOOK_MIN_BYTES" ]] || stop "the exported file is only ${size} bytes (at least ${WORKBOOK_MIN_BYTES} expected); nothing was uploaded"
-          echo "- workbook: built, ${size} bytes" >> "$GITHUB_STEP_SUMMARY"
+          readable_xlsx "$refresh" || stop "the refresh workbook is not a readable Excel workbook; nothing was uploaded"
+          rsize="$(stat -c %s "$refresh")"
+          [[ "$rsize" -ge "$REFRESH_MIN_BYTES" ]] || stop "the refresh workbook is only ${rsize} bytes (at least ${REFRESH_MIN_BYTES} expected); nothing was uploaded"
+          # The two table files: present, not empty, a header that starts with "season," (no byte-order mark),
+          # and a size and a line count that a truncated file cannot reach.
+          check_table() {   # check_table FILE MIN_BYTES MIN_LINES
+            local f="$1" bytes lines
+            [[ -s "$f" ]] || stop "$(basename "$f") is missing or empty; nothing was uploaded"
+            [[ "$(head -n 1 "$f" | cut -c1-7)" == "season," ]] || stop "$(basename "$f") does not start with the header season,...; nothing was uploaded"
+            bytes="$(stat -c %s "$f")"; lines="$(wc -l < "$f")"
+            [[ "$bytes" -ge "$2" ]] || stop "$(basename "$f") is only ${bytes} bytes (at least $2 expected); nothing was uploaded"
+            [[ "$lines" -ge "$3" ]] || stop "$(basename "$f") has only ${lines} lines (at least $3 expected); nothing was uploaded"
+            echo "- workbook: built $(basename "$f"), ${bytes} bytes, ${lines} lines" >> "$GITHUB_STEP_SUMMARY"
+          }
+          check_table "$players" "$PLAYERS_MIN_BYTES" "$PLAYERS_MIN_LINES"
+          check_table "$seasons" "$SEASONS_MIN_BYTES" "$SEASONS_MIN_LINES"
+          echo "- workbook: built, ${size} bytes; refresh workbook ${rsize} bytes" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish the workbook (release nfl-workbook)
         id: wbpublish
         if: steps.wbcheck.outputs.build == 'true'
-        timeout-minutes: 20
+        timeout-minutes: 30
         working-directory: ${{ github.workspace }}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_EXISTS: ${{ steps.wbcheck.outputs.release_exists }}
           WORKBOOK_KEY: ${{ steps.wbcheck.outputs.key }}
-          WORKBOOK_FILE: NFL/.work/workbook/NFL-Analysis.xlsx
+          WORKBOOK_DIR: NFL/.work/workbook
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           ALERT_DETAILS: ${{ runner.temp }}/nfl-alert-details.md
           NOTES_FILE: ${{ runner.temp }}/workbook-notes.md
@@ -399,16 +441,22 @@ jobs:
           }
           status=NFL/04-data/status.csv
           val() { awk -F, -v k="$1" '$1==k{print $2; exit}' "$status" | tr -d '\r'; }
-          url="${GITHUB_SERVER_URL}/${GH_REPO}/releases/download/${WORKBOOK_TAG}/${WORKBOOK_ASSET}"
+          base="${GITHUB_SERVER_URL}/${GH_REPO}/releases/download/${WORKBOOK_TAG}"
           api="repos/${GH_REPO}/releases"
-          next="${WORKBOOK_ASSET%.xlsx}.next.xlsx"       # the temporary name; GitHub refuses two assets with one name
-          size="$(stat -c %s "$WORKBOOK_FILE")"
-          # The release notes say which data the file holds. The key line is what the next run compares
-          # (see "Decide whether to build the workbook"); it is written only after the upload worked.
+          assets=("$WORKBOOK_ASSET" "$TABLE_PLAYERS_ASSET" "$TABLE_SEASONS_ASSET" "$REFRESH_ASSET")
+          # The temporary name of each asset (GitHub refuses two assets with one name): NFL-Analysis.next.xlsx, ...
+          nextname() { printf '%s.next.%s' "${1%.*}" "${1##*.}"; }
+          declare -A size newid
+          for a in "${assets[@]}"; do size[$a]="$(stat -c %s "$WORKBOOK_DIR/$a")"; done
+          # The release notes say which data the files hold. The key line is what the next run compares
+          # (see "Decide whether to build the workbook"); it is written only after every upload and link worked.
           cat > "$NOTES_FILE" <<NOTES
-          Latest NFL fantasy-football workbook. Values only: nothing to refresh in Excel.
+          Latest NFL fantasy-football workbook and tables. Values only: the workbook has nothing to refresh in Excel.
 
-          Download: ${url}
+          - Finished workbook: ${base}/${WORKBOOK_ASSET}
+          - PlayerGames table (CSV): ${base}/${TABLE_PLAYERS_ASSET}
+          - SeasonTotals table (CSV): ${base}/${TABLE_SEASONS_ASSET}
+          - Refresh workbook (no data; refreshes from the two CSV files in Excel): ${base}/${REFRESH_ASSET}
 
           - Data through: season $(val latest_season), week $(val latest_week) ($(val latest_season_type))
           - Data run id: $(val run_id)
@@ -418,7 +466,7 @@ jobs:
           - Built by: ${RUN_URL}
 
           Data: nflverse, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), modified. See DATA-LICENSE.md in the repository.
-          This is not a software release: the file under this tag is replaced on every publish.
+          This is not a software release: the files under this tag are replaced on every publish.
 
           <!-- nfl-workbook-key: ${WORKBOOK_KEY} -->
           NOTES
@@ -454,73 +502,97 @@ jobs:
           asset_ids() {   # asset_ids NAME [jq test]: the ids of the assets with this name
             retry gh api "${api}/${rid}" --jq ".assets[] | select(.name==\"$1\"${2:+ and $2}) | .id"
           }
-          drop_assets() {   # delete every asset with this name, whatever its state
+          drop_assets() {   # delete every asset with this name, whatever its state (none is fine: a new asset has no old one)
             local ids id
             ids="$(asset_ids "$1")" || return 1
             for id in $ids; do
               retry gh api -X DELETE "${api}/assets/${id}" >/dev/null || return 1
             done
           }
-          # 3. Upload under the temporary name. A leftover of a failed earlier run is removed first. There is no
-          #    --clobber: the live asset has another name, so this can never touch it.
-          stage="$(mktemp -d)"; cp "$WORKBOOK_FILE" "$stage/$next"
-          upload_next() {
-            drop_assets "$next" || return 1
-            gh release upload "$WORKBOOK_TAG" "$stage/$next" 2>"$err"
+          drop_all_next() { local x; for x in "${assets[@]}"; do drop_assets "$(nextname "$x")" >/dev/null 2>&1; done; }
+          # 3. Upload every file under its temporary name. A leftover of a failed earlier run is removed first.
+          #    There is no --clobber: no live asset has a temporary name, so this can never touch one.
+          stage="$(mktemp -d)"
+          upload_next() {   # upload_next TEMPORARY-NAME
+            drop_assets "$1" || return 1
+            gh release upload "$WORKBOOK_TAG" "$stage/$1" 2>"$err"
           }
-          uploaded=false
-          for attempt in 1 2 3; do
-            if upload_next; then uploaded=true; break; fi
-            echo "::warning::upload failed (attempt $attempt): $(oneline "$err")"
-            sleep $((attempt * 10))
-          done
-          if [[ "$uploaded" != "true" ]]; then
-            drop_assets "$next" >/dev/null 2>&1
-            stop "could not upload the new workbook after 3 attempts; the workbook already on the release was not touched; the built file is in this run's workbook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT} artifact for 7 days"
-          fi
-          # 4. Confirm the new file is on the release, finished and complete.
-          new="$(asset_ids "$next" ".state==\"uploaded\" and .size==${size}")"
-          if [[ -z "$new" || "$new" == *[[:space:]]* ]]; then
-            drop_assets "$next" >/dev/null 2>&1
-            stop "the upload finished but the new file is not on the release as one complete asset; the workbook already on the release was not touched"
-          fi
-          # 5. The old file goes. This opens the short window in which the link answers "not found".
-          drop_assets "$WORKBOOK_ASSET" || stop "could not remove the old ${WORKBOOK_ASSET}; it was left in place and the new file is on the release as ${next}"
-          # 6. The new file takes the stable name, which closes the window. Should the rename be refused, the
-          #    new file is uploaded again under the stable name (nothing is left to overwrite).
-          renamed=false
-          for attempt in 1 2 3 4 5; do
-            if gh api -X PATCH "${api}/assets/${new}" -f name="$WORKBOOK_ASSET" >/dev/null 2>"$err"; then renamed=true; break; fi
-            sleep 2
-          done
-          if [[ "$renamed" != "true" ]]; then
-            echo "::warning::could not rename ${next} to ${WORKBOOK_ASSET} ($(oneline "$err")); uploading it again under that name"
-            fallback=false
+          for a in "${assets[@]}"; do
+            n="$(nextname "$a")"; cp "$WORKBOOK_DIR/$a" "$stage/$n"
+            uploaded=false
             for attempt in 1 2 3; do
-              if gh release upload "$WORKBOOK_TAG" "$WORKBOOK_FILE" --clobber 2>"$err"; then fallback=true; break; fi
+              if upload_next "$n"; then uploaded=true; break; fi
+              echo "::warning::upload of ${a} failed (attempt $attempt): $(oneline "$err")"
               sleep $((attempt * 10))
             done
-            [[ "$fallback" == "true" ]] || stop "the new workbook is on the release as ${next} but could not be renamed to ${WORKBOOK_ASSET}, and uploading it again failed ($(oneline "$err")); the link answers not found until the next run puts it back"
-            drop_assets "$next" >/dev/null 2>&1 || echo "::warning::could not remove the temporary asset ${next}; the next run removes it"
-          fi
-          # 7. Ask for the public address the way the owner's browser does. A 404 here means the file is not
-          #    served (a draft, an immutable-release rule, a wrong name), whatever the API said.
-          code=""
-          for attempt in 1 2 3 4 5; do
-            code="$(curl -sL --max-time 60 -r 0-0 -o /dev/null -w '%{http_code}' "$url")"
-            [[ "$code" == "200" || "$code" == "206" ]] && break
-            sleep $((attempt * 5))
+            if [[ "$uploaded" != "true" ]]; then
+              drop_all_next
+              stop "could not upload the new ${a} after 3 attempts; no asset already on the release was touched; the built files are in this run's workbook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT} artifact for 7 days"
+            fi
           done
-          [[ "$code" == "200" || "$code" == "206" ]] || stop "the workbook is on the release but ${url} answers ${code:-nothing}; the release notes still carry the old key, so the next run builds it again"
-          # 8. Only now do the notes claim the new data (the key line is what makes the next run skip).
+          # 4. Verify EVERY new file (finished, the right size) before any live asset is touched.
+          for a in "${assets[@]}"; do
+            id="$(asset_ids "$(nextname "$a")" ".state==\"uploaded\" and .size==${size[$a]}")"
+            if [[ -z "$id" || "$id" == *[[:space:]]* ]]; then
+              drop_all_next
+              stop "the upload finished but the new ${a} is not on the release as one complete asset; no asset already on the release was touched"
+            fi
+            newid[$a]="$id"
+          done
+          # 5. The swaps, back to back. For each asset the old file goes (this opens the short window in which its link
+          #    answers "not found") and the new one takes the stable name (which closes it). Should the rename be refused,
+          #    the new file is uploaded again under the stable name (nothing is left to overwrite). A failure is noted and
+          #    the other assets are still swapped, so the files do not stay half old and half new longer than needed.
+          bad=""
+          for a in "${assets[@]}"; do
+            n="$(nextname "$a")"
+            if ! drop_assets "$a"; then
+              bad+="could not remove the old ${a}; it was left in place and the new file is on the release as ${n}. "
+              continue
+            fi
+            renamed=false
+            for attempt in 1 2 3 4 5; do
+              if gh api -X PATCH "${api}/assets/${newid[$a]}" -f name="$a" >/dev/null 2>"$err"; then renamed=true; break; fi
+              sleep 2
+            done
+            if [[ "$renamed" != "true" ]]; then
+              echo "::warning::could not rename ${n} to ${a} ($(oneline "$err")); uploading it again under that name"
+              fallback=false
+              for attempt in 1 2 3; do
+                if gh release upload "$WORKBOOK_TAG" "$WORKBOOK_DIR/$a" --clobber 2>"$err"; then fallback=true; break; fi
+                sleep $((attempt * 10))
+              done
+              if [[ "$fallback" != "true" ]]; then
+                bad+="the new ${a} is on the release as ${n} but could not be renamed to ${a}, and uploading it again failed ($(oneline "$err")); that link answers not found until the next run puts it back. "
+                continue
+              fi
+              drop_assets "$n" >/dev/null 2>&1 || echo "::warning::could not remove the temporary asset ${n}; the next run removes it"
+            fi
+          done
+          [[ -z "$bad" ]] || stop "${bad}The release notes still carry the old key, so the next run builds everything again"
+          # 6. Ask for each public address the way the owner's browser does. A 404 here means the file is not
+          #    served (a draft, an immutable-release rule, a wrong name), whatever the API said.
+          for a in "${assets[@]}"; do
+            code=""
+            for attempt in 1 2 3 4 5; do
+              code="$(curl -sL --max-time 60 -r 0-0 -o /dev/null -w '%{http_code}' "${base}/${a}")"
+              [[ "$code" == "200" || "$code" == "206" ]] && break
+              sleep $((attempt * 5))
+            done
+            [[ "$code" == "200" || "$code" == "206" ]] || bad+="${a} is on the release but ${base}/${a} answers ${code:-nothing}. "
+          done
+          [[ -z "$bad" ]] || stop "${bad}The release notes still carry the old key, so the next run builds everything again"
+          # 7. Only now do the notes claim the new data (the key line is what makes the next run skip).
           edited=false
           for attempt in 1 2 3; do
             if gh release edit "$WORKBOOK_TAG" --notes-file "$NOTES_FILE" 2>"$err"; then edited=true; break; fi
             sleep $((attempt * 5))
           done
-          [[ "$edited" == "true" ]] || stop "the workbook was uploaded and the link works, but the release notes could not be updated ($(oneline "$err")); the next run rebuilds it"
-          echo "- workbook: published at ${url}" >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice title=Workbook::published ${url}"
+          [[ "$edited" == "true" ]] || stop "the files were uploaded and the links work, but the release notes could not be updated ($(oneline "$err")); the next run rebuilds them"
+          for a in "${assets[@]}"; do
+            echo "- workbook: published at ${base}/${a}" >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Workbook::published ${base}/${a}"
+          done
 
       - name: Keep the workbook (run artifact, 7 days)
         if: ${{ !cancelled() && steps.wbbuild.outcome == 'success' }}
@@ -528,9 +600,13 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: workbook-${{ github.run_id }}-${{ github.run_attempt }}
-          path: NFL/.work/workbook/NFL-Analysis.xlsx
+          path: |
+            NFL/.work/workbook/NFL-Analysis.xlsx
+            NFL/.work/workbook/NFL-PlayerGames.csv
+            NFL/.work/workbook/NFL-SeasonTotals.csv
+            NFL/.work/workbook/NFL-Analysis-Refresh.xlsx
           if-no-files-found: ignore
-          compression-level: 0
+          compression-level: 6   # the CSV files compress to about an eighth; the workbooks are zip data already
           retention-days: 7
 
       - name: Heartbeat (keep the schedules alive)

@@ -18,6 +18,9 @@ commands:
   resolve   decide whether there is new work (used by GitHub Actions)
   watchdog  fail when the last publish is too old
   export    build the values-only Excel workbook from 04-data
+            (--tables-dir also writes the two CSV tables)
+  refresh-workbook
+            write the small Power Query workbook that loads the CSV tables
   version   print the pipeline version
 """
 
@@ -64,6 +67,10 @@ def main(argv: list[str] | None = None) -> int:
     if command == "export":
         from . import export_xlsx
         return export_xlsx.main(rest)
+
+    if command == "refresh-workbook":
+        from . import refresh_workbook
+        return refresh_workbook.main(rest)
 
     print(f"nflpipe: unknown command '{command}'\n\n{USAGE}", file=sys.stderr)
     return 1
