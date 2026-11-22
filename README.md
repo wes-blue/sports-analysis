@@ -8,6 +8,8 @@ Scored NFL fantasy-football data, rebuilt automatically on GitHub from public nf
 
 The link never changes: every rebuild replaces the file behind it. Open it in Excel and click **Enable Editing** if Protected View appears. It takes about a minute to open. [`NFL/05-excel/README.md`](NFL/05-excel/README.md) has tips and the version history.
 
+Prefer to refresh from Excel, or read the data in another tool? The same two tables are plain files: [`NFL-PlayerGames.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv) (about 38 MB) and [`NFL-SeasonTotals.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv). Steps for loading them into Excel are in [`NFL/05-excel/README.md`](NFL/05-excel/README.md).
+
 ## What is in the workbook
 
 - **About**: version, data-through date and where the data comes from. Start here.

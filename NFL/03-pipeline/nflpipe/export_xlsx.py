@@ -39,6 +39,7 @@ from operator import itemgetter
 from pathlib import Path
 
 WORKBOOK_VERSION = "3.002"
+TABLES_VERSION = "1"
 DATA_CONTRACT_VERSION = "1"          # the data contract (CONTRACTS.md section 5) this exporter understands
 AUTHOR = "NFL-Analysis pipeline"
 MAX_DATA_ROWS = 1_048_575
@@ -841,20 +842,18 @@ def csv_cols(header: list[str]) -> list[Col]:
     return [Col(h, text=h.strip().lower() in CONFIG_TEXT) for h in header]
 
 
-def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, layout: Layout, totals: dict,
-                 total_rows: int) -> int:
-    """Stream PlayerGames, newest first, and in the same pass collect the SeasonTotals sums.
+def iter_player_rows(data: Data, layout: Layout, totals: dict, total_rows: int):
+    """The one row generator behind PlayerGames: yields ``(values, pw_name, line, sc_name, scored_line)`` per row,
+    newest season first, week descending, then published order. The workbook and the published CSV
+    (``--tables-dir``) both consume it, so they cannot differ. It also fills ``totals`` (the SeasonTotals
+    sums, exact decimal arithmetic) and refuses a source that does not match.
 
     Scored values are looked up by key (season, week, season_type, player_id) and column name, so the order of
     rows or columns in a scored file cannot put a value under the wrong player or league."""
-    cols, nfront, nleague = layout.cols, len(FRONT), len(layout.league_cols)
+    nleague = len(layout.league_cols)
     i_week, i_name, i_pos, i_team = (layout.header0.index(n) for n in ("week", "player_display_name", "position", "team"))
-    out = SheetOut(pkg, part)
-    out.put(sheet_head(cols, FREEZE_PLAYER_GAMES, 1, selected=False))
-    em = Emitter(sst, cols, compact=True)
-    out.put(em.header(1))
     ctx = Context(prec=60)
-    rn = 1
+    n = 0
     for season, pw_path, sc_path in reversed(data.seasons):            # newest season first
         pw = iter_csv(pw_path)
         try:
@@ -884,15 +883,8 @@ def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, layout
             sline, ff = waiting.pop(0)
             if not waiting:
                 del scored[key]
-            rn += 1
-            try:
-                out.put(em.row(rn, (*layout.front_get(row), *ff, *layout.rest_get(row))))
-            except BadValue as exc:
-                if nfront <= exc.column < nfront + nleague:
-                    src, ln, name = sc_path.name, sline, layout.league_cols[exc.column - nfront]
-                else:
-                    src, ln, name = pw_path.name, line, cols[exc.column].name
-                raise ExportError(f"{src} line {ln}, column '{name}': {exc}") from None
+            n += 1
+            yield (*layout.front_get(row), *ff, *layout.rest_get(row)), pw_path.name, line, sc_path.name, sline
             # SeasonTotals sums (exact decimal arithmetic)
             tkey = (season, row[2], row[3])
             rank = (-negweek, line)                                    # the last game: highest week, later published row
@@ -911,9 +903,71 @@ def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, layout
             left = sum(len(w) for w in scored.values())
             raise ExportError(f"{sc_path.name} line {line}: no matching row in {pw_path.name} "
                               f"({left} scored rows have no player_week row)")
-    n = rn - 1
     if n != total_rows:
         raise ExportError(f"PlayerGames: read {n} rows but counted {total_rows}")
+
+
+class TableCsv:
+    """One published table (``--tables-dir``): UTF-8 without BOM, LF, RFC 4180 quoting only where needed.
+    Written under a temporary name; ``commit`` renames it into place, ``abort`` removes it."""
+
+    def __init__(self, path: Path, header: list[str]):
+        self.path = path
+        self.tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        try:
+            self.fh = open(self.tmp, "w", encoding="utf-8", newline="")
+        except OSError as exc:
+            raise ExportError(f"cannot write {path}: {exc.strerror or exc}") from None
+        self.w = csv.writer(self.fh, lineterminator="\n")
+        self.rows = 0
+        self.w.writerow([clean_text(h) for h in header])
+
+    def row(self, vals) -> None:
+        self.w.writerow([clean_text(v) if v else v for v in vals])
+        self.rows += 1
+
+    def close(self) -> None:
+        if not self.fh.closed:
+            self.fh.close()
+
+    def commit(self) -> None:
+        self.close()
+        os.replace(self.tmp, self.path)
+
+    def abort(self) -> None:
+        try:
+            self.close()
+        except Exception:                                       # noqa: BLE001
+            pass
+        try:
+            self.tmp.unlink()
+        except OSError:
+            pass
+
+
+def player_games(pkg: Package, sst: SharedStrings, data: Data, part: str, layout: Layout, totals: dict,
+                 total_rows: int, tee: TableCsv | None = None) -> int:
+    """Stream PlayerGames into the sheet from ``iter_player_rows`` (and, with ``tee``, into the CSV) and, in the
+    same pass, collect the SeasonTotals sums."""
+    cols, nfront, nleague = layout.cols, len(FRONT), len(layout.league_cols)
+    out = SheetOut(pkg, part)
+    out.put(sheet_head(cols, FREEZE_PLAYER_GAMES, 1, selected=False))
+    em = Emitter(sst, cols, compact=True)
+    out.put(em.header(1))
+    rn = 1
+    for vals, pw_name, line, sc_name, sline in iter_player_rows(data, layout, totals, total_rows):
+        rn += 1
+        try:
+            out.put(em.row(rn, vals))
+        except BadValue as exc:
+            if nfront <= exc.column < nfront + nleague:
+                src, ln, name = sc_name, sline, layout.league_cols[exc.column - nfront]
+            else:
+                src, ln, name = pw_name, line, cols[exc.column].name
+            raise ExportError(f"{src} line {ln}, column '{name}': {exc}") from None
+        if tee is not None:
+            tee.row(vals)
+    n = rn - 1
     if n == 0:
         rn += 1
         out.put(f'<row r="{rn}"></row>')
@@ -958,7 +1012,11 @@ def season_totals(data: Data, totals: dict) -> list[list[str]]:
 # ---------------------------------------------------------------------------------------------
 # build
 
-def build(data_dir: Path, out_path: Path) -> dict:
+PLAYER_GAMES_CSV = "NFL-PlayerGames.csv"
+SEASON_TOTALS_CSV = "NFL-SeasonTotals.csv"
+
+
+def build(data_dir: Path, out_path: Path, tables_dir: Path | None = None) -> dict:
     data = Data(data_dir)
     layout = Layout(data)
     check_headers(data, layout)
@@ -995,6 +1053,12 @@ def build(data_dir: Path, out_path: Path) -> dict:
         out_path.parent.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         raise ExportError(f"cannot create the folder {out_path.parent}: {exc.strerror or exc}") from None
+    csvs: list[TableCsv] = []
+    if tables_dir is not None:
+        try:
+            tables_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise ExportError(f"cannot create the folder {tables_dir}: {exc.strerror or exc}") from None
     sst = SharedStrings()
     tables: list[tuple[int, str, str]] = []           # (sheet number, table name, table xml)
     try:
@@ -1002,6 +1066,9 @@ def build(data_dir: Path, out_path: Path) -> dict:
     except OSError as exc:
         raise ExportError(f"cannot write {out_path}: {exc.strerror or exc}") from None
     try:
+        if tables_dir is not None:
+            csvs.append(TableCsv(tables_dir / PLAYER_GAMES_CSV, layout.names))
+            csvs.append(TableCsv(tables_dir / SEASON_TOTALS_CSV, [c.name for c in st_cols]))
         part = lambda i: f"xl/worksheets/sheet{i}.xml"                      # noqa: E731
         names = [s for s, _ in SHEETS]
         # Parts that do not depend on the data volume.
@@ -1025,7 +1092,7 @@ def build(data_dir: Path, out_path: Path) -> dict:
                 [(rid, f"{REL_TYPE}/hyperlink", url, True) for rid, url in links]))
 
         totals: dict = {}
-        n_games = player_games(pkg, sst, data, part(2), layout, totals, total_rows)
+        n_games = player_games(pkg, sst, data, part(2), layout, totals, total_rows, csvs[0] if csvs else None)
         tables.append((2, "tblPlayerGames", table_xml(1, "tblPlayerGames", layout.cols, *pkg.last_table)))   # type: ignore[attr-defined]
         pkg.add("xl/worksheets/_rels/sheet2.xml.rels", table_rels(1))
 
@@ -1034,6 +1101,9 @@ def build(data_dir: Path, out_path: Path) -> dict:
         tables.append((3, "tblSeasonTotals", table_xml(2, "tblSeasonTotals", st_cols, *pkg.last_table)))   # type: ignore[attr-defined]
         pkg.add("xl/worksheets/_rels/sheet3.xml.rels", table_rels(2))
         n_totals = len(st_rows)
+        if csvs:
+            for r in st_rows:
+                csvs[1].row(r)
         del st_rows
 
         for k, (sheet, cols, rows, nt) in enumerate(small):
@@ -1047,9 +1117,15 @@ def build(data_dir: Path, out_path: Path) -> dict:
             pkg.add(f"xl/tables/table{i}.xml", xml)
         pkg.add("xl/sharedStrings.xml", sst.xml())
         pkg.close()
+        for t in csvs:
+            t.close()
         os.replace(tmp, out_path)
+        for t in csvs:
+            t.commit()
     except BaseException as exc:
         pkg.abort()
+        for t in csvs:
+            t.abort()
         try:
             tmp.unlink()
         except OSError:
@@ -1058,7 +1134,8 @@ def build(data_dir: Path, out_path: Path) -> dict:
             raise ExportError(f"cannot write {out_path}: {exc.strerror or exc}") from None
         raise
     return {"player_rows": total_rows, "player_columns": len(layout.cols), "totals_rows": n_totals,
-            "strings": len(sst.index), "bytes": out_path.stat().st_size}
+            "strings": len(sst.index), "bytes": out_path.stat().st_size,
+            "tables": [(t.path, t.path.stat().st_size, t.rows) for t in csvs]}
 
 
 def table_rels(tid: int) -> str:
@@ -1110,9 +1187,11 @@ def main(argv: list[str]) -> int:
                                      description="Build the values-only Excel workbook from the published 04-data.")
     parser.add_argument("--data-dir", type=Path, default=PROJECT / "04-data")
     parser.add_argument("--out", type=Path, default=PROJECT / ".work" / "workbook" / "NFL-Analysis.xlsx")
+    parser.add_argument("--tables-dir", type=Path, default=None,
+                        help="also write NFL-PlayerGames.csv and NFL-SeasonTotals.csv (the sheets' values) into this folder")
     args = parser.parse_args(argv)
     try:
-        info = build(args.data_dir, args.out)
+        info = build(args.data_dir, args.out, args.tables_dir)
     except ExportError as exc:
         print(f"nflpipe export: error: {exc}", file=sys.stderr)
         return 1
@@ -1126,6 +1205,8 @@ def main(argv: list[str]) -> int:
         return 1
     print(f"wrote {args.out} ({info['bytes'] / 1_048_576:.1f} MB): PlayerGames {info['player_rows']:,} rows x "
           f"{info['player_columns']} columns, SeasonTotals {info['totals_rows']:,} rows, {info['strings']:,} distinct strings")
+    for path, size, rows in info["tables"]:
+        print(f"wrote {path} ({size / 1_048_576:.1f} MB): {rows:,} rows")
     return 0
 
 
