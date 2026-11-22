@@ -1338,17 +1338,17 @@
       "source": "D-054; D-056; BLOCKERS.csv Q-023",
       "target_version": "3.005",
       "acceptance_criteria": "Roadmap 3.005 (a), (b): the files equal the sheets cell for cell (control C-37) and two builds give the same SHA-256.",
-      "status": "Planned"
+      "status": "In progress"
     },
     {
       "id": "FR-54",
-      "requirement": "A small generated workbook, NFL-Analysis-Refresh.xlsx, holds two Power Query queries that load the two CSV links and no scoring; it is published as a release asset and rebuilt only when the design of the tables changes.",
+      "requirement": "A small generated workbook, NFL-Analysis-Refresh.xlsx, holds two Power Query queries that load the two CSV links and no scoring. It is built deterministically, so rebuilding it changes nothing unless its generator, its query text or TABLES_VERSION changes, and any change to it bumps TABLES_VERSION. It is published as a release asset only while the workflows' PUBLISH_REFRESH_WORKBOOK switch is \"true\"; the switch stays \"false\" until the owner's Excel test passes (D-057).",
       "type": "Functional",
       "priority": "Should",
-      "source": "D-054; D-056; BLOCKERS.csv Q-023",
+      "source": "D-054; D-056; D-057; BLOCKERS.csv Q-023",
       "target_version": "3.005",
-      "acceptance_criteria": "The owner opens it in desktop Excel with no repair message, refreshes it, and reports the prompts and the time it took (roadmap 3.005 (e)). If Excel rejects it, it is not published and the guide (FR-55) stands (RAID-108).",
-      "status": "Planned"
+      "acceptance_criteria": "The owner opens a test copy in desktop Excel with no repair message, refreshes it, and reports the prompts and the time it took (roadmap 3.005 (e)); only then is the switch set to \"true\". If Excel rejects it, the switch stays \"false\" and the guide (FR-55) stands (RAID-108).",
+      "status": "In progress"
     },
     {
       "id": "FR-55",
@@ -1358,7 +1358,7 @@
       "source": "D-054; D-056",
       "target_version": "3.005",
       "acceptance_criteria": "A new user following the guide alone loads both tables and refreshes them (roadmap 3.005 (f)).",
-      "status": "Planned"
+      "status": "In progress"
     },
     {
       "id": "FR-56",
@@ -1368,7 +1368,7 @@
       "source": "D-056; NFL/03-pipeline/AUTOMATION.md",
       "target_version": "3.005",
       "acceptance_criteria": "Roadmap 3.005 (c), (d): a forced upload failure leaves every live asset as it was and turns the run red; a design change to the tables republishes all assets; the public links answer.",
-      "status": "Planned"
+      "status": "In progress"
     }
   ],
   "raid": [
@@ -2555,7 +2555,7 @@
       "title": "Excel may not accept a generated Power Query workbook",
       "detail": "NFL-Analysis-Refresh.xlsx is generated from scratch, not saved by Excel. Excel could show a repair message, refuse the queries or lay out the loaded tables badly. Only the owner's desktop Excel can confirm it; a 2.x experiment that reused an Excel-saved skeleton did open cleanly.",
       "rating": "Medium",
-      "response": "The owner tests a copy first, and the file is published only if it opens cleanly and refreshes. The 'Get Data > From Web' guide (FR-55) is the fallback that cannot fail, because Excel writes the queries itself.",
+      "response": "The owner tests a copy first. The workflows publish the file only once the PUBLISH_REFRESH_WORKBOOK switch is set to \"true\", which happens after it opens cleanly and refreshes (D-057). The 'Get Data > From Web' guide (FR-55) is the fallback that cannot fail, because Excel writes the queries itself.",
       "owner": "Orchestrator",
       "target_version": "3.005",
       "status": "Open"
@@ -2846,9 +2846,9 @@
       "id": "C-37",
       "control": "The CSV tables equal the workbook sheets",
       "method": "A test reads the workbook's PlayerGames and SeasonTotals sheets with an independent reader and compares every cell with the corresponding cell of NFL-PlayerGames.csv and NFL-SeasonTotals.csv, header row included; it also checks the encoding (UTF-8, no byte-order mark, LF) and that two builds give the same SHA-256.",
-      "expected_result": "Zero differing cells and identical bytes on a second build. Not yet built.",
+      "expected_result": "Zero differing cells and identical bytes on a second build. Passing 2026-11-22 (3.005 build): the table tests pass on Python 3.11 and 3.13; the review committee compared the full current data with an independent reader: PlayerGames 180,302 rows, 17,669,596 cells, and SeasonTotals 24,251 rows, 412,267 cells, with 0 differences; the workbook's SHA-256 is unchanged (be3ed041...).",
       "target_version": "3.005",
-      "status": "Designed"
+      "status": "Passing"
     }
   ],
   "glossary": [
