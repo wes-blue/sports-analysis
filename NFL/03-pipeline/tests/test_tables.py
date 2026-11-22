@@ -433,3 +433,16 @@ def test_refresh_workbook_unwritable_target_is_a_clear_error(tmp_path, capsys):
     assert refresh_workbook.main(["--out", str(blocker / "r.xlsx")]) == 1
     assert "refresh-workbook: error: cannot write" in capsys.readouterr().err
     assert [p.name for p in tmp_path.iterdir()] == ["file"]
+
+
+GUIDE = Path(__file__).resolve().parents[2] / "05-excel" / "README.md"
+
+
+@pytest.mark.parametrize("name", ["PlayerGames", "SeasonTotals"])
+def test_guide_query_text_equals_the_m_file(name: str) -> None:
+    """The 'Get Data > From Web' guide gives the same query as the refresh workbook (comments aside)."""
+    m = (Path(refresh_workbook.__file__).parent / "pq" / f"{name}.m").read_text(encoding="utf-8")
+    body = "\n".join(line for line in m.splitlines() if not line.lstrip().startswith("//")).strip()
+    found = re.search(r"`" + name + r"`:\n\n```\n(.*?)\n```", GUIDE.read_text(encoding="utf-8"), re.S)
+    assert found, f"the guide has no `{name}` code block"
+    assert found.group(1).strip() == body, f"the guide's {name} query differs from nflpipe/pq/{name}.m: update the guide"

@@ -1060,7 +1060,8 @@ def test_publish_swaps_all_four_assets_and_never_deletes_a_live_one_first(name):
     """A2-02 generalised (D-054): gh `release upload --clobber` deletes the old asset BEFORE uploading. Every new file is
     uploaded under a temporary name and verified, and only then do the delete and rename pairs run, back to back."""
     s = script_of(name, PUBLISH_WB)
-    assert 'assets=("$WORKBOOK_ASSET" "$TABLE_PLAYERS_ASSET" "$TABLE_SEASONS_ASSET" "$REFRESH_ASSET")' in s
+    assert 'all_assets=("$WORKBOOK_ASSET" "$TABLE_PLAYERS_ASSET" "$TABLE_SEASONS_ASSET" "$REFRESH_ASSET")' in s
+    assert 'assets=("$WORKBOOK_ASSET" "$TABLE_PLAYERS_ASSET" "$TABLE_SEASONS_ASSET")\n' in s and 'assets+=("$REFRESH_ASSET")' in s
     assert """nextname() { printf '%s.next.%s' "${1%.*}" "${1##*.}"; }""" in s
     order = ['gh release upload "$WORKBOOK_TAG" "$stage/$1"',        # 3 upload every file under its temporary name
              'newid[$a]="$id"',                                       # 4 verify EVERY upload (finished, right size)
@@ -1090,9 +1091,9 @@ def test_publish_swaps_all_four_assets_and_never_deletes_a_live_one_first(name):
 def test_publish_checks_every_public_address_and_retries_the_cdn(name):
     """A2-06: ask for each stable address the way a browser does; 200 or 206 or the run is red."""
     s = script_of(name, PUBLISH_WB)
-    assert "curl -sL --max-time 60 -r 0-0 -o /dev/null -w '%{http_code}' \"${base}/${a}\"" in s
+    assert "curl -sL --max-time 20 -r 0-0 -o /dev/null -w '%{http_code}' \"${base}/${a}\"" in s
     assert '"$code" == "200" || "$code" == "206"' in s and "for attempt in 1 2 3 4 5" in s
-    assert "sleep $((attempt * 5))" in s
+    assert "sleep $((attempt * 5))" in s and '[[ "$attempt" -lt 5 ]] && sleep $((attempt * 5))' in s, "no pause after the last try"
     assert 'answers ${code:-nothing}' in s
     for fragment in ("sleep $((attempt * 10))", "sleep $((attempt * 5))", "sleep 2"):   # backoff on every retried write
         assert fragment in s, fragment
@@ -1114,7 +1115,7 @@ def test_release_detection_is_structured_fails_closed_and_treats_a_draft_as_unpu
     decide = script_of(name, DECIDE)
     assert "gh release create" not in decide and "gh release view" not in decide
     assert "retry gh api" in decide and "for n in 1 2 3; do" in decide and "sleep $((n * 5))" in decide
-    assert '.state=="uploaded" and .size>0' in decide, "an empty 'starter' asset does not count as present"
+    assert '$1=="uploaded" && $2>0' in decide, "an empty 'starter' asset does not count as present"
 
 
 @pytest.mark.parametrize("name", PUBLISHING)
@@ -1127,8 +1128,10 @@ def test_freshness_key_has_four_fields_and_missing_means_any_asset(name):
     assert "import" not in s.split("design=")[1].split("\n")[0], "the version is read from the source, not imported"
     assert "import" not in s.split("tables=")[1].split("\n")[0]
     assert 'for v in "$run_id" "$version" "$design" "$tables"; do' in s
+    required = s.split("required=(")[1].split("for a in")[0]
     for stable in ("$WORKBOOK_ASSET", "$TABLE_PLAYERS_ASSET", "$TABLE_SEASONS_ASSET", "$REFRESH_ASSET"):
-        assert stable in s.split("# All four must be there")[1].split("if [[ -z \"$missing\" ]]")[0], stable
+        assert stable in required, stable
+    assert '"$PUBLISH_REFRESH_WORKBOOK" == "true" ]] && required+=("$REFRESH_ASSET")' in required
     assert "have_asset=true" in s.split('if [[ -z "$missing" ]]')[1][:30], "current only when none of the four is missing"
     real = (PIPELINE_DIR / "nflpipe" / "export_xlsx.py").read_text(encoding="utf-8")
     for const in ("WORKBOOK_VERSION", "TABLES_VERSION"):
@@ -1150,8 +1153,9 @@ def test_the_workflow_reads_the_real_exporter_constants():
 def test_notes_name_every_asset_and_the_key(name):
     s = script_of(name, PUBLISH_WB)
     notes = s.split("cat > \"$NOTES_FILE\" <<NOTES")[1].split("\nNOTES\n")[0]
-    for var in ("WORKBOOK_ASSET", "TABLE_PLAYERS_ASSET", "TABLE_SEASONS_ASSET", "REFRESH_ASSET"):
+    for var in ("WORKBOOK_ASSET", "TABLE_PLAYERS_ASSET", "TABLE_SEASONS_ASSET"):
         assert "${base}/${" + var + "}" in notes, var
+    assert "${refresh_line}" in notes and "- Refresh workbook (" in s and "${base}/${REFRESH_ASSET}" in s
     assert "nfl-workbook-key: ${WORKBOOK_KEY}" in notes and "CC BY 4.0" in notes
 
 
@@ -1221,7 +1225,10 @@ uploads; without --clobber an existing name is refused; a duplicate asset name o
 Knobs (env): GH_<KIND>_FAILS = how many calls of that kind fail (kinds: list get create upload delete patch edit),
 GH_<KIND>_FAIL_NAME = only for calls about this asset name, GH_LIST_ERROR = the error text, GH_CREATE_PHANTOM = a failed
 create has still created the release, GH_UPLOAD_LEAVES_STARTER = a failed upload leaves an empty asset, GH_UPLOAD_SHORT =
-the upload 'succeeds' but the asset stays empty. Invariant checks write $GH_STATE/violations."""
+the upload 'succeeds' but the asset stays empty. GH_<KIND>_LOST (kinds: delete patch), with GH_<KIND>_LOST_NAME: the
+server DOES the change but the reply is lost (a 502), so the retry finds the asset gone (404) or the name taken (422).
+While PUBLISH_REFRESH_WORKBOOK is "false" the stable refresh workbook must never be touched and its temporary file is
+not one of the files a publish has to have. Invariant checks write $GH_STATE/violations."""
 import json, os, subprocess, sys
 S = os.environ["GH_STATE"]; P = os.path.join(S, "state.json")
 LIVES = ["NFL-Analysis.xlsx", "NFL-PlayerGames.csv", "NFL-SeasonTotals.csv", "NFL-Analysis-Refresh.xlsx"]
@@ -1245,6 +1252,18 @@ def fails(kind, name=None):
         return False
     s["n"][kind] = s["n"].get(kind, 0) + 1; save()
     return s["n"][kind] <= int(os.environ.get(f"GH_{kind.upper()}_FAILS", "0"))
+def lost(kind, name=None):
+    only = os.environ.get(f"GH_{kind.upper()}_LOST_NAME")
+    if only and name != only:
+        return False
+    key = "lost_" + kind
+    s["n"][key] = s["n"].get(key, 0) + 1; save()
+    return s["n"][key] <= int(os.environ.get(f"GH_{kind.upper()}_LOST", "0"))
+HELD = os.environ.get("PUBLISH_REFRESH_WORKBOOK") == "false"
+REFRESH = "NFL-Analysis-Refresh.xlsx"
+def touch(name):
+    if HELD and name == REFRESH:
+        violation("the refresh workbook was touched while PUBLISH_REFRESH_WORKBOOK is false")
 def opt(flag, default=None):
     return a[a.index(flag) + 1] if flag in a else default
 def jq(obj, expr):
@@ -1272,6 +1291,7 @@ elif a[:2] == ["release", "upload"]:
     if not r:
         die("release not found")
     name = os.path.basename(a[3]); clobber = "--clobber" in a
+    touch(name)
     existing = [x for x in r["assets"] if x["name"] == name]
     if existing and not clobber:
         die(f"HTTP 422: asset under the same name already exists: [{name}]")
@@ -1319,20 +1339,27 @@ elif a[0] == "api":
         if method == "DELETE":
             if fails("delete", asset["name"]):
                 die("HTTP 502: Bad Gateway")
+            touch(asset["name"])
             if asset["name"] in LIVES:
                 # a live asset may go only when EVERY new file of this publish is on the release (or already took its stable name)
-                gone = [n for n in LIVES if not any(x["name"] == next_of(n) and x["state"] == "uploaded" and x["size"] > 0 for x in r["assets"])
+                gone = [n for n in LIVES if not (HELD and n == REFRESH) and not any(x["name"] == next_of(n) and x["state"] == "uploaded" and x["size"] > 0 for x in r["assets"])
                         and n not in s.get("renamed", [])]
                 if gone:
                     violation("a live asset was deleted before every new file was on the release: missing " + ", ".join(gone))
             r["assets"].remove(asset); save()
+            if lost("delete", asset["name"]):
+                die("HTTP 502: Bad Gateway")
         elif method == "PATCH":
             if fails("patch"):
                 die("HTTP 502: Bad Gateway")
             new = a[a.index("-f") + 1].split("=", 1)[1]
             if any(x["name"] == new for x in r["assets"]):
                 die("gh: Validation Failed (HTTP 422) already_exists")
+            touch(new)
+            before = asset["name"]
             asset["name"] = new; s.setdefault("renamed", []).append(new); save()
+            if lost("patch", before):
+                die("HTTP 502: Bad Gateway")
         else:
             die("unexpected method " + method, 2)
     else:
@@ -1537,7 +1564,9 @@ class WB:
         env = {"GH_STATE": str(self.state), "GH_TOKEN": "t", "GH_REPO": "wes-blue/sports-analysis", "FAKE_LOG": str(self.log),
                "REAL_PY": self.real_py, "ALERT_DETAILS": str(self.details), "EXPORT_LOG": str(self.tmp / "export.log"),
                "WORKBOOK_MIN_BYTES": "100", "PLAYERS_MIN_BYTES": "100", "PLAYERS_MIN_LINES": "10",
-               "SEASONS_MIN_BYTES": "50", "SEASONS_MIN_LINES": "5", "REFRESH_MIN_BYTES": "100"}
+               "SEASONS_MIN_BYTES": "50", "SEASONS_MIN_LINES": "5", "REFRESH_MIN_BYTES": "100",
+               # the workflows ship with the switch "false"; most tests below exercise the four-asset path, so they turn it on
+               "PUBLISH_REFRESH_WORKBOOK": "true"}
         env.update(extra)
         return env
 
@@ -1560,6 +1589,15 @@ class WB:
         """The size of each of the four built files in the workspace."""
         d = self.ws / "NFL" / ".work" / "workbook"
         return {a: (d / a).stat().st_size for a in ALL_ASSETS}
+
+    def sizes_of(self, names):
+        d = self.ws / "NFL" / ".work" / "workbook"
+        return {a: (d / a).stat().st_size for a in names}
+
+    def state_clear(self):
+        f = self.state / "state.json"
+        if f.exists():
+            f.unlink()
 
     @property
     def body(self):
@@ -2099,6 +2137,207 @@ def test_publish_the_stand_in_would_catch_a_delete_before_all_uploads(wb):
     assert done.returncode == 0 and any("deleted before every new file" in v for v in wb.violations)
 
 
+# ---- the refresh-workbook switch (PUBLISH_REFRESH_WORKBOOK), the lost-reply checks and the leftover cleanup (3.005 fixes) ----
+
+HELD = {"PUBLISH_REFRESH_WORKBOOK": "false"}
+ON = {"PUBLISH_REFRESH_WORKBOOK": "true"}
+THREE = [WB_ASSET, PG_ASSET, ST_ASSET]
+
+
+def test_the_switch_ships_off_and_is_the_same_in_both_workflows():
+    values = [load(n)[1]["env"]["PUBLISH_REFRESH_WORKBOOK"] for n in PUBLISHING]
+    assert values == ["false", "false"], "a string, not a YAML boolean; off until the owner's Excel test passed"
+    for n in PUBLISHING:
+        for step_name in (DECIDE, BUILD, PUBLISH_WB):
+            s = script_of(n, step_name)
+            assert 'PUBLISH_REFRESH_WORKBOOK' in s, (n, step_name)
+        assert "PUBLISH_REFRESH_WORKBOOK" not in str(step_named(load(n)[1], PUBLISH_WB).get("env", {})), "read from the workflow env, no expression"
+
+
+@both
+def test_switch_must_be_true_or_false(wb):
+    wb.release(THREE, body=f"<!-- nfl-workbook-key: {KEY} -->")
+    wb.decide("SKIP", expect_rc=1, PUBLISH_REFRESH_WORKBOOK="maybe")
+    assert "must be" in wb.details.read_text() and wb.writes() == []
+
+
+@both
+def test_off_decide_ignores_the_refresh_workbook_missing_or_present(wb):
+    """Three assets and a current key: nothing to build. A stray refresh workbook is not looked at."""
+    wb.release(THREE, body=f"<!-- nfl-workbook-key: {KEY} -->")
+    out, _ = wb.decide("SKIP", **HELD)
+    assert out["build"] == "false" and "the 3 files on the release" in wb.summary and wb.writes() == []
+    wb.release(ALL_ASSETS, body=f"<!-- nfl-workbook-key: {KEY} -->", tag="other")      # an unrelated release must not matter
+    out, _ = wb.decide("SKIP", **HELD)
+    assert out["build"] == "false"
+
+
+@both
+def test_off_decide_names_only_the_three_missing_assets(wb):
+    wb.release([WB_ASSET], body=f"<!-- nfl-workbook-key: {KEY} -->")
+    out, _ = wb.decide("SKIP", **HELD)
+    assert out["build"] == "true" and f"no finished {PG_ASSET}, {ST_ASSET} " in wb.summary and RF_ASSET not in wb.summary
+
+
+@both
+def test_off_build_makes_three_files_and_never_calls_the_refresh_generator(wb):
+    wb.build(FAKE_REFRESH="fail", **HELD)             # a broken generator cannot turn the run red while the file is not published
+    d = wb.ws / "NFL" / ".work" / "workbook"
+    assert sorted(x.name for x in d.iterdir()) == sorted(THREE)
+    assert "refresh-workbook" not in wb.log.read_text() and "refresh workbook none (not published)" in wb.summary
+
+
+@both
+def test_off_publish_first_run_uploads_swaps_and_lists_three_assets(wb):
+    wb.build(**HELD)
+    sizes = wb.sizes_of(THREE)
+    wb.publish(False, **HELD)
+    assert kinds(wb) == ["create"] + ["upload"] * 3 + ["patch"] * 3 + ["edit"], kinds(wb)
+    assert wb.asset_names() == sorted(THREE) and {a: wb.served(a) for a in THREE} == sizes and wb.violations == []
+    assert RF_ASSET not in wb.body and wb.body.count("releases/download") == 3
+    assert f"nfl-workbook-key: {KEY} " in wb.body
+    assert len((wb.state / "curl.log").read_text().splitlines()) == 3, "three public links are checked"
+    assert wb.decide("SKIP", **HELD)[0]["build"] == "false"
+
+
+@both
+def test_off_publish_leaves_a_stray_refresh_workbook_alone(wb):
+    live_release(wb)                                   # four old files, one of them the refresh workbook
+    wb.build(**HELD)
+    sizes = wb.sizes_of(THREE)
+    wb.publish(True, **HELD)
+    assert kinds(wb) == ["upload"] * 3 + ["delete", "patch"] * 3 + ["edit"], kinds(wb)
+    assert wb.violations == [] and wb.served(RF_ASSET) == OLD_SIZE, "not deleted, not replaced"
+    assert {a: wb.served(a) for a in THREE} == sizes and RF_ASSET not in wb.body
+    assert wb.asset_names() == sorted(ALL_ASSETS)
+
+
+@both
+def test_flipping_the_switch_publishes_the_refresh_workbook_on_the_next_run(wb):
+    """Three assets, current key, no TABLES_VERSION bump: the first run with the switch on finds the refresh workbook missing,
+    republishes all four, and the run after that finds everything current."""
+    wb.release(THREE, body=f"old\n<!-- nfl-workbook-key: {KEY} -->\n")
+    assert wb.decide("SKIP", **HELD)[0]["build"] == "false"
+    out, _ = wb.decide("SKIP", **ON)
+    assert out["build"] == "true" and out["key"] == KEY and f"no finished {RF_ASSET} " in wb.summary
+    wb.build(**ON)
+    sizes = wb.sizes()
+    wb.publish(True, **ON)
+    assert kinds(wb) == ["upload"] * 4 + ["delete", "patch"] * 3 + ["patch", "edit"], kinds(wb)
+    assert wb.violations == [] and wb.asset_names() == sorted(ALL_ASSETS) and served_all(wb) == sizes
+    assert f"{DL_BASE}/{RF_ASSET}" in wb.body
+    assert wb.decide("SKIP", **ON)[0]["build"] == "false"
+
+
+@both
+def test_flipping_the_switch_back_off_leaves_the_published_copy_and_builds_nothing(wb):
+    live_release(wb, key=KEY)
+    assert wb.decide("SKIP", **ON)[0]["build"] == "false"
+    assert wb.decide("SKIP", **HELD)[0]["build"] == "false"
+    assert wb.writes() == []
+
+
+# -- M-2 of the adversarial review: a reply that is lost although the server did the work
+
+@both
+def test_publish_a_lost_reply_on_delete_still_completes_the_swap(wb):
+    """The server removed the old workbook, the reply was a 502, and the retry found nothing. The re-list sees it is gone."""
+    sizes = stage(wb)
+    wb.publish(True, GH_DELETE_LOST="1", GH_DELETE_LOST_NAME=WB_ASSET)
+    assert wb.violations == [] and wb.asset_names() == sorted(ALL_ASSETS) and served_all(wb) == sizes
+    assert f"nfl-workbook-key: {KEY} " in wb.body
+    assert not any("--clobber" in c for c in wb.gh_calls)
+    assert wb.decide("SKIP")[0]["build"] == "false"
+
+
+@both
+def test_publish_a_lost_reply_on_delete_is_not_a_failure_for_a_new_asset_either(wb):
+    sizes = stage(wb, old=False)
+    live_release(wb, assets=[WB_ASSET])
+    wb.publish(True, GH_DELETE_LOST="1", GH_DELETE_LOST_NAME=WB_ASSET)
+    assert wb.asset_names() == sorted(ALL_ASSETS) and served_all(wb) == sizes
+
+
+@both
+def test_publish_a_delete_that_really_failed_is_still_a_failure(wb):
+    """The re-list finds the old file, so it is not 'done' (this is the existing refusal path, kept)."""
+    stage(wb)
+    wb.publish(True, expect_rc=1, GH_DELETE_FAILS="99", GH_DELETE_FAIL_NAME=WB_ASSET)
+    assert f"could not remove the old {WB_ASSET}" in wb.details.read_text()
+    assert wb.served(WB_ASSET) == OLD_SIZE and "NFL-Analysis.next.xlsx" in wb.asset_names()
+
+
+@both
+def test_publish_a_lost_reply_on_rename_is_recognised_without_uploading_again(wb):
+    sizes = stage(wb)
+    wb.publish(True, GH_PATCH_LOST="1", GH_PATCH_LOST_NAME="NFL-PlayerGames.next.csv")
+    assert wb.violations == [] and wb.asset_names() == sorted(ALL_ASSETS) and served_all(wb) == sizes
+    assert sum("-X PATCH" in c for c in wb.gh_calls) == 4, "one try for each asset: the re-list found the new name in place"
+    assert not any("--clobber" in c for c in wb.gh_calls)
+    assert f"nfl-workbook-key: {KEY} " in wb.body
+
+
+@both
+def test_publish_a_rename_that_really_fails_still_falls_back_to_an_upload(wb):
+    """The re-list after each refused rename finds no asset with the stable name, so the fallback still runs."""
+    sizes = stage(wb)
+    wb.publish(True, GH_PATCH_FAILS="99")
+    assert len([c for c in wb.gh_calls if "--clobber" in c]) == 4 and served_all(wb) == sizes
+
+
+# -- m-1: a temporary asset left by a dead run
+
+@both
+def test_decide_a_leftover_temporary_asset_makes_a_skip_publish_and_the_publish_removes_it(wb):
+    wb.release(ALL_ASSETS + ["NFL-PlayerGames.next.csv"], body=f"<!-- nfl-workbook-key: {KEY} -->")
+    out, _ = wb.decide("SKIP")
+    assert out["build"] == "true" and "a temporary asset is left over" in wb.summary and "NFL-PlayerGames.next.csv" in wb.summary
+    wb.build()
+    wb.publish(True)
+    assert wb.asset_names() == sorted(ALL_ASSETS) and served_all(wb) == wb.sizes() and wb.violations == []
+    assert wb.decide("SKIP")[0]["build"] == "false"
+
+
+@both
+@pytest.mark.parametrize("leftover", [{"state": "uploaded", "size": 7}, {"state": "starter", "size": 0}])
+def test_decide_a_leftover_is_found_in_any_state_and_for_all_four_names(wb, leftover):
+    for name in NEXT_NAMES:
+        wb.state_clear()
+        wb.release(ALL_ASSETS + [{"name": name, **leftover}], body=f"<!-- nfl-workbook-key: {KEY} -->")
+        assert wb.decide("SKIP")[0]["build"] == "true", name
+
+
+@both
+def test_off_publish_removes_a_leftover_refresh_temporary_file_but_nothing_else_of_it(wb):
+    wb.release(THREE + [{"name": "NFL-Analysis-Refresh.next.xlsx", "size": 5}], body=f"<!-- nfl-workbook-key: {OLD_KEY} -->")
+    wb.build(**HELD)
+    wb.publish(True, **HELD)
+    assert wb.asset_names() == sorted(THREE) and wb.violations == []
+
+
+@both
+def test_publish_the_leftover_is_removed_before_the_first_upload(wb):
+    wb.release(ALL_ASSETS + ["NFL-SeasonTotals.next.csv"], body=f"<!-- nfl-workbook-key: {OLD_KEY} -->")
+    wb.build()
+    wb.publish(True)
+    deletes = [i for i, c in enumerate(wb.gh_calls) if "-X DELETE" in c]
+    uploads = [i for i, c in enumerate(wb.gh_calls) if c.startswith("gh release upload")]
+    assert deletes and uploads and deletes[0] < uploads[0]
+
+
+# -- m-2: the link check is bounded
+
+@both
+def test_publish_link_check_worst_case_is_ten_minutes(wb):
+    stage(wb)
+    wb.publish(True, expect_rc=1, CURL_CODE="404")
+    calls = (wb.state / "curl.log").read_text().splitlines()
+    assert len(calls) == 20 and all("--max-time 20 " in c for c in calls)
+    pauses = sum(int(x) for x in wb.sleeps)
+    assert pauses == 4 * (5 + 10 + 15 + 20) == 200, "no pause after the last try of an address"
+    assert len(calls) * 20 + pauses == 600 < 30 * 60 / 2, "the whole check fits in a third of the 30-minute step"
+
+
 # ---- the other steps of the weekly and monthly workflows --------------------------------------------------
 
 def test_resolve_workbook_only_skips_resolve_and_the_stray_file_check(tmp_path):
@@ -2214,8 +2453,10 @@ def test_guide_first_time_steps_describe_this_merge_and_the_failure_behaviour():
     assert "counts as a config change, so two runs" not in text and "a newer commit by **github-actions[bot]** named" not in sec2.split("4. ")[0]
     assert "**If the link says not found.**" in text and "Rebuild only the workbook" in text.split("**If the link says not found.**")[1][:900]
     assert "20 MB" not in text and "about 8 MB" in text, "the guide states the size of the 3.002 file"
-    assert "uploaded first under a temporary name" in text and "never leaves the link empty" in text
-    assert "deleted only after the new one is safely on the release" in text and "the link keeps giving the old workbook" in text
+    assert "uploaded first under a temporary name" in text and "never leaves the link empty" not in text
+    assert "deleted only after the new one is safely on the release" in text and "the links keep giving the old files" in text
+    assert "about a second" in text and "lost although the change was made" in text, "the 404 window and the re-list are documented"
+    assert "at most 10 minutes" in text and "14 KB" in text and "20 KB" not in text
     assert "Re-run failed jobs" in text and "workbook-RUN-ATTEMPT" in text
     assert "NOTHING was rebuilt" in text, "workbook_only from a branch is red, and the guide says so"
     assert "right-hand side" not in text, "R2-17: the sidebar claim is unverified"
@@ -2232,6 +2473,36 @@ def test_guide_describes_the_four_assets_the_key_and_how_to_find_a_missing_one()
     assert "nfl-workbook-key: <run id>|<pipeline version>|<workbook design>|<tables design>" in text
     assert "WORKBOOK_VERSION" in text and "TABLES_VERSION" in text
     assert "Which asset is missing?" in text and "the release has no finished NFL-PlayerGames.csv" in text
-    assert "workbook_only" in text and "also rebuilds" not in text.split("workbook_only**:")[0] and "rebuilds and republishes all four files" in text
-    assert "All four uploads are checked" in text and "before anything old is touched" in text
+    assert "workbook_only" in text and "also rebuilds" not in text.split("workbook_only**:")[0] and "rebuilds and republishes every file that is being published" in text
+    assert "All the uploads are checked" in text and "before anything old is touched" in text
     assert "The merge that added the two CSV files" in text and "three fields instead of four" in text
+
+
+def test_guide_documents_the_refresh_workbook_switch():
+    text = GUIDE.read_text(encoding="utf-8")
+    sec = text.split("**The refresh workbook switch.**")[1].split("**Which asset is missing?**")[0]
+    assert "PUBLISH_REFRESH_WORKBOOK" in sec and "nfl-pipeline-weekly.yml" in sec and "nfl-pipeline-monthly.yml" in sec
+    assert "left alone" in sec and "no change to `TABLES_VERSION`" in sec and "after the owner's Excel test passes" in sec
+    assert "NFL/05-excel/README.md" in sec and "front page `README.md`" in sec
+
+
+def test_visitor_pages_follow_the_switch():
+    """While the refresh workbook is switched off no visitor page links it; the 05-excel guide says it is coming, not where it is.
+    Flipping the switch means putting the link back in the same change."""
+    on = {load(n)[1]["env"]["PUBLISH_REFRESH_WORKBOOK"] for n in PUBLISHING}
+    assert len(on) == 1
+    pages = {"README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+             "NFL/05-excel/README.md": (REPO_ROOT / "NFL" / "05-excel" / "README.md").read_text(encoding="utf-8")}
+    if on == {"false"}:
+        for name, text in pages.items():
+            assert "NFL-Analysis-Refresh" not in text and "releases/download/nfl-workbook/NFL-Analysis-Refresh" not in text, name
+        assert "coming once" in pages["NFL/05-excel/README.md"].lower() or "once it has been confirmed in excel" in pages["NFL/05-excel/README.md"].lower()
+    else:
+        assert f"{DL_BASE}/{RF_ASSET}" in pages["NFL/05-excel/README.md"]
+    # visitor pages: no decision numbers or internal jargon, no retired redirect host, the right size, the estimates labelled
+    excel = pages["NFL/05-excel/README.md"]
+    for name, text in pages.items():
+        assert not re.search(r"\bD-0\d\d\b|\bRAID-|\bFR-\d", text), name
+    assert "objects.githubusercontent.com" not in excel and "20 KB" not in excel
+    assert "estimate" in excel.lower() and "not tested" in excel.lower()
+    assert "From Text/CSV" in excel and "formula" in excel.lower(), "the second reason not to double-click"

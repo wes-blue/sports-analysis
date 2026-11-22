@@ -5,7 +5,7 @@ The NFL workbook is built for you on GitHub, from public nflverse statistics. Th
 ## Two ways to use it
 
 1. **Download the finished workbook.** Nothing to install or refresh. This is the easiest way and the one that works on every device.
-2. **Refresh from Excel.** Download two CSV files, or a small workbook that fetches them for you, and press Refresh in desktop Excel whenever you want the newest data.
+2. **Refresh from Excel.** Load two CSV files into desktop Excel with Get Data, From Web, and press Refresh whenever you want the newest data.
 
 ### 1. Download the finished workbook
 
@@ -13,7 +13,7 @@ The NFL workbook is built for you on GitHub, from public nflverse statistics. Th
 
 `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
 
-The link stays the same: every rebuild replaces the file behind it. The file is **not in this folder or anywhere in the repository's files**: it is about 8 MB and is rebuilt on every publish. It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
+The link stays the same: every rebuild replaces the file behind it. For about a second during each replacement the link answers "not found"; if a download fails, try again. The file is **not in this folder or anywhere in the repository's files**: it is about 8 MB and is rebuilt on every publish. It is a release asset, and the release page is <https://github.com/wes-blue/sports-analysis/releases/tag/nfl-workbook>.
 
 **Opening it.** The file is about 8 MB but holds about 17 million cells, so Excel takes about a minute to open it; it opened in desktop Excel with no repair message. Excel opens a downloaded file in Protected View: click **Enable Editing** so that sorting and filtering work. The newest games are at the top of `PlayerGames`, with your league columns (`FF_<League>`) right after the player's name.
 
@@ -27,17 +27,16 @@ The same two tables as the workbook's `PlayerGames` and `SeasonTotals` sheets ar
 |---|---|---|---|
 | `NFL-PlayerGames.csv` | One row per player per game, newest first (about 180,000 rows, 98 columns today) | about 38 MB | [download](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv) |
 | `NFL-SeasonTotals.csv` | One row per player per season and season type (about 24,000 rows, 17 columns today) | about 2 MB | [download](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv) |
-| `NFL-Analysis-Refresh.xlsx` | A small workbook with no data in it. Its two queries read the two files above. | about 20 KB | [download](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis-Refresh.xlsx) |
 
 The columns are the ones in the finished workbook, so a league you add is a new `FF_<League>` column in both files.
 
-**The quick way: the refresh workbook.** Download [`NFL-Analysis-Refresh.xlsx`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis-Refresh.xlsx) and open it in desktop Excel. Click **Enable Editing** and then **Enable Content** (Excel shows both because the file came from the Internet), read the `Start` sheet, then choose **Data**, **Refresh All**. If Excel asks how to connect, choose **Anonymous**; if it asks about privacy levels, choose **Public**. If Excel reports a problem with this file, use the steps below instead: they build the same two queries yourself.
+**Coming: a ready-made refresh workbook.** A small workbook with no data in it, whose two queries read the two files above, is coming once it has been confirmed in Excel. Until then, use the steps below: they build the same two queries yourself.
 
-**The steps that always work: Get Data, From Web.** Do these in a new, empty workbook in desktop Excel (Microsoft 365, Excel 2019 or newer; on a Mac, a current Microsoft 365 build).
+**The steps: Get Data, From Web.** Do these in a new, empty workbook in desktop Excel (Microsoft 365 or Excel 2019 or newer). The steps were written for desktop Excel on Windows. On a Mac the menu names differ (look for **Get Data (Power Query)**), and these steps are not tested there.
 
 1. On the **Data** tab, choose **Get Data**, then **From Other Sources**, then **From Web**.
 2. Paste the link `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv` and click **OK**.
-3. If Excel asks how to connect, choose **Anonymous** and click **Connect**. (The files are public. If it offers to apply the setting to a level, keep `https://github.com/`. Excel may ask once more for a second address that starts with `objects.githubusercontent.com`: choose **Anonymous** there too.)
+3. If Excel asks how to connect, choose **Anonymous** and click **Connect**. (The files are public. If it offers to apply the setting to a level, keep `https://github.com/`. Excel may ask once more for a second address that ends in `githubusercontent.com`: choose **Anonymous** there too.)
 4. If Excel asks about **privacy levels**, choose **Public** for this address.
 5. In the preview window, click **Transform Data** (not Load). The Power Query window opens. On its **Home** tab, click **Advanced Editor**.
 6. Select everything in the box, delete it, paste the `PlayerGames` code below, and click **Done**. If a yellow bar asks for credentials, click **Edit Credentials**, then **Anonymous**, then **Connect**.
@@ -48,7 +47,10 @@ The columns are the ones in the finished workbook, so a league you add is a new 
 ```
 let
     Source = Csv.Document(
-        Web.Contents("https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv"),
+        Web.Contents(
+            "https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv",
+            [Timeout = #duration(0, 0, 10, 0)]
+        ),
         [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
     ),
     Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
@@ -73,7 +75,10 @@ in
 ```
 let
     Source = Csv.Document(
-        Web.Contents("https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv"),
+        Web.Contents(
+            "https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv",
+            [Timeout = #duration(0, 0, 10, 0)]
+        ),
         [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
     ),
     Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
@@ -97,12 +102,12 @@ The code names the columns that are whole numbers or text and treats every other
 
 **Good to know.**
 
-- A refresh takes about a minute or two: Excel downloads about 40 MB and writes about 17 million cells.
-- **Excel for the web cannot refresh these queries.** Use desktop Excel.
+- A refresh may take about a minute or two (an estimate; not yet measured): Excel downloads about 40 MB and writes about 17 million cells.
+- **Excel for the web may not be able to refresh these queries** (not tested). Use desktop Excel.
 - **On a phone or tablet, use the finished workbook** (way 1). It opens there, and there is nothing to refresh.
 - Refreshing reads the newest published files, which are the same data the finished workbook holds. The data is rebuilt after every publish (see "How often it is rebuilt").
 
-**Other tools.** The two CSV files are plain text: UTF-8 (no byte-order mark), comma-separated, one header row, a full stop as the decimal mark, an empty field for "no value". Read the link straight into R (`read.csv(url)`), Python (`pandas.read_csv(url)`) or any tool that reads CSV. In Excel, load them with **Data**, **From Text/CSV** and keep the file origin on **65001: Unicode (UTF-8)**; do not double-click the file, because Excel then guesses the encoding (accents such as in a player's name can come out garbled). Google Sheets cannot open `NFL-PlayerGames.csv`: it has about 17 million cells, more than a Google Sheet holds. `NFL-SeasonTotals.csv` fits.
+**Other tools.** The two CSV files are plain text: UTF-8 (no byte-order mark), comma-separated, one header row, a full stop as the decimal mark, an empty field for "no value". Read the link straight into R (`read.csv(url)`), Python (`pandas.read_csv(url)`) or any tool that reads CSV. In Excel, load them with **Data**, **From Text/CSV** (keep the file origin on **65001: Unicode (UTF-8)**) or with the steps above, never by double-clicking the file, for two reasons: a double-clicked file makes Excel guess the encoding (accents such as in a player's name can come out garbled), and it treats a text cell that starts with `=`, `+`, `-` or `@` as a formula. No such cell is in the files today. Google Sheets cannot open `NFL-PlayerGames.csv`: it has about 17 million cells, more than a Google Sheet holds. `NFL-SeasonTotals.csv` fits.
 
 **Data credit.** The data comes from [nflverse](https://github.com/nflverse), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), and has been modified (scored for fantasy-football leagues and combined). See [`/DATA-LICENSE.md`](../../DATA-LICENSE.md).
 
