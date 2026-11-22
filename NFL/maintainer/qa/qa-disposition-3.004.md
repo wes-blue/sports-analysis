@@ -11,7 +11,7 @@
 ## Verified independently (review and re-test, each with its own full run)
 
 - **Scope of the change:** only `FF_ESPN_League` changes, in 179 kicker player-games across 2017–2026, by `−fg_blocked` each, for a total of −183. Four games have two blocks (−2). In 2026, 11 games change. No other league or column changes, and `player_week` and `long_td` are byte-identical.
-- **Gates:** all 13 pass on full runs (51 s and 44 s). G-GOLDEN checks 125 values for `ESPN_League`, so it does not report "not applicable". G-ESPN reproduces 55 of 55 (48 exact, 7 within tolerance), and 217 of 217 D/ST stat columns are equal.
+- **Gates:** all 13 pass on full runs (51 s and 44 s). G-GOLDEN checks 125 values for `ESPN_League`, so it does not report "not applicable". G-ESPN reproduces 55 of 55 (48 exact, 7 within tolerance), and 65 of 65 (58 exact) after the Myers log was added, and 217 of 217 D/ST stat columns are equal.
 - **Tests and checks:** 689 tests pass on Python 3.11 and 3.13. The CI `config-check` passes locally and on GitHub. `actionlint` is clean.
 - **Configuration:** the only non-text cell that changed is `fg_blocked`/`ESPN_League`. Formatting is unchanged (LF, no BOM, same quoting), and a simulated Excel re-save leaves the configuration hash unchanged.
 - **Privacy:** no personal data, fantasy-team or manager names, or private names in the evidence, the diff or the commits.
@@ -20,7 +20,7 @@
 
 | ID | Grade | Finding | Disposition |
 |---|---|---|---|
-| Review M1 | Major | The `fg_blocked` note stated as fact what rests on one ESPN statistics page, not a fantasy score | **Fixed.** The note now says "Not yet confirmed by an ESPN fantasy score". A J. Myers fantasy game log was requested from the owner; when it arrives, it joins the ESPN check, so the −1 is tested on every run. |
+| Review M1 | Major | The `fg_blocked` note stated as fact what rests on one ESPN statistics page, not a fantasy score | **Fixed and confirmed.** The owner pasted J. Myers' ESPN Fantasy game log: week 8 (the blocked kick) scores 2.0, as the rule gives (3.0 without it), and all 10 weeks match. The log is evidence, its weeks are in the ESPN check, and the note says so. |
 | Adversarial M1 | Major | Seven D/ST rows sat exactly on the ±1 tolerance, so one late nflverse correction would hold every run | **Fixed.** Those seven rows have tolerance 2. `CONTRACTS.md` §6 states the rule, and `AUTOMATION.md` gives the remedy. |
 | Review m1, re-test N1 | Minor | The safety case was understated; the contract still called confirmed cases assumptions | **Fixed** in D-055, `CONTRACTS.md` §3 and the config description ("safeties on scrimmage plays") |
 | Review m2, re-test N3 | Minor | 20 stat rows were quoted; the real count is 21 | **Fixed** in the records. Past reports keep their wording. |
@@ -28,7 +28,7 @@
 | Review m4 | Minor | "Owner's league" appeared on a visitor page | **Fixed** |
 | Re-test N2 | Minor | The G-ESPN message said "D/ST +/-1" | **Fixed:** a message string in `gates.py`, with no change to the logic |
 | Adversarial m1 | Minor | Memory was stale | **Fixed** |
-| Adversarial m2 | Minor | No gate exercises `fg_blocked = −1` | **Accepted** until the Myers fantasy log arrives; a unit test covers the rule |
+| Adversarial m2 | Minor | No gate exercises `fg_blocked = −1` | **Fixed:** G-ESPN now checks Myers' 10 weeks exactly, including week 8. On a full orchestrator run, all 13 gates pass and G-ESPN reproduces 65 of 65. |
 | Adversarial m3 | Minor | `BLOCKERS.csv` on `main` holds full ESPN page text | **Owner's choice:** the answers are the owner's; trimming was offered |
 | Adversarial m4 | Minor | Any config edit, even a note, triggers a full republish | **Accepted:** by design, and it takes under a minute |
 
