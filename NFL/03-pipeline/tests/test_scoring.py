@@ -98,3 +98,23 @@ def test_score_row_rounds_the_total():
     # 0.1 * 5 - 2 = -1.5 -> -2 at 0 decimals (half away from zero, not banker's rounding)
     assert score_row(row(rushing_yards=5, fumbles_lost_total=1), r, 0) == -2
     assert score_row(row(rushing_yards=25), r, 0) == 3        # 2.5 -> 3
+
+
+# ---- the published rules: a blocked field goal (ESPN counts it as a miss) ---------------------
+
+def test_blocked_field_goal_costs_one_point_in_espn_league_only():
+    from pathlib import Path
+    from nflpipe.config import load_config
+    from nflpipe.scoring import build_rules
+    config = load_config(Path(__file__).resolve().parents[2] / "02-config")
+    assert config.problems == []
+    by_name = {r.name: r for r in build_rules(config)}
+    kicker = row("K", "SPEC", fg_blocked=1)
+    two_blocks = row("K", "SPEC", fg_blocked=2)
+    assert score_row(kicker, by_name["ESPN_League"], config.round_decimals) == -1
+    assert score_row(two_blocks, by_name["ESPN_League"], config.round_decimals) == -2
+    for name, league in by_name.items():
+        if name != "ESPN_League":
+            assert score_row(kicker, league, config.round_decimals) == 0, name
+    # the weight is gated to kickers: a non-kicker with the same column scores nothing
+    assert score_row(row("WR", "WR", fg_blocked=1), by_name["ESPN_League"], config.round_decimals) == 0

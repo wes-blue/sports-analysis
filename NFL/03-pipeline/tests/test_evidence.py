@@ -51,3 +51,38 @@ def test_espn_dst_stats_carry_every_column_of_the_game_log():
         for column in ("TD", "INT", "FR", "SCK", "SFTY", "BLK", "PA"):
             assert r[f"espn_{column.lower()}"] == week[column], (week["WEEK"], column)
     assert len(rows) == 10
+
+
+# ---- the 2026-11-22 game logs: Allgeier (player rows exact), IND and NYJ D/ST (+/-1; stats exact) -------------
+
+def log_rows(name: str, columns: int) -> list[list[str]]:
+    lines = (QA / "evidence" / name).read_text(encoding="utf-8").splitlines()
+    values = lines[lines.index("Game Log") + 1 + columns:]
+    assert len(values) % columns == 0
+    return [values[i:i + columns] for i in range(0, len(values), columns)]
+
+
+def test_allgeier_game_log_is_in_espn_actuals_exactly():
+    weeks = log_rows("espn-game-log-Allgeier-ARI-RB-2026.txt", 11)
+    assert [w[0] for w in weeks] == [str(n) for n in range(1, 11)]
+    rows = {r["week"]: r for r in fixture("espn_actuals.csv") if r["player_id"] == "00-0037263"}
+    assert len(rows) == 10
+    for w in weeks:
+        r = rows[w[0]]
+        assert (r["season"], r["season_type"], r["league"], r["row_expected"]) == ("2026", "REG", "ESPN_League", "Yes")
+        assert float(r["espn_points"]) == float(w[10]) and r["tolerance"] == "0"      # a player row is exact
+
+
+def test_colts_and_jets_game_logs_are_in_espn_actuals_and_stats():
+    actuals = fixture("espn_actuals.csv")
+    stats = fixture("espn_dst_stats.csv")
+    for name, team, last_week in (("espn-game-log-IND-DST-2026.txt", "IND", 11), ("espn-game-log-NYJ-DST-2026.txt", "NYJ", 10)):
+        weeks = log_rows(name, 10)
+        assert [w[0] for w in weeks] == [str(n) for n in range(1, last_week + 1)]
+        a = {r["week"]: r for r in actuals if r["player_id"] == f"DST_{team}"}
+        s = {r["week"]: r for r in stats if r["player_id"] == f"DST_{team}"}
+        assert len(a) == last_week and len(s) == last_week
+        for w in weeks:
+            assert float(a[w[0]]["espn_points"]) == float(w[9]) and a[w[0]]["tolerance"] == "1"
+            for column, value in zip(("td", "int", "fr", "sck", "sfty", "blk", "pa"), w[2:9]):
+                assert s[w[0]][f"espn_{column}"] == value, (team, w[0], column)
