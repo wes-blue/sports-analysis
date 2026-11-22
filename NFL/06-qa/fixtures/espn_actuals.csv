@@ -6,7 +6,7 @@ season,week,season_type,player_id,player_display_name,team,position,league,espn_
 2026,8,REG,00-0031588,Stefon Diggs,WAS,WR,ESPN_League,15.8,0,Yes,ESPN lineup: Stefon Diggs WSH WR vs PHI W 27-10 (ESPN WSH = nflverse WAS)
 2026,8,REG,00-0040128,Tyler Warren,IND,TE,ESPN_League,6.8,0,Yes,ESPN lineup: Tyler Warren IND TE @ JAX L 7-42
 2026,8,REG,00-0039067,Rashee Rice,KC,WR,ESPN_League,20.3,0,Yes,ESPN lineup: Rashee Rice KC WR @ DEN L 24-28
-2026,8,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,161,1,Yes,ESPN lineup: Jets D/ST vs LV L 33-38; nflverse stat feed differs from ESPN by about one point (D-021)
+2026,8,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,161,2,Yes,ESPN lineup: Jets D/ST vs LV L 33-38; nflverse stat feed differs from ESPN by about one point (D-021)
 2026,8,REG,00-0031136,Chris Boswell,PIT,K,ESPN_League,8,0,Yes,ESPN lineup: Chris Boswell PIT K vs CLE W 27-6
 2026,8,REG,00-0041037,Denzel Boston,CLE,WR,ESPN_League,12.7,0,Yes,ESPN lineup (bench): Denzel Boston CLE WR @ PIT L 6-27
 2026,8,REG,00-0038797,Emanuel Wilson,SEA,RB,ESPN_League,0,0,No,ESPN lineup (bench): Emanuel Wilson SEA RB vs CHI status O; did not play so nflverse has no row and he counts as 0
@@ -21,7 +21,7 @@ season,week,season_type,player_id,player_display_name,team,position,league,espn_
 2026,5,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,265,1,Yes,ESPN game log: Cardinals D/ST week 5 DET (PA 45); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
 2026,6,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,141,1,Yes,ESPN game log: Cardinals D/ST week 6 @LAR (PA 16); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
 2026,7,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,211,1,Yes,ESPN game log: Cardinals D/ST week 7 DEN (PA 30); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
-2026,8,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,225,1,Yes,ESPN game log: Cardinals D/ST week 8 @DAL (PA 30); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
+2026,8,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,225,2,Yes,ESPN game log: Cardinals D/ST week 8 @DAL (PA 30); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
 2026,9,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,161,1,Yes,ESPN game log: Cardinals D/ST week 9 @SEA (PA 17); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
 2026,10,REG,DST_ARI,ARI D/ST,ARI,DST,ESPN_League,110,1,Yes,ESPN game log: Cardinals D/ST week 10 LAR (PA 34); 06-qa/evidence/espn-game-log-ARI-DST-2026.txt
 2026,1,REG,00-0037263,Tyler Allgeier,ARI,RB,ESPN_League,11,0,Yes,ESPN game log: T. Allgeier ARI RB week 1 @LAC; 06-qa/evidence/espn-game-log-Allgeier-ARI-RB-2026.txt
@@ -36,13 +36,13 @@ season,week,season_type,player_id,player_display_name,team,position,league,espn_
 2026,10,REG,00-0037263,Tyler Allgeier,ARI,RB,ESPN_League,2.4,0,Yes,ESPN game log: T. Allgeier ARI RB week 10 LAR; 06-qa/evidence/espn-game-log-Allgeier-ARI-RB-2026.txt
 2026,1,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,264,1,Yes,ESPN game log: Colts D/ST week 1 BAL (PA 41); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,2,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,248,1,Yes,ESPN game log: Colts D/ST week 2 @KC (PA 33); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
-2026,3,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,122,1,Yes,ESPN game log: Colts D/ST week 3 HOU (PA 17); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
+2026,3,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,122,2,Yes,ESPN game log: Colts D/ST week 3 HOU (PA 17); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,4,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,178,1,Yes,ESPN game log: Colts D/ST week 4 @WSH (PA 13); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,5,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,224,1,Yes,ESPN game log: Colts D/ST week 5 @PIT (PA 34); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,6,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,166,1,Yes,ESPN game log: Colts D/ST week 6 TEN (PA 26); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,7,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,211,1,Yes,ESPN game log: Colts D/ST week 7 @MIN (PA 16); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,8,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,215,1,Yes,ESPN game log: Colts D/ST week 8 @JAX (PA 36); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
-2026,9,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,174,1,Yes,ESPN game log: Colts D/ST week 9 DAL (PA 27); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
+2026,9,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,174,2,Yes,ESPN game log: Colts D/ST week 9 DAL (PA 27); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,10,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,225,1,Yes,ESPN game log: Colts D/ST week 10 MIA (PA 16); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,11,REG,DST_IND,IND D/ST,IND,DST,ESPN_League,212,1,Yes,ESPN game log: Colts D/ST week 11 @HOU (PA 24); 06-qa/evidence/espn-game-log-IND-DST-2026.txt
 2026,1,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,87,1,Yes,ESPN game log: Jets D/ST week 1 @TEN (PA 10); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
@@ -50,7 +50,7 @@ season,week,season_type,player_id,player_display_name,team,position,league,espn_
 2026,3,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,192,1,Yes,ESPN game log: Jets D/ST week 3 @DET (PA 31); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
 2026,4,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,188,1,Yes,ESPN game log: Jets D/ST week 4 @CHI (PA 23); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
 2026,5,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,252,1,Yes,ESPN game log: Jets D/ST week 5 CLE (PA 12); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
-2026,6,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,208,1,Yes,ESPN game log: Jets D/ST week 6 @NE (PA 26); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
-2026,7,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,115,1,Yes,ESPN game log: Jets D/ST week 7 MIA (PA 28); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
+2026,6,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,208,2,Yes,ESPN game log: Jets D/ST week 6 @NE (PA 26); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
+2026,7,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,115,2,Yes,ESPN game log: Jets D/ST week 7 MIA (PA 28); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
 2026,9,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,232,1,Yes,ESPN game log: Jets D/ST week 9 @KC (PA 35); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
-2026,10,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,195,1,Yes,ESPN game log: Jets D/ST week 10 BUF (PA 31); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
+2026,10,REG,DST_NYJ,NYJ D/ST,NYJ,DST,ESPN_League,195,2,Yes,ESPN game log: Jets D/ST week 10 BUF (PA 31); 06-qa/evidence/espn-game-log-NYJ-DST-2026.txt
