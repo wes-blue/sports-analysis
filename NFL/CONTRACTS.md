@@ -270,19 +270,27 @@ Columns: `Question_ID,Question,Answer,Type,Default_Used_Meanwhile,Options,What_I
 - **Data version** is the `run_id` and "data through" of the `status.csv` it was built from, shown on `About`.
 - File properties carry no personal data: author `NFL-Analysis pipeline`.
 
-### 13.5 Publication
+### 13.5 Publication: four release assets
 
 - The workbook is **not committed to git**: a file of about 8 MB (design 3.002; 3.001 was about 38 MB; measured 2026-11-21 for 2017–2026; it grows with the window) rebuilt every week would grow the repository by hundreds of megabytes a season (more than a gigabyte at the 3.001 size).
-- It is a **GitHub Release asset**: release tag `nfl-workbook`, asset name `NFL-Analysis.xlsx`, replaced on every publish. Stable download address:
-  `https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx`
-- The weekly and monthly workflows build and upload it after a PUBLISH. A SKIP rebuilds it only when the release or its asset is missing, or when the release notes' freshness key (`nfl-workbook-key: <run_id>|<pipeline_version>|<WORKBOOK_VERSION>`, a hidden marker) differs from the published data and the exporter, so a failed earlier upload repairs itself and a new workbook design republishes. The workbook is always built from the latest `NFL/04-data` on `main`. Dry runs, runs on other branches and the monthly heartbeat-only fire never build it. Merging a change to the pipeline code starts the weekly workflow (§8), so a merge that changes the exporter publishes a new workbook within minutes.
-- Manual dispatch with the input `workbook_only` rebuilds and republishes it from the data on `main` without a pipeline run; that run's outcome is `WORKBOOK` (green, and it never closes an alert issue).
-- The release is a **pre-release, never marked Latest**, created at the commit of the first run that needs it; the tag is never moved. Releases are found from a structured listing (`gh api` on the releases list), and an error in that listing stops the run rather than creating a duplicate. A **draft** release with the tag stops the run with a message for the maintainer.
-- **Replacing the asset:** the new file is uploaded as `NFL-Analysis.next.xlsx` and checked (size at least 1 MB, state uploaded); then the old `NFL-Analysis.xlsx` is deleted and the new asset renamed to it through the releases API. The stable address is missing only between the delete and the rename (about a second). If the rename is refused, the file is uploaded again under the stable name. A leftover temporary asset from an earlier failed run is removed first.
-- After publishing, a ranged request to the stable public address must return HTTP 200 or 206 (with retries for the CDN), or the run fails.
-- The build step checks that the file is a readable zip containing `xl/workbook.xml` before uploading. A failed build or upload turns the run red and raises the workflow's alert issue; the data commit already made stays, and the built file (if any) is kept as a run artifact named with the run id and attempt for 7 days.
-- The release notes say which data the file holds (data through, run id, gates).
 - The 2.x Power Query workbooks are retired and no longer published in this repository.
+
+The workbook, the two table files and the refresh workbook are not committed to git. They are four assets of one release, tag `nfl-workbook` (a pre-release, never "Latest", so it does not pose as a software release), at addresses that never change:
+
+| Asset | Built by | Stable address (`https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/<name>`) |
+|---|---|---|
+| `NFL-Analysis.xlsx` | `python -m nflpipe export --data-dir DIR --out FILE --tables-dir DIR2` | `.../NFL-Analysis.xlsx` |
+| `NFL-PlayerGames.csv` | the same call (`--tables-dir`) | `.../NFL-PlayerGames.csv` |
+| `NFL-SeasonTotals.csv` | the same call (`--tables-dir`) | `.../NFL-SeasonTotals.csv` |
+| `NFL-Analysis-Refresh.xlsx` | `python -m nflpipe refresh-workbook --out FILE` | `.../NFL-Analysis-Refresh.xlsx` |
+
+**Freshness key.** The release notes end with `<!-- nfl-workbook-key: <run_id>|<pipeline_version>|<WORKBOOK_VERSION>|<TABLES_VERSION> -->`. `run_id` and `pipeline_version` are read from `NFL/04-data/status.csv`; `WORKBOOK_VERSION` and `TABLES_VERSION` are read as text from the lines `WORKBOOK_VERSION = "..."` and `TABLES_VERSION = "..."` in `nflpipe/export_xlsx.py` (never imported). Each field matches `[0-9A-Za-z._-]+`. A run compares the whole key with the line in the notes (followed by a space, so `1.2.1` is not a prefix match of `1.2.10`). A different key, or any of the four assets missing, in `starter` state or of size 0, means "build and publish all four". `TABLES_VERSION` changes only when the column design of the two table files (or the refresh workbook's queries) changes. The key had three fields up to 3.002; a release carrying a three-field key is always stale, so the first run after the tables were added republishes everything, whether or not the workbook asset exists.
+
+**Build checks (before anything is uploaded).** Both workbooks are zip files whose every member reads back (`testzip`) and that hold `xl/workbook.xml`; the finished workbook is at least 1,000,000 bytes, the refresh workbook at least 5,000. Each CSV starts with the header `season,` (so no byte-order mark), and has at least 1,000,000 bytes and 1,000 lines (PlayerGames) or 100,000 bytes and 100 lines (SeasonTotals). Any failed check removes every built file, turns the run red and uploads nothing.
+
+**Safe swap.** 1) Upload each file under a temporary name (`NFL-Analysis.next.xlsx`, `NFL-PlayerGames.next.csv`, `NFL-SeasonTotals.next.csv`, `NFL-Analysis-Refresh.next.xlsx`): a leftover temporary asset of a dead run is removed first, an upload is tried three times, and `--clobber` is never used on a live asset. 2) Verify **every** temporary asset (`state` `uploaded`, size equal to the local file) before any live asset is touched; on any failure every temporary asset is removed and the live assets are untouched. 3) For each asset, back to back: delete the live asset (none to delete for an asset that is new), rename the temporary one to the stable name (five tries); if the rename is refused, upload the file again under the stable name with `--clobber` (nothing is left to overwrite). A failed pair is recorded and the other pairs still run. 4) Ask for each of the four public addresses with a ranged request (`curl -sL -r 0-0`, five tries with growing waits); 200 or 206 passes. 5) Only if steps 3 and 4 had no failure, edit the release notes: a line per asset with its address, the data lines and the key. A failure in any step turns the run red and opens or comments on the alert issue; the notes keep the old key, so the next run builds and publishes again.
+
+**Runs.** The same three workflow steps (decide, build, publish) run after a PUBLISH, after a SKIP (reads only when all four assets are current), and for the `workbook_only` dispatch, which also rebuilds the two table files and the refresh workbook. They never run on a dry run, off `main`, or for the monthly heartbeat. The 7-day run artifact `workbook-<run_id>-<attempt>` holds all four files.
 
 ### 13.6 The published tables and the refresh workbook
 
