@@ -2000,10 +2000,10 @@
       "title": "Q-008 and Q-017: Long-TD stacking and return fumbles",
       "detail": "BLOCKERS.csv Q-008 is Still open: the pasted text was the owner's own lineup, which includes none of the players asked about (D-039). The follow-up Q-017 asks for the 2026 ESPN game log of any listed long-TD or return-fumble player.",
       "rating": "Low",
-      "response": "Stacking and -2 for a return fumble meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38). Update 2026-11-22: the paste for Q-017 was ESPN.com's stats page (no fantasy points), so it cannot settle the long-TD rule; the owner was asked for the ESPN Fantasy game log with its FPTS column.",
+      "response": "Outcome: answered 2026-11-22 (D-055): the long-touchdown bonuses stack (T. Allgeier, week 8 2026: 46.1 needs both); the lost-return-fumble rule stays on its default for lack of an example. Before the answer: Stacking and -2 for a return fumble meanwhile (RAID-48). Settled in roadmap 3.004 (FR-38). Update 2026-11-22: the paste for Q-017 was ESPN.com's stats page (no fantasy points), so it cannot settle the long-TD rule; the owner was asked for the ESPN Fantasy game log with its FPTS column.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-63",
@@ -2209,10 +2209,10 @@
       "title": "Q-017: Paste the 2026 ESPN game log of a long-TD or return-fumble player",
       "detail": "BLOCKERS.csv Q-017, follow-up to Q-008 (RAID-62). One player with a 50+ yard touchdown and one with a fumble lost on a return settle both rules.",
       "rating": "Low",
-      "response": "Default in force: a 50+ yard TD earns both bonuses; a lost return fumble costs 2 points. Settled in roadmap 3.004. Update 2026-11-22: the paste was ESPN.com's stats page, not the fantasy game log; asked again with directions.",
+      "response": "Outcome: answered 2026-11-22 (D-055): the owner pasted Allgeier's ESPN Fantasy game log; all 10 weeks match. Before the answer: Default in force: a 50+ yard TD earns both bonuses; a lost return fumble costs 2 points. Settled in roadmap 3.004. Update 2026-11-22: the paste was ESPN.com's stats page, not the fantasy game log; asked again with directions.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-82",
@@ -2352,10 +2352,10 @@
       "title": "Q-019: ESPN's treatment of special-teams touchdowns, blocked-kick returns, safeties and own-fumble touchdowns for a team defense",
       "detail": "BLOCKERS.csv Q-019. The owner's Arizona game log proved that ESPN leaves out points scored by the opposing defense, but shows none of these four cases. One ESPN game log each (Jets, Colts, Titans, Cowboys D/ST) would settle them.",
       "rating": "Low",
-      "response": "Defaults in force (D-038): special-teams touchdowns and blocked-kick returns count as points allowed; a safety against the offense does not; a team's own end-zone fumble recovery is credited to its D/ST as the nflverse data reports it. In 2026 so far these affect 6 of 300 team-games. Update 2026-11-22: the paste for Q-019 was the Colts' season team statistics (no weekly points allowed or fantasy points); asked again for a D/ST fantasy game log.",
+      "response": "Outcome: answered 2026-11-22 (D-055): Colts and Jets D/ST game logs; points allowed match in all 21 games, special-teams touchdowns and the blocked-punt case count against the defense as assumed; rarer cases stay on defaults. Before the answer: Defaults in force (D-038): special-teams touchdowns and blocked-kick returns count as points allowed; a safety against the offense does not; a team's own end-zone fumble recovery is credited to its D/ST as the nflverse data reports it. In 2026 so far these affect 6 of 300 team-games. Update 2026-11-22: the paste for Q-019 was the Colts' season team statistics (no weekly points allowed or fantasy points); asked again for a D/ST fantasy game log.",
       "owner": "User",
       "target_version": "3.004",
-      "status": "Open"
+      "status": "Closed"
     },
     {
       "id": "RAID-95",
