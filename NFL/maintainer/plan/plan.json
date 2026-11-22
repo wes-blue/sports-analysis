@@ -464,7 +464,7 @@
     {
       "version": "3.005",
       "increment": "Power Query refresh (option A)",
-      "scope": "The Power Query option of D-054 returns, loading only finished data: no scoring in Excel. (1) Each pipeline run also publishes two finished CSV files, NFL-PlayerGames.csv and NFL-SeasonTotals.csv, as release assets next to the workbook at stable links, with the same values as the workbook's PlayerGames and SeasonTotals sheets. (2) A small generated workbook, NFL-Analysis-Refresh.xlsx, with two Power Query queries that load those two files, published as a release asset. (3) A 'Get Data > From Web' guide in NFL/05-excel/README.md, which is the path that cannot fail. The workbook design stays 3.002 (D-056).",
+      "scope": "The Power Query option of D-054 returns, loading only finished data: no scoring in Excel. (1) Each pipeline run also publishes two finished CSV files, NFL-PlayerGames.csv and NFL-SeasonTotals.csv, as release assets next to the workbook at stable links, with the same values as the workbook's PlayerGames and SeasonTotals sheets. (2) A small generated workbook, NFL-Analysis-Refresh.xlsx, with two Power Query queries that load those two files, published as a release asset. (3) A 'Get Data > From Web' guide in NFL/05-excel/README.md, which is the path that cannot fail. The workbook design stays 3.002 (D-056). Live since 2026-11-22 (D-058): the two CSV files and the guide. The refresh workbook waits for the owner's Excel test (Q-026, D-057).",
       "deliverables": "The CSV writer in the exporter (an option on 'python -m nflpipe export', one pass with the workbook) and its tests; the generator of NFL-Analysis-Refresh.xlsx; the weekly workflow's safe swap generalised to all three assets with a freshness key that covers the tables; the updated NFL/CONTRACTS.md, NFL/03-pipeline/AUTOMATION.md, README.md, NFL/README.md and NFL/05-excel/README.md; an independent QA report with dispositions.",
       "acceptance_criteria": "(a) NFL-PlayerGames.csv and NFL-SeasonTotals.csv equal the workbook's PlayerGames and SeasonTotals sheets cell for cell, header included (FR-53, C-37). (b) Two builds from the same data give the same bytes (same SHA-256) for each CSV and for the refresh workbook; the CSVs are UTF-8 without a byte-order mark, with LF line ends. (c) The publish step swaps all assets safely: uploads under temporary names, checks every upload before touching a live asset, then replaces them back to back; the freshness key covers the tables, so a change to their design republishes all assets (FR-56). (d) The public links of all assets answer after a run. (e) The owner opens NFL-Analysis-Refresh.xlsx in desktop Excel with no repair message, refreshes it, and reports the prompts and the time it took (FR-54, RAID-108). (f) The guide in NFL/05-excel/README.md works for a new user who follows it alone (FR-55). (g) Quality gates G1-G5 pass. (h) python3 NFL/maintainer/plan/validate_plan.py passes.",
       "depends_on": "3.002 (released 2026-11-21); D-054; D-056",
@@ -1337,8 +1337,8 @@
       "priority": "Must",
       "source": "D-054; D-056; BLOCKERS.csv Q-023",
       "target_version": "3.005",
-      "acceptance_criteria": "Roadmap 3.005 (a), (b): the files equal the sheets cell for cell (control C-37) and two builds give the same SHA-256.",
-      "status": "In progress"
+      "acceptance_criteria": "Roadmap 3.005 (a), (b): the files equal the sheets cell for cell (control C-37) and two builds give the same SHA-256. Done 2026-11-22 (D-058): run 45058873419 published both files; the copies at the public links are byte-identical to a local build of main, which equals the workbook sheets cell for cell (C-37).",
+      "status": "Done"
     },
     {
       "id": "FR-54",
@@ -1367,8 +1367,8 @@
       "priority": "Must",
       "source": "D-056; NFL/03-pipeline/AUTOMATION.md",
       "target_version": "3.005",
-      "acceptance_criteria": "Roadmap 3.005 (c), (d): a forced upload failure leaves every live asset as it was and turns the run red; a design change to the tables republishes all assets; the public links answer.",
-      "status": "In progress"
+      "acceptance_criteria": "Roadmap 3.005 (c), (d): a forced upload failure leaves every live asset as it was and turns the run red; a design change to the tables republishes all assets; the public links answer. Done 2026-11-22 (D-058): the first swap on GitHub (run 45058873419) published three assets through temporary names, all links answer, and the four-field key was written. The forced-failure cases are proven with the workflow stand-ins (test_workflows.py); a failure on GitHub itself belongs to roadmap 3.003.",
+      "status": "Done"
     }
   ],
   "raid": [
