@@ -4,7 +4,7 @@ Scored NFL fantasy-football data and a finished Excel workbook built from it. A 
 
 **Download the workbook:** <https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis.xlsx>. Open it in Excel; there is nothing to refresh. The link never changes, and the file behind it is replaced after every publish.
 
-**Or refresh from Excel:** the workbook's two main tables are also published as plain CSV files, [`NFL-PlayerGames.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv) and [`NFL-SeasonTotals.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv), replaced together with it. [`05-excel/README.md`](05-excel/README.md) shows how to load them in Excel with **Get Data, From Web**, so that **Refresh All** fetches the newest data.
+**Or refresh from Excel:** the workbook's two main tables are also published as plain CSV files, [`NFL-PlayerGames.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-PlayerGames.csv) and [`NFL-SeasonTotals.csv`](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-SeasonTotals.csv), replaced together with it. The ready-made [refresh workbook](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis-Refresh.xlsx) loads both in desktop Excel with **Data**, **Refresh All**; [`05-excel/README.md`](05-excel/README.md) has the steps, and how to build the same queries yourself with **Get Data, From Web**.
 
 Everything runs on GitHub. Nothing needs your computer to be on, and you need only Excel to use the result.
 

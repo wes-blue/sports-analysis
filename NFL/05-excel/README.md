@@ -5,7 +5,7 @@ The NFL workbook is built for you on GitHub, from public nflverse statistics. Th
 ## Two ways to use it
 
 1. **Download the finished workbook.** Nothing to install or refresh. This is the easiest way and the one that works on every device.
-2. **Refresh from Excel.** Load two CSV files into desktop Excel with Get Data, From Web, and press Refresh whenever you want the newest data.
+2. **Refresh from Excel.** Download a small refresh workbook, or load the two CSV files yourself with Get Data, From Web, then press Refresh All whenever you want the newest data. This needs desktop Excel.
 
 ### 1. Download the finished workbook
 
@@ -30,7 +30,14 @@ The same two tables as the workbook's `PlayerGames` and `SeasonTotals` sheets ar
 
 The columns are the ones in the finished workbook, so a league you add is a new `FF_<League>` column in both files.
 
-**Coming: a ready-made refresh workbook.** A small workbook with no data in it, whose two queries read the two files above, is coming once it has been confirmed in Excel. Until then, use the steps below: they build the same two queries yourself.
+**The quick way: the refresh workbook.** **[Download NFL-Analysis-Refresh.xlsx](https://github.com/wes-blue/sports-analysis/releases/download/nfl-workbook/NFL-Analysis-Refresh.xlsx)** (about 14 KB, no data in it). Its two queries read the two files above.
+
+1. Open it in desktop Excel and click **Enable Editing** and **Enable Content** if those bars appear.
+2. Choose **Data**, **Refresh All**.
+3. When Excel asks how to connect, choose **Anonymous** and click **Connect**. It may ask again for a second address that ends in `githubusercontent.com`: choose **Anonymous** there too.
+4. If Excel asks about privacy levels, choose **Public**.
+
+Both tables fill with every season from 2017. Save the workbook, and **Refresh All** brings in the newest data from then on. Its **Start** sheet has a short version of these steps. The steps below build the same two queries in a workbook of your own, if you prefer.
 
 **The steps: Get Data, From Web.** Do these in a new, empty workbook in desktop Excel (Microsoft 365 or Excel 2019 or newer). The steps were written for desktop Excel on Windows. On a Mac the menu names differ (look for **Get Data (Power Query)**), and these steps are not tested there.
 
@@ -102,7 +109,7 @@ The code names the columns that are whole numbers or text and treats every other
 
 **Good to know.**
 
-- A refresh may take about a minute or two (an estimate; not yet measured): Excel downloads about 40 MB and writes about 17 million cells.
+- A refresh downloads about 40 MB and writes about 17 million cells. In one test in desktop Excel (Microsoft 365, Windows) the first refresh took under two minutes and the next one about 30 seconds; treat that as an estimate for your computer and connection.
 - **Excel for the web may not be able to refresh these queries** (not tested). Use desktop Excel.
 - **On a phone or tablet, use the finished workbook** (way 1). It opens there, and there is nothing to refresh.
 - Refreshing reads the newest published files, which are the same data the finished workbook holds. The data is rebuilt after every publish (see "How often it is rebuilt").

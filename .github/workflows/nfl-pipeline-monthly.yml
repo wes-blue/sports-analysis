@@ -54,10 +54,10 @@ env:
   TABLE_PLAYERS_ASSET: NFL-PlayerGames.csv
   TABLE_SEASONS_ASSET: NFL-SeasonTotals.csv
   REFRESH_ASSET: NFL-Analysis-Refresh.xlsx
-  # The refresh workbook (NFL-Analysis-Refresh.xlsx) is built and published only while this is "true". It stays "false"
-  # until the owner has opened a copy in desktop Excel and it worked (AUTOMATION.md, "The refresh workbook switch").
+  # The refresh workbook (NFL-Analysis-Refresh.xlsx) is built and published only while this is "true". It was "false"
+  # until the owner opened the real file in desktop Excel and it worked, on 2026-11-23 (AUTOMATION.md, "The refresh workbook switch").
   # Keep the value the same in nfl-pipeline-weekly.yml and nfl-pipeline-monthly.yml.
-  PUBLISH_REFRESH_WORKBOOK: "false"
+  PUBLISH_REFRESH_WORKBOOK: "true"
   HEARTBEAT_CRON: "37 11 16 * *"
   HEARTBEAT_AFTER_DAYS: "21"
   GUIDE_URL: https://github.com/wes-blue/sports-analysis/blob/main/NFL/03-pipeline/AUTOMATION.md
