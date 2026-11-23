@@ -70,3 +70,20 @@
   - The workbook link answers "not found" for about a second.
   - The two CSV links, already shown on the visitor pages, answer "not found" from the merge until this run renames them, typically a few minutes.
 - **Not published:** the refresh workbook.
+
+## Addendum, 2026-11-23: switching the refresh workbook on
+
+- **Change:** `PUBLISH_REFRESH_WORKBOOK` is now `"true"` in both workflows (D-059), after the owner's Excel test of the real file passed (Q-026). The visitor pages link the file.
+- **Review:** [`review-3.005-switch-on.md`](review-3.005-switch-on.md) says ready to merge, with 0 critical, 0 major and 4 minor findings, all optional. It confirmed four things:
+  - the first run publishes four assets and touches no live asset before all four are verified;
+  - builds from `main` and from the branch both equal the tested file (`1e0a8a16…`);
+  - 828 tests pass on Python 3.11 and 3.13;
+  - only Q-026 changed in `BLOCKERS.csv`.
+- **Its minor findings:**
+
+| Finding | Disposition |
+|---|---|
+| The `Start` sheet is shorter than the guide | **Accepted (D-059):** the file stays byte-identical to the one Excel accepted, and the two do not contradict each other |
+| The quick-way steps give no time | **Accepted:** the measured times, labelled as an estimate, are in "Good to know" a few lines below |
+| The reviewer's local `origin/main` was stale, so its diff also showed two records commits | **No action:** the reviewer's environment, not the change |
+| Some historical wording in `AUTOMATION.md` | **Accepted:** it describes past runs and is accurate |
