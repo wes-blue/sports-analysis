@@ -1,6 +1,6 @@
 key,value
-run_id,20261124T235354Z-gh45513711732
-generated_utc,2026-11-24T23:54:04Z
+run_id,20261125T195644Z-gh45690108037
+generated_utc,2026-11-25T19:57:40Z
 pipeline_version,1.2.1
 data_contract_version,1
 outcome,PUBLISH
@@ -10,12 +10,12 @@ season_types,REG+POST
 latest_season,2026
 latest_week,11
 latest_season_type,REG
-upstream_last_modified_max,2026-11-24T23:46:23Z
+upstream_last_modified_max,2026-11-25T19:46:30Z
 config_sha256,620146c2bb5bebb5bb3d230dd820139e1381e23c8508c64b117f4fb52b255a28
 gates_pass,13
 gates_warn,0
 gates_fail,0
-seasons_refreshed,2026
+seasons_refreshed,"2017,2018,2019,2020,2021,2022,2023,2024,2025,2026"
 data_source,"nflverse, https://github.com/nflverse/nflverse-data (modified: see DATA-LICENSE.md at the repository root)"
 data_license,"CC BY 4.0, https://creativecommons.org/licenses/by/4.0/"
 contract_Standard,15e3fc14b87e0bd900dc07fdf27f0fec629de84092189ca1bc93d86ab96d74e6
