@@ -17,4 +17,4 @@ season,season_type,player_rows,dst_rows,max_week,season_status,refreshed_utc
 2024,REG,18112,544,18,complete,2026-11-25T19:56:44Z
 2025,POST,878,26,22,complete,2026-11-25T19:56:44Z
 2025,REG,18522,544,18,complete,2026-11-25T19:56:44Z
-2026,REG,11328,326,11,in_progress,2026-11-25T19:56:44Z
+2026,REG,11392,328,12,in_progress,2026-11-26T19:36:41Z

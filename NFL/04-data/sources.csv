@@ -1,5 +1,5 @@
 season,kind,url,last_modified,size_bytes,sha256,fetched_utc
-,schedules,https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv,2026-11-25T19:46:30Z,2192455,7e7c17f35daa2c86f6acb2bd0cba772caab3880031e7735c5ebec7cc8c28c846,2026-11-25T19:56:45Z
+,schedules,https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv,2026-11-26T19:16:58Z,2192482,40e7804aabbbd089301066302f253e1b1f253930e9c0480439899721b8b9cda2,2026-11-26T19:36:41Z
 2017,pbp,https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2017.csv.gz,2026-11-25T08:19:30Z,18455779,0a97654af637053b2f0dfa155b3a6a16becfaa9d50251699a0a2ee2e35af6373,2026-11-25T19:56:54Z
 2017,stats_player,https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2017.csv,2026-11-25T08:37:11Z,7821809,8e9382c90991f092941360682f4f3a41f317a734921b0cca9388e7d22b8f897c,2026-11-25T19:56:54Z
 2017,stats_team,https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2017.csv,2026-11-25T08:37:13Z,215672,11c9b5c915dee5960494c6244166b6ff911b29fc90a82f4cf354a08aaae707a4,2026-11-25T19:56:54Z
@@ -27,6 +27,6 @@ season,kind,url,last_modified,size_bytes,sha256,fetched_utc
 2025,pbp,https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2025.csv.gz,2026-11-25T18:44:34Z,19582786,a518c6b8750cc671f6078e71aa7a44033b37b5ba02dbd714e5fc9faee782c758,2026-11-25T19:57:28Z
 2025,stats_player,https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2025.csv,2026-11-25T18:47:23Z,8657057,f7b117394e1435efd368e31ed8a83fe14188c4f96d886b0e8930d986bb75bc1b,2026-11-25T19:57:28Z
 2025,stats_team,https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2025.csv,2026-11-25T18:47:25Z,229658,f27f6ae1d97cd606b34f25e653b3e1f590c61b8c4b3a7b4e120fe51e82467064,2026-11-25T19:57:28Z
-2026,pbp,https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2026.csv.gz,2026-11-25T19:09:19Z,11448785,f92d2a1c1ee506d9c6172ba3ffcfaeb9088d03aa999e797f6afc764b2a86851c,2026-11-25T19:57:32Z
-2026,stats_player,https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2026.csv,2026-11-25T19:12:23Z,5048215,1f3127432e987b860326e7ac0d734e2963bc91ff4fdcaae669e212649b673f9b,2026-11-25T19:56:44Z
-2026,stats_team,https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2026.csv,2026-11-25T19:12:25Z,132533,5c503521038f8181a7ebfd34857de1ea3be21bc818f14159c7ced935167de5f6,2026-11-25T19:57:32Z
+2026,pbp,https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2026.csv.gz,2026-11-26T18:58:15Z,11514059,adf5a3a727ce7f114678dfdd6d49a98f5a67c2f55bf6b5b001002d224959ec89,2026-11-26T19:36:48Z
+2026,stats_player,https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2026.csv,2026-11-26T18:59:40Z,5077093,b06ab83310fe351db1b16e89e87c074f7de464e51700f6b3ff730315598d0c12,2026-11-26T19:36:41Z
+2026,stats_team,https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2026.csv,2026-11-26T18:59:42Z,133333,331cba4c251b2bf48c852c31a3761c40c670ace0cabac5e97bfd913dbca37c82,2026-11-26T19:36:48Z
