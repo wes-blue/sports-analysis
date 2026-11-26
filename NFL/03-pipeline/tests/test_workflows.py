@@ -1565,7 +1565,7 @@ class WB:
                "REAL_PY": self.real_py, "ALERT_DETAILS": str(self.details), "EXPORT_LOG": str(self.tmp / "export.log"),
                "WORKBOOK_MIN_BYTES": "100", "PLAYERS_MIN_BYTES": "100", "PLAYERS_MIN_LINES": "10",
                "SEASONS_MIN_BYTES": "50", "SEASONS_MIN_LINES": "5", "REFRESH_MIN_BYTES": "100",
-               # the workflows ship with the switch "false"; most tests below exercise the four-asset path, so they turn it on
+               # the four-asset path, as the workflows now ship it (the switch "true"); tests of the held path set it "false"
                "PUBLISH_REFRESH_WORKBOOK": "true"}
         env.update(extra)
         return env
@@ -2144,9 +2144,9 @@ ON = {"PUBLISH_REFRESH_WORKBOOK": "true"}
 THREE = [WB_ASSET, PG_ASSET, ST_ASSET]
 
 
-def test_the_switch_ships_off_and_is_the_same_in_both_workflows():
+def test_the_switch_is_on_and_the_same_in_both_workflows():
     values = [load(n)[1]["env"]["PUBLISH_REFRESH_WORKBOOK"] for n in PUBLISHING]
-    assert values == ["false", "false"], "a string, not a YAML boolean; off until the owner's Excel test passed"
+    assert values == ["true", "true"], "a string, not a YAML boolean; on since the owner's Excel test passed (2026-11-23)"
     for n in PUBLISHING:
         for step_name in (DECIDE, BUILD, PUBLISH_WB):
             s = script_of(n, step_name)

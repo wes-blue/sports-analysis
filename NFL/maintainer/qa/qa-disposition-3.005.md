@@ -34,10 +34,10 @@
 | Review F3 | Minor | Size given as about 20 KB | **Fixed:** about 14 KB everywhere |
 | Review F4 | Minor | The contract said the refresh workbook is rebuilt only when `TABLES_VERSION` changes | **Fixed.** It is rebuilt on every publish, with identical bytes. Any change to its generator or query text must bump `TABLES_VERSION`, and a pin test enforces that (it fails on a `.m` edit and on a generator edit). |
 | Review F5 | Minor | Refresh time and platform claims not labelled | **Fixed:** labelled as estimates or not tested |
-| Review F6, re-test N2 | Minor | Redirect host named wrongly; the refresh workbook's `Start` sheet does not mention the possible second prompt for an address ending in `githubusercontent.com` | **Guide fixed. Start sheet deferred to the switch pull request.** The guide, which is the live route, covers the second prompt. The refresh workbook is not published, and its `Start` text will be written from the prompts the owner reports in Q-026, with a new pin, in the pull request that sets the switch to `"true"`. |
+| Review F6, re-test N2 | Minor | Redirect host named wrongly; the refresh workbook's `Start` sheet does not mention the possible second prompt for an address ending in `githubusercontent.com` | **Guide fixed. Start sheet left as tested (D-059).** The guide covers the second prompt. The owner's Excel test of the real file (Q-026) needed no extra guidance, so the file is published byte-identical to the one Excel accepted, rather than changed after the test. |
 | Review F7 | Minor | Stale records | **Fixed:** plan, memory and the C-37 status |
 | Review F8 | Minor | A bare CR inside a quoted field contradicted "LF line ends" | **Fixed** in the wording (§13.6), with a test |
-| Review F9 | Minor | The query text cannot be run here | **Open until Q-026:** only Excel can run it |
+| Review F9 | Minor | The query text cannot be run here | **Closed by Q-026 (D-059):** the owner's desktop Excel ran both queries and loaded every season |
 | Review observation | Note | The archived 2.x workbook carries a user-bound permission block | **Accepted:** outside this change. The new generator writes an empty block and reads nothing from the archive. |
 | Adversarial m-1 | Minor | A stray temporary asset survived a SKIP | **Fixed:** a leftover `*.next.*` asset makes the decide step rebuild, and publish removes all four temporary names first |
 | Adversarial m-2 | Minor | The link check could outlast the publish step | **Fixed:** `--max-time 20` and bounded waits; the worst case is 600 s of the 30-minute step |
@@ -47,7 +47,7 @@
 | Adversarial m-6 | Minor | The first run swaps a byte-identical workbook | **Accepted:** the link answers "not found" for about a second, once |
 | Adversarial m-7 | Minor | Documentation overstated link uptime | **Fixed** |
 | Re-test N1 | Minor | The build step does not check the switch value itself | **Accepted:** unreachable, because the decide step stops on any value other than `"true"` or `"false"` before build runs |
-| Re-test N3 | Minor | The refresh workbook still differs from an Excel-saved file: never-loaded state, empty bindings, an empty row | **Open until Q-026:** none is a known repair trigger, and only the owner's Excel can settle it. The switch stays off until then. |
+| Re-test N3 | Minor | The refresh workbook still differs from an Excel-saved file: never-loaded state, empty bindings, an empty row | **Closed by Q-026 (D-059):** Excel opened the file with no repair message; the switch is now on |
 | Re-test N4 | Minor | `NFL/README.md` and `NFL/04-data/README.md` did not mention the two CSV files | **Fixed** by the orchestrator: both pages now point to them and to the guide |
 
 ## Version policy
@@ -70,3 +70,20 @@
   - The workbook link answers "not found" for about a second.
   - The two CSV links, already shown on the visitor pages, answer "not found" from the merge until this run renames them, typically a few minutes.
 - **Not published:** the refresh workbook.
+
+## Addendum, 2026-11-23: switching the refresh workbook on
+
+- **Change:** `PUBLISH_REFRESH_WORKBOOK` is now `"true"` in both workflows (D-059), after the owner's Excel test of the real file passed (Q-026). The visitor pages link the file.
+- **Review:** [`review-3.005-switch-on.md`](review-3.005-switch-on.md) says ready to merge, with 0 critical, 0 major and 4 minor findings, all optional. It confirmed four things:
+  - the first run publishes four assets and touches no live asset before all four are verified;
+  - builds from `main` and from the branch both equal the tested file (`1e0a8a16…`);
+  - 828 tests pass on Python 3.11 and 3.13;
+  - only Q-026 changed in `BLOCKERS.csv`.
+- **Its minor findings:**
+
+| Finding | Disposition |
+|---|---|
+| The `Start` sheet is shorter than the guide | **Accepted (D-059):** the file stays byte-identical to the one Excel accepted, and the two do not contradict each other |
+| The quick-way steps give no time | **Accepted:** the measured times, labelled as an estimate, are in "Good to know" a few lines below |
+| The reviewer's local `origin/main` was stale, so its diff also showed two records commits | **No action:** the reviewer's environment, not the change |
+| Some historical wording in `AUTOMATION.md` | **Accepted:** it describes past runs and is accurate |
